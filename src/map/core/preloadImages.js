@@ -76,6 +76,37 @@ export default async () => {
   const background = await loadImage(backgroundSvg);
   mapImages.background = await prepareIcon(background);
   mapImages.direction = await prepareIcon(await loadImage(directionSvg));
+
+  // Chip: cápsula redondeada de fondo para el label del vehículo.
+  // Base chica (18px) para que icon-text-fit la escale sin sobre-restringir
+  // el alto: solo los extremos redondeados quedan fijos, el resto se estira.
+  const chipCanvas = document.createElement('canvas');
+  const chipH = 18;
+  const chipW = 60;
+  chipCanvas.width = chipW;
+  chipCanvas.height = chipH;
+  const ctx = chipCanvas.getContext('2d');
+  const r = chipH / 2;
+  ctx.fillStyle = '#1C2536';
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(chipW - r, 0);
+  ctx.arc(chipW - r, r, r, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(r, chipH);
+  ctx.arc(r, r, r, Math.PI / 2, -Math.PI / 2);
+  ctx.closePath();
+  ctx.fill();
+  const chipData = ctx.getImageData(0, 0, chipW, chipH);
+  mapImages.chip = {
+    width: chipW,
+    height: chipH,
+    data: new Uint8Array(chipData.data),
+    // El texto ocupa el rectángulo central; los extremos redondeados no se
+    // estiran. Banda central estirable en ambos ejes para 1 o varias líneas.
+    content: [r, 1, chipW - r, chipH - 1],
+    stretchX: [[r, chipW - r]],
+    stretchY: [[r - 1, r + 1]],
+  };
   await Promise.all(
     Object.keys(mapIcons).map(async (category) => {
       const results = [];
