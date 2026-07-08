@@ -190,6 +190,55 @@ export const prepareDirection = (color) => {
   return context.getImageData(0, 0, s, s);
 };
 
+// Pill "horneado": imagen completa (fondo blanco + borde + nombre ya dibujado)
+// para el label del vehículo. Al ser un ícono sólido (y no chip + texto), cuando
+// dos se superponen el de arriba tapa por completo al de abajo — MapLibre dibuja
+// el ícono como una unidad, en vez de dibujar todos los textos al final.
+export const buildLabelImage = (text) => {
+  const dpr = devicePixelRatio;
+  const fontSize = 10;
+  const font = `bold ${fontSize}px "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif`;
+  const padX = 11;
+  const padY = 3;
+  const border = 1.5;
+
+  const measure = document.createElement('canvas').getContext('2d');
+  measure.font = font;
+  const textWidth = Math.ceil(measure.measureText(text).width);
+
+  const height = Math.round(fontSize + padY * 2 + border * 2);
+  const width = textWidth + padX * 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  const context = canvas.getContext('2d');
+  context.scale(dpr, dpr);
+
+  const m = border / 2 + 0.25;
+  const r = height / 2 - m;
+  context.beginPath();
+  context.moveTo(height / 2, m);
+  context.lineTo(width - height / 2, m);
+  context.arc(width - height / 2, height / 2, r, -Math.PI / 2, Math.PI / 2);
+  context.lineTo(height / 2, height - m);
+  context.arc(height / 2, height / 2, r, Math.PI / 2, -Math.PI / 2);
+  context.closePath();
+  context.fillStyle = '#FFFFFF';
+  context.fill();
+  context.lineWidth = border;
+  context.strokeStyle = '#1C2536';
+  context.stroke();
+
+  context.fillStyle = '#1C2536';
+  context.font = font;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(text, width / 2, height / 2 + 0.5);
+
+  return context.getImageData(0, 0, canvas.width, canvas.height);
+};
+
 export const prepareIcon = (background, icon, color) => {
   const canvas = document.createElement('canvas');
   canvas.width = background.width * devicePixelRatio;

@@ -18,7 +18,9 @@ import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
+import MapLabels from '../map/control/MapLabels';
 import useFeatures from '../common/util/useFeatures';
+import usePersistedState from '../common/util/usePersistedState';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const theme = useTheme();
@@ -31,6 +33,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const features = useFeatures();
 
   const [rulerActive, setRulerActive] = useState(false);
+  const [showLabels, setShowLabels] = usePersistedState('mapShowNames', true);
 
   const onMarkerClick = useCallback(
     (_, deviceId) => {
@@ -52,11 +55,13 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
           selectedPosition={selectedPosition}
           showStatus
           disabled={rulerActive}
+          showLabels={showLabels}
         />
         <MapDefaultCamera filteredPositions={filteredPositions} />
         <MapSelectedDevice />
         <PoiMap />
         <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />
+        <MapLabels enabled={showLabels} onToggle={() => setShowLabels(!showLabels)} />
         {!features.disableEvents && (
           <MapNotification enabled={eventsAvailable} onClick={onEventsClick} />
         )}

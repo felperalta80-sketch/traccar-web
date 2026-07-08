@@ -45,15 +45,7 @@ const initMap = async () => {
   if (ready) return;
   if (!map.hasImage('background')) {
     Object.entries(mapImages).forEach(([key, value]) => {
-      if (value.stretchX || value.stretchY || value.content) {
-        const { stretchX, stretchY, content } = value;
-        map.addImage(key, value, {
-          pixelRatio: 1,
-          stretchX,
-          stretchY,
-          content,
-        });
-      } else if (typeof value.render === 'function') {
+      if (typeof value.render === 'function') {
         map.addImage(key, value, { pixelRatio: 1 });
       } else {
         map.addImage(key, value, {

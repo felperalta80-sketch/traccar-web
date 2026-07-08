@@ -7,7 +7,12 @@ import { formatTime, getStatusColor } from '../common/util/formatter';
 import { mapIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
-import { findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
+import {
+  buildLabelImage,
+  findFonts,
+  fromMapCoordinates,
+  toMapCoordinates,
+} from './core/mapUtil';
 
 const MapPositions = ({
   positions,
@@ -17,6 +22,7 @@ const MapPositions = ({
   selectedPosition,
   titleField,
   disabled,
+  showLabels = true,
 }) => {
   const id = useId();
   const clusters = `${id}-clusters`;
@@ -35,6 +41,9 @@ const MapPositions = ({
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
 
+  const showLabelsRef = useRef(showLabels);
+  showLabelsRef.current = showLabels;
+
   const createFeature = useCallback(
     (devices, position) => {
       const device = devices[position.deviceId];
@@ -50,6 +59,9 @@ const MapPositions = ({
           showDirection = position.course > 0;
           break;
       }
+      const rawTitle =
+        titleField === 'fixTime' ? formatTime(position.fixTime, 'seconds') : device.name;
+      const label = rawTitle && rawTitle.length > 20 ? `${rawTitle.slice(0, 20)}…` : rawTitle;
       return {
         id: position.id,
         deviceId: position.deviceId,
@@ -60,9 +72,11 @@ const MapPositions = ({
         rotation: position.course,
         direction: showDirection,
         moving: position.speed > 0,
+        label,
+        labelKey: `label:${label}`,
       };
     },
-    [directionType, showStatus],
+    [directionType, showStatus, titleField],
   );
 
   const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
@@ -138,44 +152,17 @@ const MapPositions = ({
         },
       });
       map.addLayer({
-        id: source,
-        type: 'symbol',
-        source,
-        filter: ['!has', 'point_count'],
-        layout: {
-          'icon-image': '{category}-{color}',
-          'icon-size': iconScale,
-          'icon-allow-overlap': true,
-          'symbol-sort-key': ['get', 'id'],
-        },
-      });
-      map.addLayer({
         id: `${source}-label`,
         type: 'symbol',
         source,
         filter: ['!has', 'point_count'],
         layout: {
-          'icon-image': 'chip',
-          'icon-text-fit': 'both',
-          'icon-text-fit-padding': [4, 8, 4, 8],
+          visibility: showLabelsRef.current ? 'visible' : 'none',
+          'icon-image': ['get', 'labelKey'],
           'icon-allow-overlap': true,
-          'text-field': [
-            'case',
-            ['>', ['length', ['get', titleField || 'name']], 20],
-            ['concat', ['slice', ['get', titleField || 'name'], 0, 20], '…'],
-            ['get', titleField || 'name'],
-          ],
-          'text-max-width': 100,
-          'text-allow-overlap': true,
-          'text-anchor': 'bottom',
-          'text-offset': [0, -2.6 * iconScale],
-          'text-font': findFonts(map).map((font) => font.replace('Regular', 'Bold')),
-          'text-justify': 'center',
-          'text-size': 10,
-          'symbol-sort-key': ['get', 'id'],
-        },
-        paint: {
-          'text-color': '#1C2536',
+          'icon-anchor': 'bottom',
+          'icon-offset': [0, -24],
+          'symbol-z-order': 'source',
         },
       });
       map.addLayer({
@@ -189,9 +176,21 @@ const MapPositions = ({
           'icon-allow-overlap': true,
           'icon-rotate': ['get', 'rotation'],
           'icon-rotation-alignment': 'map',
+          'symbol-z-order': 'source',
         },
       });
-
+      map.addLayer({
+        id: source,
+        type: 'symbol',
+        source,
+        filter: ['!has', 'point_count'],
+        layout: {
+          'icon-image': '{category}-{color}',
+          'icon-size': iconScale,
+          'icon-allow-overlap': true,
+          'symbol-z-order': 'source',
+        },
+      });
       map.on('mouseenter', source, onMouseEnter);
       map.on('mouseleave', source, onMouseLeave);
       map.on('click', source, onMarkerClickCallback);
@@ -292,22 +291,30 @@ const MapPositions = ({
 
   useEffect(() => {
     [id, selected].forEach((source) => {
-      map.getSource(source)?.setData({
-        type: 'FeatureCollection',
-        features: positions
-          .filter((it) => devices.hasOwnProperty(it.deviceId))
-          .filter((it) =>
-            source === id ? it.deviceId !== selectedDeviceId : it.deviceId === selectedDeviceId,
-          )
-          .map((position) => ({
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: toMapCoordinates(position.longitude, position.latitude),
-            },
-            properties: createFeature(devices, position),
-          })),
+      const features = positions
+        .filter((it) => devices.hasOwnProperty(it.deviceId))
+        .filter((it) =>
+          source === id ? it.deviceId !== selectedDeviceId : it.deviceId === selectedDeviceId,
+        )
+        .map((position) => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: toMapCoordinates(position.longitude, position.latitude),
+          },
+          properties: createFeature(devices, position),
+        }));
+      // Genera (una sola vez, cacheado por hasImage) la imagen horneada de cada
+      // label que aparezca, para poder usarla como icon-image del pill.
+      features.forEach((feature) => {
+        const key = feature.properties.labelKey;
+        if (key && feature.properties.label && !map.hasImage(key)) {
+          map.addImage(key, buildLabelImage(feature.properties.label), {
+            pixelRatio: window.devicePixelRatio,
+          });
+        }
       });
+      map.getSource(source)?.setData({ type: 'FeatureCollection', features });
     });
   }, [
     mapCluster,
@@ -322,6 +329,14 @@ const MapPositions = ({
     selected,
     selectedDeviceId,
   ]);
+
+  useEffect(() => {
+    [id, selected].forEach((source) => {
+      if (map.getLayer(`${source}-label`)) {
+        map.setLayoutProperty(`${source}-label`, 'visibility', showLabels ? 'visible' : 'none');
+      }
+    });
+  }, [showLabels, id, selected]);
 
   return null;
 };

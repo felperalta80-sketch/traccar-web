@@ -83,42 +83,6 @@ export default async () => {
   // Halo tipo sonar (verde) para los dispositivos online
   mapImages.pulse = createPulse();
 
-  // Chip: cápsula redondeada de fondo para el label del vehículo.
-  // Base chica (18px) para que icon-text-fit la escale sin sobre-restringir
-  // el alto: solo los extremos redondeados quedan fijos, el resto se estira.
-  const chipCanvas = document.createElement('canvas');
-  const chipH = 18;
-  const chipW = 60;
-  chipCanvas.width = chipW;
-  chipCanvas.height = chipH;
-  const ctx = chipCanvas.getContext('2d');
-  const cy = chipH / 2;
-  const lineWidth = 1.5;
-  const m = lineWidth / 2 + 0.5; // margen para que el filete no se recorte
-  const r = cy - m; // radio de los extremos (con inset)
-  ctx.beginPath();
-  ctx.moveTo(cy, m);
-  ctx.lineTo(chipW - cy, m);
-  ctx.arc(chipW - cy, cy, r, -Math.PI / 2, Math.PI / 2);
-  ctx.lineTo(cy, chipH - m);
-  ctx.arc(cy, cy, r, Math.PI / 2, -Math.PI / 2);
-  ctx.closePath();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fill();
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = '#1C2536';
-  ctx.stroke();
-  const chipData = ctx.getImageData(0, 0, chipW, chipH);
-  mapImages.chip = {
-    width: chipW,
-    height: chipH,
-    data: new Uint8Array(chipData.data),
-    // El texto ocupa el rectángulo central; los extremos redondeados no se
-    // estiran. Banda central estirable en ambos ejes para 1 o varias líneas.
-    content: [cy, m, chipW - cy, chipH - m],
-    stretchX: [[cy, chipW - cy]],
-    stretchY: [[cy - 1, cy + 1]],
-  };
   await Promise.all(
     Object.keys(mapIcons).map(async (category) => {
       const results = [];
