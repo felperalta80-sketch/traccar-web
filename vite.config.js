@@ -8,8 +8,15 @@ export default defineConfig(() => ({
   server: {
     port: 3000,
     proxy: {
-      '/api/socket': 'ws://localhost:8082',
-      '/api': 'http://localhost:8082',
+      '/api/socket': {
+        target: 'wss://rastreo.ubimaxgps.com',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/api': {
+        target: 'https://rastreo.ubimaxgps.com',
+        changeOrigin: true,
+      },
     },
   },
   build: {

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,400,1,0&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#EDF2F9;--acc-fg:#0B0E14;--acc-soft:rgba(226,236,250,.09);--acc-border:rgba(226,236,250,.38);--acc-strong:rgba(226,236,250,.85);--acc-glow:rgba(190,210,235,.05);--bg:#0B0E14;--sf:#131720;--sf2:#0D1119;--hv:#1A2030;--bd:#252B3A;--bd2:#1E2430;--bd3:#171D29;--bd4:#3A4356;--tx:#E6EAF2;--tx2:#C7CEDC;--dim:#AAB4C8;--dim2:#8A94A8;--mut:#7A8498;--fnt:#5B6579;--fnt2:#4A5468;--glass:rgba(19,23,32,.93);--glass2:rgba(15,19,27,.97);--zebra:rgba(120,140,180,.03);--grid:rgba(120,140,180,.055);--grid2:rgba(120,140,180,.028);--road:rgba(140,160,200,.10);--water1:rgba(46,84,120,.16);--water2:rgba(46,84,120,.22);--maplabel:rgba(160,175,205,.26);--shc:rgba(0,0,0,.5);--scrim:rgba(5,7,11,.5);--routecase:rgba(11,14,20,.85);}
+:root[data-theme="light"]{--acc:#1C2536;--acc-fg:#FFFFFF;--acc-soft:rgba(22,34,58,.07);--acc-border:rgba(22,34,58,.32);--acc-strong:rgba(22,34,58,.8);--acc-glow:rgba(22,34,58,.05);--bg:#E9EDF3;--sf:#FFFFFF;--sf2:#F6F8FB;--hv:#EDF1F7;--bd:#D8DFE9;--bd2:#E5EAF1;--bd3:#EEF1F6;--bd4:#C2CAD8;--tx:#17202F;--tx2:#2E3A52;--dim:#4E5A70;--dim2:#66738A;--mut:#75819A;--fnt:#8A94A8;--fnt2:#A6AFC0;--glass:rgba(255,255,255,.93);--glass2:rgba(252,253,255,.97);--zebra:rgba(90,110,150,.05);--grid:rgba(90,110,150,.14);--grid2:rgba(90,110,150,.07);--road:rgba(90,110,150,.22);--water1:rgba(110,150,195,.25);--water2:rgba(110,150,195,.33);--maplabel:rgba(90,105,135,.5);--shc:rgba(25,35,60,.15);--scrim:rgba(30,42,66,.4);}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+*{box-sizing:border-box;}
+input{outline:none;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes umx-pulse{0%{transform:scale(1);opacity:.55;}100%{transform:scale(2.6);opacity:0;}}
+@keyframes umx-dash{to{stroke-dashoffset:-24;}}
+</style>
+</helmet>
+
+<div data-screen-label="Monitoreo en vivo" style="position:fixed;inset:0;font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);overflow:hidden;">
+
+  <!-- ============ MAPA (fondo absoluto) ============ -->
+  <div style="position:absolute;inset:0;background:var(--bg);background-image:radial-gradient(ellipse 900px 600px at 62% 42%, var(--acc-glow), transparent 60%), repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 96px), repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 96px), repeating-linear-gradient(0deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 24px), repeating-linear-gradient(90deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 24px);">
+    <!-- avenidas -->
+    <div style="position:absolute;left:-10%;top:38%;width:120%;height:7px;background:var(--road);transform:rotate(-7deg);border-top:1px solid var(--road);"></div>
+    <div style="position:absolute;left:56%;top:-10%;width:7px;height:120%;background:var(--road);transform:rotate(12deg);border-left:1px solid var(--road);"></div>
+    <div style="position:absolute;left:-10%;top:68%;width:120%;height:4px;background:var(--road);transform:rotate(4deg);"></div>
+    <!-- río -->
+    <div style="position:absolute;right:-6%;top:-12%;width:26%;height:130%;background:linear-gradient(100deg, transparent, var(--water1) 30%, var(--water2));transform:rotate(9deg);border-left:1px solid rgba(90,140,190,.12);"></div>
+    <!-- etiquetas de mapa -->
+    <div style="position:absolute;left:30%;top:30%;font:500 11px/1 'JetBrains Mono',monospace;color:var(--maplabel);letter-spacing:.14em;">VILLA CRESPO</div>
+    <div style="position:absolute;left:58%;top:62%;font:500 11px/1 'JetBrains Mono',monospace;color:var(--maplabel);letter-spacing:.14em;">SAN TELMO</div>
+    <div style="position:absolute;left:44%;top:14%;font:500 11px/1 'JetBrains Mono',monospace;color:var(--maplabel);letter-spacing:.14em;">PALERMO</div>
+  </div>
+
+  <!-- geocerca -->
+  <sc-if value="{{ mostrarGeocerca }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:46%;top:22%;width:340px;height:340px;border:1.5px dashed var(--acc-border);border-radius:50%;background:var(--acc-glow);pointer-events:none;">
+      <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);font:500 10px/1 'JetBrains Mono',monospace;color:var(--acc-strong);letter-spacing:.1em;background:var(--bg);padding:3px 8px;border-radius:5px;border:1px solid var(--acc-border);">DEPÓSITO NORTE</div>
+    </div>
+  </sc-if>
+
+  <!-- marcadores -->
+  <sc-for list="{{ markers }}" as="m" hint-placeholder-count="6">
+    <div onClick="{{ m.select }}" style="position:absolute;left:{{ m.x }}%;top:{{ m.y }}%;width:34px;height:34px;margin:-17px 0 0 -17px;cursor:pointer;z-index:{{ m.z }};">
+      <sc-if value="{{ m.pulse }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;border-radius:50%;background:{{ m.color }};animation:umx-pulse 1.8s ease-out infinite;"></div>
+      </sc-if>
+      <div style="position:absolute;inset:0;border-radius:50%;background:var(--sf);border:2px solid {{ m.color }};box-shadow:0 2px 10px var(--shc), {{ m.selGlow }};display:flex;align-items:center;justify-content:center;">
+        <span style="font-family:'Material Symbols Rounded';font-size:17px;line-height:1;color:{{ m.color }};">{{ m.icon }}</span>
+      </div>
+      <sc-if value="{{ m.showHeading }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:-3px;transform:rotate({{ m.heading }}deg);pointer-events:none;">
+          <div style="position:absolute;top:-7px;left:50%;margin-left:-5px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid {{ m.color }};"></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ m.showLabel }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:38px;left:50%;transform:translateX(-50%);white-space:nowrap;font:600 10.5px/1 'JetBrains Mono',monospace;background:var(--sf);border:1px solid var(--bd);color:var(--tx);padding:4px 8px;border-radius:6px;">{{ m.name }} · {{ m.speedLabel }}</div>
+      </sc-if>
+    </div>
+  </sc-for>
+
+  <!-- cluster -->
+  <div style="position:absolute;left:24%;top:74%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:var(--glass);border:1.5px solid var(--bd4);display:flex;align-items:center;justify-content:center;font:600 12px/1 'JetBrains Mono',monospace;color:var(--dim);cursor:pointer;box-shadow:0 2px 10px var(--shc);" title="6 vehículos">+6</div>
+
+  <!-- ============ BARRA DE COMANDO SUPERIOR ============ -->
+  <div style="position:absolute;top:16px;left:{{ barLeft }};transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:8px;max-width:calc(100% - 420px);background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:12px;padding:8px 10px;box-shadow:0 8px 32px var(--shc);transition:left .28s cubic-bezier(.32,.72,.36,1);">
+    <div style="display:flex;align-items:center;gap:8px;padding:0 6px;">
+      <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--acc),var(--acc));display:flex;align-items:center;justify-content:center;font:700 11px/1 Inter,sans-serif;color:var(--acc-fg);">U</div>
+      <span style="font:600 13px/1 Inter,sans-serif;letter-spacing:-.01em;">UbimaxGPS</span>
+    </div>
+    <div style="width:1px;height:20px;background:var(--bd);"></div>
+    <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;width:clamp(140px, 24vw, 260px);color:var(--fnt);cursor:text;overflow:hidden;">
+      <span style="font-size:12px;">⌕</span>
+      <span style="font:400 12.5px/1 Inter,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;">Buscar vehículo, lugar, comando…</span>
+      <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;border:1px solid var(--bd);border-radius:4px;padding:2px 5px;color:var(--fnt);">⌘K</span>
+    </div>
+    <button title="Capas de mapa" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">▦</button>
+    <button title="Geocercas" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">◇</button>
+    <button onClick="{{ toggleDrawer }}" title="Eventos" style="all:unset;cursor:pointer;position:relative;width:32px;height:32px;border-radius:8px;border:1px solid {{ bellBorder }};display:flex;align-items:center;justify-content:center;color:{{ bellColor }};font-size:13px;" style-hover="background:var(--hv);">◔<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#F0455A;border:1.5px solid var(--sf);"></div></button>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">{{ themeIcon }}</button>
+    <div style="width:30px;height:30px;border-radius:50%;background:var(--hv);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;color:var(--acc);cursor:pointer;">MR</div>
+  </div>
+
+  <!-- ============ PANEL IZQUIERDO ============ -->
+  <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;top:16px;left:16px;bottom:16px;width:380px;z-index:30;display:flex;flex-direction:column;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 40px var(--shc);overflow:hidden;">
+    <!-- header del panel -->
+    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--bd2);display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:7px;flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;" style-focus="border-color:var(--acc);">
+          <span style="color:var(--fnt);font-size:12px;">⌕</span>
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar por nombre o patente" style="all:unset;flex:1;font:400 12.5px/1 Inter,sans-serif;color:var(--tx);min-width:0;"></input>
+        </div>
+        <button title="Selector de grupo" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--bd);font:500 11.5px/1 Inter,sans-serif;color:var(--dim);" style-hover="background:var(--hv);">Flota BA<span style="font-size:8px;color:var(--fnt);">▼</span></button>
+        <button onClick="{{ collapsePanel }}" title="Colapsar panel" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:12px;" style-hover="background:var(--hv);color:var(--tx);">⟨</button>
+      </div>
+      <!-- chips de estado -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+          <button onClick="{{ c.onClick }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};font:500 11.5px/1 Inter,sans-serif;color:{{ c.fg }};" style-hover="border-color:var(--bd4);">
+            <sc-if value="{{ c.dot }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ c.dotColor }};"></span></sc-if>
+            {{ c.label }}
+            <span style="font:600 10.5px/1 'JetBrains Mono',monospace;color:{{ c.countFg }};">{{ c.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <!-- lista de vehículos -->
+    <div style="flex:1;overflow-y:auto;padding:6px;">
+      <sc-for list="{{ rows }}" as="v" hint-placeholder-count="7">
+        <div onClick="{{ v.select }}" style="display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:10px;cursor:pointer;background:{{ v.rowBg }};border:1px solid {{ v.rowBorder }};margin-bottom:2px;" style-hover="background:var(--hv);">
+          <div style="position:relative;width:38px;height:38px;flex:none;">
+            <div style="position:absolute;inset:0;border-radius:50%;border:2px solid {{ v.color }};opacity:.9;"></div>
+            <div style="position:absolute;inset:4px;border-radius:50%;background:var(--hv);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:16px;line-height:1;color:var(--dim);">{{ v.icon }}</span></div>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+            <div style="display:flex;align-items:center;gap:7px;">
+              <span style="font:600 13px/1.2 Inter,sans-serif;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ v.name }}</span>
+              <span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--dim2);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:2.5px 5px;letter-spacing:.05em;flex:none;">{{ v.plate }}</span>
+            </div>
+            <div style="font:400 11.5px/1.3 Inter,sans-serif;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ v.address }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;">
+            <div style="font:600 16px/1 'JetBrains Mono',monospace;color:{{ v.speedColor }};font-variant-numeric:tabular-nums;">{{ v.speedLabel }}<span style="font-size:9.5px;font-weight:500;color:var(--fnt);margin-left:3px;">{{ v.speedUnit }}</span></div>
+            <div style="font:400 10.5px/1 Inter,sans-serif;color:var(--fnt);">{{ v.ago }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <!-- footer del panel -->
+    <div style="padding:10px 14px;border-top:1px solid var(--bd2);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font:400 11px/1 Inter,sans-serif;color:var(--fnt);">{{ footerLabel }}</span>
+      <span style="display:flex;align-items:center;gap:6px;font:500 10.5px/1 'JetBrains Mono',monospace;color:#22D3A5;"><span style="width:6px;height:6px;border-radius:50%;background:#22D3A5;"></span>EN VIVO</span>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- rail colapsado -->
+  <sc-if value="{{ panelClosed }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;top:16px;left:16px;z-index:30;display:flex;flex-direction:column;gap:6px;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:14px;padding:8px;box-shadow:0 12px 40px var(--shc);">
+    <button onClick="{{ expandPanel }}" title="Expandir panel" style="all:unset;cursor:pointer;width:36px;height:36px;border-radius:9px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--tx);font-size:12px;background:var(--hv);" style-hover="border-color:var(--acc);">⟩</button>
+    <sc-for list="{{ railItems }}" as="r" hint-placeholder-count="4">
+      <button onClick="{{ r.onClick }}" title="{{ r.title }}" style="all:unset;cursor:pointer;position:relative;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:600 10.5px/1 'JetBrains Mono',monospace;color:{{ r.fg }};border:1px solid transparent;" style-hover="background:var(--hv);">
+        {{ r.count }}
+        <span style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:14px;height:2.5px;border-radius:2px;background:{{ r.color }};"></span>
+      </button>
+    </sc-for>
+  </div>
+  </sc-if>
+
+  <!-- ============ CARD DE VEHÍCULO SELECCIONADO ============ -->
+  <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;right:{{ cardRight }};bottom:16px;width:392px;z-index:35;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 40px var(--shc);overflow:hidden;transition:right .28s cubic-bezier(.32,.72,.36,1);">
+    <div style="padding:14px 16px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd2);">
+      <div style="position:relative;width:44px;height:44px;flex:none;">
+        <div style="position:absolute;inset:0;border-radius:12px;border:2px solid {{ sel.color }};"></div>
+        <div style="position:absolute;inset:5px;border-radius:8px;background:var(--hv);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Material Symbols Rounded';font-size:19px;line-height:1;color:var(--dim);">{{ sel.icon }}</span></div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font:600 15px/1.2 Inter,sans-serif;">{{ sel.name }}</span>
+          <span style="font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--dim2);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:3px 6px;letter-spacing:.05em;">{{ sel.plate }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:{{ sel.color }};"></span>
+          <span style="font:500 11.5px/1 Inter,sans-serif;color:{{ sel.color }};">{{ sel.statusLabel }}</span>
+          <span style="font:400 11px/1 Inter,sans-serif;color:var(--fnt);">· reportó {{ sel.ago }}</span>
+        </div>
+      </div>
+      <button onClick="{{ deselect }}" style="all:unset;cursor:pointer;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:14px;" style-hover="background:var(--hv);color:var(--tx);">×</button>
+    </div>
+    <!-- métricas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid var(--bd2);">
+      <div style="padding:12px 0 12px 16px;display:flex;flex-direction:column;gap:4px;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">VELOCIDAD</span>
+        <span style="font:600 20px/1 'JetBrains Mono',monospace;color:{{ sel.speedColor }};font-variant-numeric:tabular-nums;">{{ sel.speedLabel }}<span style="font-size:10px;color:var(--fnt);font-weight:500;margin-left:3px;">{{ sel.speedUnit }}</span></span>
+      </div>
+      <div style="padding:12px 0;display:flex;flex-direction:column;gap:4px;border-left:1px solid var(--bd2);padding-left:14px;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">IGNICIÓN</span>
+        <span style="font:600 13px/1.4 Inter,sans-serif;color:{{ sel.ignColor }};">{{ sel.ignLabel }}</span>
+      </div>
+      <div style="padding:12px 0;display:flex;flex-direction:column;gap:4px;border-left:1px solid var(--bd2);padding-left:14px;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">COMBUSTIBLE</span>
+        <span style="font:600 13px/1.4 'JetBrains Mono',monospace;color:var(--tx);font-variant-numeric:tabular-nums;">{{ sel.fuel }}</span>
+      </div>
+      <div style="padding:12px 16px 12px 14px;display:flex;flex-direction:column;gap:4px;border-left:1px solid var(--bd2);">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">ODÓMETRO</span>
+        <span style="font:600 12px/1.5 'JetBrains Mono',monospace;color:var(--tx);font-variant-numeric:tabular-nums;white-space:nowrap;">{{ sel.odometer }}</span>
+      </div>
+    </div>
+    <!-- sparkline -->
+    <div style="padding:12px 16px 4px;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">VELOCIDAD · ÚLTIMA HORA</span>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--fnt);">máx {{ sel.maxSpeed }}</span>
+      </div>
+      <svg viewBox="0 0 360 48" width="100%" height="48" preserveAspectRatio="none" style="display:block;">
+        <polyline points="{{ sel.sparkArea }}" fill="rgba(34,211,165,.10)" stroke="none"></polyline>
+        <polyline points="{{ sel.spark }}" fill="none" stroke="#22D3A5" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"></polyline>
+      </svg>
+    </div>
+    <!-- dirección -->
+    <div style="padding:8px 16px 12px;display:flex;gap:8px;align-items:flex-start;">
+      <span style="color:var(--fnt);font-size:11px;margin-top:1px;">◎</span>
+      <span style="font:400 12px/1.5 Inter,sans-serif;color:var(--dim);">{{ sel.fullAddress }}</span>
+    </div>
+    <!-- acciones -->
+    <div style="display:flex;gap:8px;padding:0 16px 14px;">
+      <button onClick="{{ toggleFollow }}" style="all:unset;cursor:pointer;flex:1;height:34px;border-radius:9px;background:{{ followBg }};color:{{ followFg }};border:1px solid {{ followBorder }};display:flex;align-items:center;justify-content:center;gap:6px;font:600 12px/1 Inter,sans-serif;" style-hover="filter:brightness(1.1);">{{ followLabel }}</button>
+      <button style="all:unset;cursor:pointer;flex:1;height:34px;border-radius:9px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:500 12px/1 Inter,sans-serif;color:var(--tx2);" style-hover="background:var(--hv);">Historial</button>
+      <button style="all:unset;cursor:pointer;flex:1;height:34px;border-radius:9px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:500 12px/1 Inter,sans-serif;color:var(--tx2);" style-hover="background:var(--hv);">Comandos</button>
+      <button title="Editar" style="all:unset;cursor:pointer;width:34px;height:34px;border-radius:9px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--tx2);flex:none;" style-hover="background:var(--hv);">✎</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ DRAWER DE EVENTOS ============ -->
+  <div style="position:absolute;top:0;bottom:0;right:0;width:340px;z-index:50;transform:translateX({{ drawerX }});transition:transform .3s cubic-bezier(.32,.72,.36,1);display:flex;flex-direction:column;background:var(--glass2);backdrop-filter:blur(16px);border-left:1px solid var(--bd);box-shadow:-16px 0 48px var(--shc);">
+    <div style="padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd2);">
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font:600 14px/1 Inter,sans-serif;">Eventos</span>
+        <span style="font:400 11px/1 Inter,sans-serif;color:var(--fnt);">Últimas 24 horas · {{ eventCount }} eventos</span>
+      </div>
+      <button onClick="{{ toggleDrawer }}" style="all:unset;cursor:pointer;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:15px;" style-hover="background:var(--hv);color:var(--tx);">×</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:2px;">
+      <sc-for list="{{ events }}" as="e" hint-placeholder-count="6">
+        <div style="display:flex;gap:11px;padding:10px 8px;border-radius:9px;cursor:pointer;" style-hover="background:var(--hv);">
+          <div style="width:28px;height:28px;flex:none;border-radius:8px;background:{{ e.bg }};border:1px solid {{ e.border }};display:flex;align-items:center;justify-content:center;font-size:12px;color:{{ e.color }};">{{ e.icon }}</div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+            <span style="font:500 12.5px/1.3 Inter,sans-serif;color:var(--tx);">{{ e.title }}</span>
+            <span style="font:400 11px/1.4 Inter,sans-serif;color:var(--mut);">{{ e.detail }}</span>
+          </div>
+          <span style="font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--fnt);flex:none;margin-top:2px;">{{ e.time }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- controles de zoom -->
+  <div style="position:absolute;bottom:16px;left:{{ zoomLeft }};z-index:20;display:flex;flex-direction:column;background:var(--glass);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:left .28s cubic-bezier(.32,.72,.36,1);">
+    <button style="all:unset;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:15px;" style-hover="background:var(--hv);">+</button>
+    <div style="height:1px;background:var(--bd);"></div>
+    <button style="all:unset;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:15px;" style-hover="background:var(--hv);">−</button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;unidadVelocidad&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;km/h&quot;, &quot;mph&quot;], &quot;default&quot;: &quot;km/h&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Datos&quot; },
+  &quot;pulsoMovimiento&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Mapa&quot; },
+  &quot;mostrarGeocerca&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Mapa&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    query: '',
+    filter: 'all',
+    selId: 'v1',
+    drawerOpen: false,
+    panelOpen: true,
+    following: false,
+    theme: localStorage.getItem('umx-theme') || 'dark',
+  };
+
+  componentDidMount() { document.documentElement.dataset.theme = this.state.theme; }
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('umx-theme', t);
+    document.documentElement.dataset.theme = t;
+    this.setState({ theme: t });
+  };
+
+  vehicles = [
+    { id:'v1', name:'Furgón 12', plate:'AB 123 CD', type:'F', status:'moving', speed:64, heading:45, address:'Av. Corrientes 3400', fullAddress:'Av. Corrientes 3412, Villa Crespo, CABA', ago:'hace 8 s', x:38, y:34, ign:true, fuel:'68 %', odometer:'84.213 km', hist:[42,55,61,48,52,66,70,58,63,71,60,64] },
+    { id:'v2', name:'Camión 04', plate:'AC 987 XY', type:'C', status:'moving', speed:82, heading:130, address:'Au. 25 de Mayo km 4', fullAddress:'Autopista 25 de Mayo km 4,2, CABA', ago:'hace 12 s', x:62, y:56, ign:true, fuel:'41 %', odometer:'156.902 km', hist:[70,76,81,85,79,88,92,84,80,86,83,82] },
+    { id:'v3', name:'Utilitario 07', plate:'AD 445 GH', type:'U', status:'moving', speed:37, heading:305, address:'Humberto 1º 950', fullAddress:'Humberto 1º 950, San Telmo, CABA', ago:'hace 5 s', x:55, y:70, ign:true, fuel:'55 %', odometer:'42.550 km', hist:[20,28,35,31,40,38,44,36,30,41,39,37] },
+    { id:'v4', name:'Sedán 02', plate:'AE 210 JK', type:'S', status:'stopped', speed:0, heading:200, address:'Thames 1820', fullAddress:'Thames 1820, Palermo, CABA', ago:'hace 4 min', x:45, y:20, ign:false, fuel:'82 %', odometer:'31.077 km', hist:[35,28,15,8,0,0,0,0,0,0,0,0] },
+    { id:'v5', name:'Camioneta 09', plate:'AF 332 LM', type:'C', status:'stopped', speed:0, heading:90, address:'Depósito Norte', fullAddress:'Geocerca Depósito Norte · Av. del Libertador 4102', ago:'hace 18 min', x:57, y:28, ign:true, fuel:'23 %', odometer:'98.410 km', hist:[12,5,0,0,0,0,0,0,0,0,0,0] },
+    { id:'v6', name:'Camión 11', plate:'AG 118 PQ', type:'C', status:'stopped', speed:0, heading:10, address:'Av. Vélez Sarsfield 480', fullAddress:'Av. Vélez Sarsfield 480, Barracas, CABA', ago:'hace 51 min', x:30, y:60, ign:false, fuel:'77 %', odometer:'201.336 km', hist:[0,0,0,0,0,0,0,0,0,0,0,0] },
+    { id:'v7', name:'Furgón 03', plate:'AH 774 RS', type:'F', status:'offline', speed:0, heading:270, address:'Suárez 2100', fullAddress:'Suárez 2100, Barracas, CABA', ago:'hace 3 h', x:22, y:44, ign:false, fuel:'—', odometer:'67.884 km', hist:[0,0,0,0,0,0,0,0,0,0,0,0] },
+    { id:'v8', name:'Moto 15', plate:'A 123 XYZ', type:'M', status:'offline', speed:0, heading:0, address:'Última: Caseros 3050', fullAddress:'Última posición: Av. Caseros 3050, Parque Patricios', ago:'hace 6 h', x:70, y:24, ign:false, fuel:'—', odometer:'12.940 km', hist:[0,0,0,0,0,0,0,0,0,0,0,0] },
+    { id:'v9', name:'Sedán 21', plate:'AJ 555 TU', type:'S', status:'unknown', speed:0, heading:180, address:'Sin datos recientes', fullAddress:'Sin datos de posición recientes', ago:'hace 42 min', x:78, y:64, ign:false, fuel:'59 %', odometer:'54.120 km', hist:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  ];
+
+  eventsData = [
+    { icon:'≫', kind:'red',   title:'Exceso de velocidad', detail:'Camión 04 · 92 km/h en zona de 60', time:'14:32' },
+    { icon:'↗', kind:'amber', title:'Salida de geocerca',  detail:'Camioneta 09 · Depósito Norte', time:'14:18' },
+    { icon:'⏻', kind:'green', title:'Ignición encendida',  detail:'Furgón 12 · Av. Corrientes 3400', time:'13:55' },
+    { icon:'↘', kind:'green', title:'Entrada a geocerca',  detail:'Camioneta 09 · Depósito Norte', time:'13:20' },
+    { icon:'◼', kind:'amber', title:'Detención prolongada', detail:'Camión 11 · 51 min detenido', time:'12:49' },
+    { icon:'≫', kind:'red',   title:'Exceso de velocidad', detail:'Moto 15 · 88 km/h en zona de 60', time:'11:36' },
+    { icon:'⏼', kind:'gray',  title:'Ignición apagada',    detail:'Sedán 02 · Thames 1820', time:'11:04' },
+    { icon:'⚠', kind:'red',   title:'Dispositivo sin señal', detail:'Furgón 03 · sin reporte hace 3 h', time:'10:58' },
+  ];
+
+  typeIcons = { F: 'airport_shuttle', C: 'local_shipping', U: 'directions_car', S: 'directions_car', M: 'two_wheeler' };
+
+  statusMeta = {
+    moving:  { color:'#22D3A5', label:'En movimiento' },
+    stopped: { color:'#E8A33D', label:'Detenido' },
+    offline: { color:'#F0455A', label:'Offline' },
+    unknown: { color:'#6B7A94', label:'Desconocido' },
+  };
+
+  renderVals() {
+    const S = this.state;
+    const unit = this.props.unidadVelocidad ?? 'km/h';
+    const pulseOn = this.props.pulsoMovimiento ?? true;
+    const conv = (kmh) => unit === 'mph' ? Math.round(kmh * 0.621) : kmh;
+
+    const q = S.query.trim().toLowerCase();
+    const byStatus = (st) => this.vehicles.filter(v => v.status === st).length;
+
+    const matches = this.vehicles.filter(v =>
+      (S.filter === 'all' || v.status === S.filter) &&
+      (!q || v.name.toLowerCase().includes(q) || v.plate.toLowerCase().includes(q))
+    );
+
+    const rows = matches.map(v => {
+      const m = this.statusMeta[v.status];
+      const isSel = v.id === S.selId;
+      return {
+        ...v,
+        color: m.color,
+        icon: this.typeIcons[v.type],
+        speedLabel: String(conv(v.speed)),
+        speedUnit: unit,
+        speedColor: v.status === 'moving' ? '#22D3A5' : 'var(--dim2)',
+        rowBg: isSel ? 'var(--acc-soft)' : 'transparent',
+        rowBorder: isSel ? 'var(--acc-border)' : 'transparent',
+        select: () => this.setState({ selId: v.id }),
+      };
+    });
+
+    const markers = this.vehicles.map(v => {
+      const m = this.statusMeta[v.status];
+      const isSel = v.id === S.selId;
+      return {
+        ...v,
+        color: m.color,
+        speedLabel: conv(v.speed) + ' ' + unit,
+        pulse: pulseOn && v.status === 'moving',
+        icon: this.typeIcons[v.type],
+        showHeading: v.status === 'moving',
+        showLabel: isSel,
+        z: isSel ? 15 : 10,
+        selGlow: isSel ? '0 0 0 3px var(--acc-border)' : '0 0 0 0 transparent',
+        select: () => this.setState({ selId: v.id }),
+      };
+    });
+
+    const chipDefs = [
+      { key:'all',     label:'Todos',         count: this.vehicles.length, dotColor:null },
+      { key:'moving',  label:'En movimiento', count: byStatus('moving'),  dotColor:'#22D3A5' },
+      { key:'stopped', label:'Detenidos',     count: byStatus('stopped'), dotColor:'#E8A33D' },
+      { key:'offline', label:'Offline',       count: byStatus('offline'), dotColor:'#F0455A' },
+    ];
+    const chips = chipDefs.map(c => {
+      const active = S.filter === c.key;
+      return {
+        label: c.label,
+        count: String(c.count),
+        dot: !!c.dotColor,
+        dotColor: c.dotColor || 'transparent',
+        bg: active ? 'var(--acc-soft)' : 'var(--bg)',
+        border: active ? 'var(--acc-border)' : 'var(--bd)',
+        fg: active ? 'var(--acc)' : 'var(--dim)',
+        countFg: active ? 'var(--acc)' : 'var(--fnt)',
+        onClick: () => this.setState({ filter: c.key }),
+      };
+    });
+
+    const railItems = chipDefs.slice(1).map(c => ({
+      title: c.label + ' · ' + c.count,
+      count: String(c.count),
+      color: c.dotColor,
+      fg: S.filter === c.key ? 'var(--tx)' : 'var(--dim2)',
+      onClick: () => this.setState({ filter: c.key, panelOpen: true }),
+    }));
+
+    const selV = this.vehicles.find(v => v.id === S.selId) || null;
+    let sel = null;
+    if (selV) {
+      const m = this.statusMeta[selV.status];
+      const W = 360, H = 48, max = Math.max(...selV.hist, 10);
+      const pts = selV.hist.map((s, i) =>
+        (i * (W / (selV.hist.length - 1))).toFixed(1) + ',' + (H - 4 - (s / max) * (H - 10)).toFixed(1)
+      );
+      sel = {
+        ...selV,
+        color: m.color,
+        statusLabel: m.label,
+        icon: this.typeIcons[selV.type],
+        speedLabel: String(conv(selV.speed)),
+        speedUnit: unit,
+        speedColor: selV.status === 'moving' ? '#22D3A5' : 'var(--dim2)',
+        ignLabel: selV.ign ? 'Encendida' : 'Apagada',
+        ignColor: selV.ign ? '#22D3A5' : 'var(--dim2)',
+        maxSpeed: conv(Math.max(...selV.hist)) + ' ' + unit,
+        spark: pts.join(' '),
+        sparkArea: '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H,
+      };
+    }
+
+    const events = this.eventsData.map(e => {
+      const c = { red:'#F0455A', amber:'#E8A33D', green:'#22D3A5', gray:'var(--dim2)' }[e.kind];
+      const a = { red:'rgba(240,69,90,', amber:'rgba(232,163,61,', green:'rgba(34,211,165,', gray:'rgba(138,148,168,' }[e.kind];
+      return { ...e, color: c, bg: a + '.10)', border: a + '.30)' };
+    });
+
+    return {
+      query: S.query,
+      onQuery: (ev) => this.setState({ query: ev.target.value }),
+      chips, rows, markers, railItems, events, sel,
+      hasSel: !!sel,
+      eventCount: String(events.length),
+      footerLabel: rows.length + ' de ' + this.vehicles.length + ' vehículos',
+      panelOpen: S.panelOpen,
+      panelClosed: !S.panelOpen,
+      collapsePanel: () => this.setState({ panelOpen: false }),
+      expandPanel: () => this.setState({ panelOpen: true }),
+      drawerOpen: S.drawerOpen,
+      drawerX: S.drawerOpen ? '0%' : '105%',
+      toggleDrawer: () => this.setState(s => ({ drawerOpen: !s.drawerOpen })),
+      bellBorder: S.drawerOpen ? 'var(--acc-border)' : 'var(--bd)',
+      bellColor: S.drawerOpen ? 'var(--acc)' : 'var(--dim)',
+      cardRight: S.drawerOpen
+        ? 'clamp(16px, calc(100vw - ' + (S.panelOpen ? 412 : 76) + 'px - 392px), 356px)'
+        : '16px',
+      zoomLeft: S.panelOpen ? '412px' : '76px',
+      barLeft: S.panelOpen ? 'calc(50% + 198px)' : 'calc(50% + 38px)',
+      deselect: () => this.setState({ selId: null }),
+      toggleFollow: () => this.setState(s => ({ following: !s.following })),
+      followLabel: S.following ? '● Siguiendo' : 'Seguir',
+      followBg: S.following ? 'var(--acc-soft)' : 'var(--acc)',
+      followFg: S.following ? 'var(--acc)' : 'var(--acc-fg)',
+      followBorder: S.following ? 'var(--acc-border)' : 'var(--acc)',
+      mostrarGeocerca: this.props.mostrarGeocerca ?? true,
+      themeIcon: S.theme === 'dark' ? '☀' : '☾',
+      toggleTheme: this.toggleTheme,
+    };
+  }
+}
+</script>
+</body>
+</html>

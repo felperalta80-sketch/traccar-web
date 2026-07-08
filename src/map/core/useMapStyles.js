@@ -34,6 +34,7 @@ export default () => {
 
   const googleKey = useAttributePreference('googleKey');
   const mapTilerKey = useAttributePreference('mapTilerKey');
+  const mapTilerCustomStyle = useAttributePreference('mapTilerCustomStyle');
   const locationIqKey =
     useAttributePreference('locationIqKey') || 'pk.0f147952a41c555a5b70614039fd148b';
   const bingMapsKey = useAttributePreference('bingMapsKey');
@@ -155,6 +156,13 @@ export default () => {
         style: `https://api.maptiler.com/maps/hybrid/style.json?key=${mapTilerKey}`,
         available: Boolean(mapTilerKey),
         attribute: 'mapTilerKey',
+      },
+      {
+        id: 'ubimaxgps',
+        title: 'UbimaxGPS',
+        style: `https://api.maptiler.com/maps/${mapTilerCustomStyle}/style.json?key=${mapTilerKey}`,
+        available: Boolean(mapTilerKey && mapTilerCustomStyle),
+        attribute: 'mapTilerCustomStyle',
       },
       {
         id: 'bingRoad',
@@ -337,6 +345,7 @@ export default () => {
     [
       t,
       mapTilerKey,
+      mapTilerCustomStyle,
       locationIqKey,
       bingMapsKey,
       tomTomKey,

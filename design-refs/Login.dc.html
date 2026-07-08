@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#EDF2F9;--acc-fg:#0B0E14;--acc-soft:rgba(226,236,250,.09);--acc-border:rgba(226,236,250,.38);--acc-strong:rgba(226,236,250,.85);--acc-glow:rgba(190,210,235,.05);--bg:#0B0E14;--sf:#131720;--sf2:#0D1119;--hv:#1A2030;--bd:#252B3A;--bd2:#1E2430;--bd3:#171D29;--bd4:#3A4356;--tx:#E6EAF2;--tx2:#C7CEDC;--dim:#AAB4C8;--dim2:#8A94A8;--mut:#7A8498;--fnt:#5B6579;--fnt2:#4A5468;--glass:rgba(19,23,32,.93);--glass2:rgba(15,19,27,.97);--zebra:rgba(120,140,180,.03);--grid:rgba(120,140,180,.055);--grid2:rgba(120,140,180,.028);--road:rgba(140,160,200,.10);--water1:rgba(46,84,120,.16);--water2:rgba(46,84,120,.22);--maplabel:rgba(160,175,205,.26);--shc:rgba(0,0,0,.5);--scrim:rgba(5,7,11,.5);--routecase:rgba(11,14,20,.85);}
+:root[data-theme="light"]{--acc:#1C2536;--acc-fg:#FFFFFF;--acc-soft:rgba(22,34,58,.07);--acc-border:rgba(22,34,58,.32);--acc-strong:rgba(22,34,58,.8);--acc-glow:rgba(22,34,58,.05);--bg:#E9EDF3;--sf:#FFFFFF;--sf2:#F6F8FB;--hv:#EDF1F7;--bd:#D8DFE9;--bd2:#E5EAF1;--bd3:#EEF1F6;--bd4:#C2CAD8;--tx:#17202F;--tx2:#2E3A52;--dim:#4E5A70;--dim2:#66738A;--mut:#75819A;--fnt:#8A94A8;--fnt2:#A6AFC0;--glass:rgba(255,255,255,.93);--glass2:rgba(252,253,255,.97);--zebra:rgba(90,110,150,.05);--grid:rgba(90,110,150,.14);--grid2:rgba(90,110,150,.07);--road:rgba(90,110,150,.22);--water1:rgba(110,150,195,.25);--water2:rgba(110,150,195,.33);--maplabel:rgba(90,105,135,.5);--shc:rgba(25,35,60,.15);--scrim:rgba(30,42,66,.4);}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+*{box-sizing:border-box;}
+input{outline:none;}
+@keyframes umx-route{to{stroke-dashoffset:-400;}}
+@keyframes umx-pulse{0%{transform:scale(1);opacity:.5;}100%{transform:scale(2.6);opacity:0;}}
+</style>
+</helmet>
+
+<div data-screen-label="Login" style="position:fixed;inset:0;display:flex;font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);">
+
+  <!-- ============ FORMULARIO ============ -->
+  <div style="width:min(460px, 100%);flex:none;display:flex;flex-direction:column;padding:48px 56px;border-right:1px solid var(--bd2);background:var(--sf2);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--acc),var(--acc));display:flex;align-items:center;justify-content:center;font:700 14px/1 Inter,sans-serif;color:var(--acc-fg);">U</div>
+      <span style="font:600 16px/1 Inter,sans-serif;letter-spacing:-.01em;">UbimaxGPS</span>
+      <div style="flex:1;"></div>
+      <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">{{ themeIcon }}</button>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px;max-width:340px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <h1 style="margin:0;font:600 24px/1.2 Inter,sans-serif;letter-spacing:-.02em;">Iniciar sesión</h1>
+        <p style="margin:0;font:400 13px/1.5 Inter,sans-serif;color:var(--mut);">Accedé al panel de operaciones de tu flota.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font:500 11px/1 Inter,sans-serif;color:var(--dim2);letter-spacing:.04em;">EMAIL</label>
+          <input value="{{ email }}" onChange="{{ onEmail }}" placeholder="nombre@empresa.com" type="email" style="all:unset;display:block;box-sizing:border-box;width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;font:400 13.5px/1.2 Inter,sans-serif;color:var(--tx);" style-focus="border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft);"></input>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <label style="font:500 11px/1 Inter,sans-serif;color:var(--dim2);letter-spacing:.04em;">CONTRASEÑA</label>
+            <span style="font:400 11.5px/1 Inter,sans-serif;color:var(--acc);cursor:pointer;" style-hover="text-decoration:underline;">¿La olvidaste?</span>
+          </div>
+          <div style="position:relative;">
+            <input value="{{ password }}" onChange="{{ onPassword }}" placeholder="••••••••" type="{{ pwType }}" style="all:unset;display:block;box-sizing:border-box;width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:9px;padding:11px 40px 11px 13px;font:400 13.5px/1.2 Inter,sans-serif;color:var(--tx);" style-focus="border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft);"></input>
+            <button onClick="{{ togglePw }}" title="Mostrar / ocultar" style="all:unset;cursor:pointer;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">{{ pwIcon }}</button>
+          </div>
+        </div>
+        <label onClick="{{ toggleRemember }}" style="display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;">
+          <span style="width:17px;height:17px;border-radius:5px;border:1.5px solid {{ chkBorder }};background:{{ chkBg }};display:flex;align-items:center;justify-content:center;font:700 10px/1 Inter,sans-serif;color:var(--acc-fg);transition:background .15s;">{{ chkMark }}</span>
+          <span style="font:400 12.5px/1 Inter,sans-serif;color:var(--dim);">Mantener sesión iniciada</span>
+        </label>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <a href="Monitoreo en vivo.dc.html" style="text-decoration:none;height:42px;border-radius:10px;background:var(--acc);color:var(--acc-fg);display:flex;align-items:center;justify-content:center;gap:8px;font:600 13.5px/1 Inter,sans-serif;" style-hover="filter:brightness(1.1);">Ingresar →</a>
+        <span style="font:400 11.5px/1.5 Inter,sans-serif;color:var(--fnt);text-align:center;">¿No tenés cuenta? <span style="color:var(--acc);cursor:pointer;">Contactá a tu administrador</span></span>
+      </div>
+    </div>
+
+    <span style="font:400 10.5px/1 'JetBrains Mono',monospace;color:var(--fnt2);">v5.2 · SERVIDOR AR-1 · <span style="color:#22D3A5;">● OPERATIVO</span></span>
+  </div>
+
+  <!-- ============ VISUAL DE MAPA ============ -->
+  <div style="flex:1;position:relative;overflow:hidden;background:var(--bg);background-image:radial-gradient(ellipse 700px 500px at 55% 40%, var(--acc-glow), transparent 60%), repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 90px), repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 90px), repeating-linear-gradient(0deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 22px), repeating-linear-gradient(90deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 22px);">
+
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;">
+      <sc-for list="{{ routes }}" as="r" hint-placeholder-count="3">
+        <polyline points="{{ r.pts }}" fill="none" stroke="var(--acc-soft)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+      </sc-for>
+      <sc-for list="{{ routes }}" as="r" hint-placeholder-count="3">
+        <polyline points="{{ r.pts }}" fill="none" stroke="{{ r.stroke }}" stroke-opacity="{{ r.strokeOp }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="{{ r.dash }}" style="animation:{{ r.anim }};"></polyline>
+      </sc-for>
+    </svg>
+
+    <!-- puntos de origen/destino -->
+    <sc-for list="{{ dots }}" as="d" hint-placeholder-count="4">
+      <div style="position:absolute;left:{{ d.x }}%;top:{{ d.y }}%;width:10px;height:10px;margin:-5px 0 0 -5px;">
+        <sc-if value="{{ d.pulse }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;border-radius:50%;background:var(--acc);animation:umx-pulse 2.2s ease-out infinite;"></div>
+        </sc-if>
+        <div style="position:absolute;inset:0;border-radius:50%;background:var(--bg);border:2px solid {{ d.color }};"></div>
+      </div>
+    </sc-for>
+
+    <!-- chips de datos flotantes -->
+    <div style="position:absolute;left:56%;top:26%;display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--bd);border-radius:9px;padding:7px 11px;box-shadow:0 6px 24px var(--shc);">
+      <span style="width:7px;height:7px;border-radius:50%;background:#22D3A5;"></span>
+      <span style="font:500 11px/1 Inter,sans-serif;color:var(--tx);">Furgón 12</span>
+      <span style="font:600 11px/1 'JetBrains Mono',monospace;color:#22D3A5;">64 km/h</span>
+    </div>
+    <div style="position:absolute;left:30%;top:64%;display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--bd);border-radius:9px;padding:7px 11px;box-shadow:0 6px 24px var(--shc);">
+      <span style="width:7px;height:7px;border-radius:50%;background:#E8A33D;"></span>
+      <span style="font:500 11px/1 Inter,sans-serif;color:var(--tx);">Camioneta 09</span>
+      <span style="font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--dim2);">detenida 18 m</span>
+    </div>
+
+    <!-- claim -->
+    <div style="position:absolute;left:48px;bottom:44px;right:48px;display:flex;flex-direction:column;gap:10px;">
+      <span style="font:600 22px/1.3 Inter,sans-serif;letter-spacing:-.02em;max-width:420px;">Toda tu flota, en un solo panel de operaciones.</span>
+      <span style="font:400 12.5px/1.6 Inter,sans-serif;color:var(--mut);max-width:420px;">Monitoreo en vivo, historial de recorridos, alertas y reportes — en tiempo real, desde cualquier dispositivo.</span>
+      <div style="display:flex;gap:16px;margin-top:6px;font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--fnt);">
+        <span><span style="color:var(--acc);">1.240</span> VEHÍCULOS</span>
+        <span><span style="color:var(--acc);">98,7%</span> UPTIME</span>
+        <span><span style="color:var(--acc);">24/7</span> SOPORTE</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;rutasAnimadas&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Visual&quot; }
+}">
+class Component extends DCLogic {
+  state = { email: '', password: '', showPw: false, remember: true, theme: localStorage.getItem('umx-theme') || 'dark' };
+
+  componentDidMount() { document.documentElement.dataset.theme = this.state.theme; }
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('umx-theme', t);
+    document.documentElement.dataset.theme = t;
+    this.setState({ theme: t });
+  };
+
+  routeDefs = [
+    { pts: '8,82 20,74 28,76 38,66 46,68 58,56 64,58 74,46 82,48 94,34', speed: '9s' },
+    { pts: '4,40 16,44 26,38 40,42 52,34 60,38 72,28 84,32 96,22', speed: '13s' },
+    { pts: '18,96 26,86 40,88 50,78 62,82 72,72 86,76 96,64', speed: '11s' },
+  ];
+
+  renderVals() {
+    const S = this.state;
+    const animOn = this.props.rutasAnimadas ?? true;
+
+    return {
+      email: S.email,
+      password: S.password,
+      onEmail: (ev) => this.setState({ email: ev.target.value }),
+      onPassword: (ev) => this.setState({ password: ev.target.value }),
+      pwType: S.showPw ? 'text' : 'password',
+      pwIcon: S.showPw ? '◡' : '◉',
+      togglePw: () => this.setState(s => ({ showPw: !s.showPw })),
+      toggleRemember: () => this.setState(s => ({ remember: !s.remember })),
+      chkBg: S.remember ? 'var(--acc)' : 'transparent',
+      chkBorder: S.remember ? 'var(--acc)' : 'var(--bd4)',
+      chkMark: S.remember ? '✓' : '',
+      themeIcon: S.theme === 'dark' ? '☀' : '☾',
+      toggleTheme: this.toggleTheme,
+      routes: this.routeDefs.map((r, i) => ({
+        pts: r.pts,
+        stroke: 'var(--acc)', strokeOp: String(0.8 - i * 0.22),
+        dash: '14 26',
+        anim: animOn ? 'umx-route ' + r.speed + ' linear infinite' : 'none',
+      })),
+      dots: [
+        { x: 94, y: 34, color: 'var(--acc)', pulse: true },
+        { x: 8,  y: 82, color: 'var(--bd4)', pulse: false },
+        { x: 96, y: 22, color: 'var(--acc)', pulse: true },
+        { x: 4,  y: 40, color: 'var(--bd4)', pulse: false },
+        { x: 96, y: 64, color: '#E8A33D', pulse: false },
+        { x: 18, y: 96, color: 'var(--bd4)', pulse: false },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

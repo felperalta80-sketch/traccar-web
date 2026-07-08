@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#EDF2F9;--acc-fg:#0B0E14;--acc-soft:rgba(226,236,250,.09);--acc-border:rgba(226,236,250,.38);--acc-strong:rgba(226,236,250,.85);--acc-glow:rgba(190,210,235,.05);--bg:#0B0E14;--sf:#131720;--sf2:#0D1119;--hv:#1A2030;--bd:#252B3A;--bd2:#1E2430;--bd3:#171D29;--bd4:#3A4356;--tx:#E6EAF2;--tx2:#C7CEDC;--dim:#AAB4C8;--dim2:#8A94A8;--mut:#7A8498;--fnt:#5B6579;--fnt2:#4A5468;--glass:rgba(19,23,32,.93);--glass2:rgba(15,19,27,.97);--zebra:rgba(120,140,180,.03);--grid:rgba(120,140,180,.055);--grid2:rgba(120,140,180,.028);--road:rgba(140,160,200,.10);--water1:rgba(46,84,120,.16);--water2:rgba(46,84,120,.22);--maplabel:rgba(160,175,205,.26);--shc:rgba(0,0,0,.5);--scrim:rgba(5,7,11,.5);--routecase:rgba(11,14,20,.85);}
+:root[data-theme="light"]{--acc:#1C2536;--acc-fg:#FFFFFF;--acc-soft:rgba(22,34,58,.07);--acc-border:rgba(22,34,58,.32);--acc-strong:rgba(22,34,58,.8);--acc-glow:rgba(22,34,58,.05);--bg:#E9EDF3;--sf:#FFFFFF;--sf2:#F6F8FB;--hv:#EDF1F7;--bd:#D8DFE9;--bd2:#E5EAF1;--bd3:#EEF1F6;--bd4:#C2CAD8;--tx:#17202F;--tx2:#2E3A52;--dim:#4E5A70;--dim2:#66738A;--mut:#75819A;--fnt:#8A94A8;--fnt2:#A6AFC0;--glass:rgba(255,255,255,.93);--glass2:rgba(252,253,255,.97);--zebra:rgba(90,110,150,.05);--grid:rgba(90,110,150,.14);--grid2:rgba(90,110,150,.07);--road:rgba(90,110,150,.22);--water1:rgba(110,150,195,.25);--water2:rgba(110,150,195,.33);--maplabel:rgba(90,105,135,.5);--shc:rgba(25,35,60,.15);--scrim:rgba(30,42,66,.4);}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+*{box-sizing:border-box;}
+input{outline:none;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div data-screen-label="Administración" style="position:fixed;inset:0;display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);">
+
+  <!-- ============ HEADER GLOBAL ============ -->
+  <div style="height:52px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--bd2);background:var(--sf2);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--acc),var(--acc));display:flex;align-items:center;justify-content:center;font:700 11px/1 Inter,sans-serif;color:var(--acc-fg);">U</div>
+      <span style="font:600 13px/1 Inter,sans-serif;letter-spacing:-.01em;">UbimaxGPS</span>
+    </div>
+    <div style="width:1px;height:20px;background:var(--bd);"></div>
+    <nav style="display:flex;gap:2px;">
+      <a href="Monitoreo en vivo.dc.html" style="text-decoration:none;font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;" style-hover="background:var(--hv);color:var(--tx);">Monitoreo</a>
+      <a href="Reproducción de recorrido.dc.html" style="text-decoration:none;font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;" style-hover="background:var(--hv);color:var(--tx);">Historial</a>
+      <a href="Reportes.dc.html" style="text-decoration:none;font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;" style-hover="background:var(--hv);color:var(--tx);">Reportes</a>
+      <span style="font:600 12px/1 Inter,sans-serif;color:var(--acc);padding:7px 11px;border-radius:7px;background:var(--acc-soft);">Administración</span>
+    </nav>
+    <div style="flex:1;"></div>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">{{ themeIcon }}</button>
+    <div style="width:30px;height:30px;border-radius:50%;background:var(--hv);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;color:var(--acc);cursor:pointer;">MR</div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0;position:relative;">
+
+    <!-- ============ SIDEBAR AGRUPADA ============ -->
+    <div style="width:216px;flex:none;border-right:1px solid var(--bd2);padding:14px 10px;overflow-y:auto;background:var(--sf2);">
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:16px;">
+          <span style="font:600 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.1em;padding:0 10px 8px;">{{ g.title }}</span>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+            <button onClick="{{ it.onClick }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:{{ it.bg }};border:1px solid {{ it.border }};" style-hover="background:var(--hv);">
+              <span style="font-size:11px;color:{{ it.iconFg }};width:14px;text-align:center;">{{ it.icon }}</span>
+              <span style="flex:1;font:500 12.5px/1.2 Inter,sans-serif;color:{{ it.fg }};">{{ it.label }}</span>
+              <span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--fnt);">{{ it.count }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ============ ÁREA PRINCIPAL ============ -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--bd2);">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;">
+          <span style="font:600 15px/1.2 Inter,sans-serif;">{{ sectionTitle }}</span>
+          <span style="font:400 11.5px/1.2 Inter,sans-serif;color:var(--fnt);">{{ sectionSub }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;width:220px;">
+          <span style="color:var(--fnt);font-size:12px;">⌕</span>
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="{{ searchPlaceholder }}" style="all:unset;flex:1;font:400 12px/1 Inter,sans-serif;color:var(--tx);min-width:0;"></input>
+        </div>
+        <button style="all:unset;cursor:pointer;height:32px;padding:0 14px;border-radius:8px;background:var(--acc);color:var(--acc-fg);font:600 12px/1 Inter,sans-serif;display:flex;align-items:center;gap:6px;flex:none;" style-hover="filter:brightness(1.1);">+ {{ addLabel }}</button>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:16px 18px;">
+        <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:12px;overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <sc-for list="{{ cols }}" as="c" hint-placeholder-count="5">
+                  <th style="text-align:{{ c.align }};font:600 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;padding:11px 14px;border-bottom:1px solid var(--bd2);white-space:nowrap;">{{ c.label }}</th>
+                </sc-for>
+                <th style="width:76px;border-bottom:1px solid var(--bd2);"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="6">
+                <tr style="background:{{ r.bg }};" style-hover="background:var(--hv);">
+                  <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="5">
+                    <td onClick="{{ r.open }}" style="cursor:pointer;text-align:{{ cell.align }};font-family:{{ cell.font }};font-size:{{ cell.size }};font-weight:{{ cell.weight }};color:{{ cell.color }};padding:10px 14px;border-bottom:1px solid var(--bd3);white-space:nowrap;font-variant-numeric:tabular-nums;">
+                      <sc-if value="{{ cell.badge }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:{{ cell.badgeBg }};border:1px solid {{ cell.badgeBorder }};font:500 11px/1 Inter,sans-serif;color:{{ cell.color }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ cell.color }};"></span>{{ cell.t }}</span>
+                      </sc-if>
+                      <sc-if value="{{ cell.toggle }}" hint-placeholder-val="{{ false }}">
+                        <span onClick="{{ cell.onToggle }}" style="display:inline-block;width:34px;height:19px;border-radius:999px;background:{{ cell.togBg }};border:1px solid {{ cell.togBorder }};position:relative;cursor:pointer;transition:background .18s;">
+                          <span style="position:absolute;top:2px;left:{{ cell.knobLeft }};width:13px;height:13px;border-radius:50%;background:{{ cell.knobBg }};transition:left .18s;"></span>
+                        </span>
+                      </sc-if>
+                      <sc-if value="{{ cell.plain }}" hint-placeholder-val="{{ true }}">{{ cell.t }}</sc-if>
+                    </td>
+                  </sc-for>
+                  <td style="padding:10px 14px;border-bottom:1px solid var(--bd3);text-align:right;white-space:nowrap;">
+                    <button onClick="{{ r.open }}" title="Editar" style="all:unset;cursor:pointer;width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;color:var(--fnt);font-size:11px;" style-hover="background:var(--bd);color:var(--tx);">✎</button>
+                    <button title="Eliminar" style="all:unset;cursor:pointer;width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;color:var(--fnt);font-size:11px;margin-left:2px;" style-hover="background:rgba(240,69,90,.15);color:#F0455A;">⌫</button>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--sf2);">
+            <span style="font:400 11px/1 Inter,sans-serif;color:var(--fnt);">{{ rowCountLabel }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DRAWER DE EDICIÓN ============ -->
+    <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:var(--scrim);z-index:40;opacity:{{ scrimOpacity }};pointer-events:{{ scrimEvents }};transition:opacity .25s;"></div>
+    <div style="position:absolute;top:0;bottom:0;right:0;width:400px;z-index:50;transform:translateX({{ drawerX }});transition:transform .3s cubic-bezier(.32,.72,.36,1);display:flex;flex-direction:column;background:var(--sf);border-left:1px solid var(--bd);box-shadow:-16px 0 48px var(--shc);">
+      <div style="padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd2);">
+        <div style="width:36px;height:36px;flex:none;border-radius:10px;background:var(--acc-soft);border:1px solid var(--acc-border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--acc);">✎</div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+          <span style="font:600 14px/1.2 Inter,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ drawerTitle }}</span>
+          <span style="font:400 11px/1.2 Inter,sans-serif;color:var(--fnt);">{{ drawerSub }}</span>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="all:unset;cursor:pointer;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:15px;" style-hover="background:var(--hv);color:var(--tx);">×</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:6px 0;">
+        <sc-for list="{{ formSections }}" as="fs" hint-placeholder-count="3">
+          <div style="border-bottom:1px solid var(--bd3);">
+            <button onClick="{{ fs.toggle }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 18px;">
+              <span style="font:600 11px/1 Inter,sans-serif;color:var(--dim);letter-spacing:.07em;">{{ fs.title }}</span>
+              <span style="font-size:9px;color:var(--fnt);transform:rotate({{ fs.chev }});transition:transform .2s;display:inline-block;">▼</span>
+            </button>
+            <sc-if value="{{ fs.open }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:2px 18px 16px;display:flex;flex-direction:column;gap:11px;">
+                <sc-for list="{{ fs.fields }}" as="f" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:5px;">
+                    <label style="font:500 10.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.04em;">{{ f.label }}</label>
+                    <input defaultValue="{{ f.value }}" style="all:unset;display:block;box-sizing:border-box;width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px 11px;font:400 12.5px/1.2 {{ f.font }};color:var(--tx);" style-focus="border-color:var(--acc);"></input>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:none;display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--bd2);background:var(--sf2);">
+        <button onClick="{{ closeDrawer }}" style="all:unset;cursor:pointer;flex:1;height:36px;border-radius:9px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:500 12.5px/1 Inter,sans-serif;color:var(--tx2);" style-hover="background:var(--hv);">Cancelar</button>
+        <button onClick="{{ closeDrawer }}" style="all:unset;cursor:pointer;flex:2;height:36px;border-radius:9px;background:var(--acc);color:var(--acc-fg);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Inter,sans-serif;" style-hover="filter:brightness(1.1);">Guardar cambios</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {}
+}">
+class Component extends DCLogic {
+  state = { section: 'dispositivos', query: '', drawerRow: null, closedSections: {}, notifOn: { n1:true, n2:true, n3:false, n4:true }, theme: localStorage.getItem('umx-theme') || 'dark' };
+
+  componentDidMount() { document.documentElement.dataset.theme = this.state.theme; }
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('umx-theme', t);
+    document.documentElement.dataset.theme = t;
+    this.setState({ theme: t });
+  };
+
+  C = { txt:'var(--tx)', dim:'var(--dim2)', mut:'var(--fnt)', green:'#22D3A5', amber:'#E8A33D', red:'#F0455A', gray:'#6B7A94' };
+
+  groups = [
+    { title:'FLOTA', items:[
+      { key:'dispositivos', label:'Dispositivos', icon:'▣', count:'9' },
+      { key:'grupos',       label:'Grupos',       icon:'⌗', count:'3' },
+      { key:'conductores',  label:'Conductores',  icon:'◉', count:'7' },
+    ]},
+    { title:'ZONAS', items:[
+      { key:'geocercas',    label:'Geocercas',    icon:'◇', count:'5' },
+    ]},
+    { title:'CUENTA', items:[
+      { key:'usuarios',      label:'Usuarios',      icon:'◈', count:'4' },
+      { key:'notificaciones',label:'Notificaciones',icon:'◔', count:'4' },
+    ]},
+  ];
+
+  cell(t, o) {
+    o = o || {};
+    return {
+      t: String(t), plain: !o.badge && !o.toggle, badge: !!o.badge, toggle: false,
+      align: o.right ? 'right' : 'left',
+      font: o.mono ? "'JetBrains Mono',monospace" : 'Inter,sans-serif',
+      size: o.mono ? '11.5px' : '12.5px',
+      weight: o.bold ? '600' : '400',
+      color: o.color || (o.bold ? this.C.txt : this.C.dim),
+      badgeBg: o.badge ? o.badgeA + '.10)' : '',
+      badgeBorder: o.badge ? o.badgeA + '.3)' : '',
+    };
+  }
+
+  statusBadge(st) {
+    const map = { online:['En línea','rgba(34,211,165,',this.C.green], offline:['Offline','rgba(240,69,90,',this.C.red], unknown:['Desconocido','rgba(107,122,148,',this.C.gray] };
+    const m = map[st];
+    return this.cell(m[0], { badge:true, badgeA:m[1], color:m[2] });
+  }
+
+  sections() {
+    const c = this.cell.bind(this), K = this.C;
+    return {
+      dispositivos: {
+        title:'Dispositivos', sub:'9 equipos GPS registrados', add:'Agregar dispositivo', ph:'Buscar por nombre o IMEI',
+        cols:[{label:'NOMBRE'},{label:'IDENTIFICADOR (IMEI)'},{label:'GRUPO'},{label:'MODELO'},{label:'ESTADO'},{label:'ÚLT. REPORTE',align:'right'}],
+        rows:[
+          { id:'d1', name:'Furgón 12',    search:'furgon 12 356938035643809', cells:[c('Furgón 12',{bold:true}),c('356938035643809',{mono:true}),c('Flota BA'),c('Teltonika FMB920'),this.statusBadge('online'),c('hace 8 s',{mono:true,right:true})] },
+          { id:'d2', name:'Camión 04',    search:'camion 04 356938035699112', cells:[c('Camión 04',{bold:true}),c('356938035699112',{mono:true}),c('Flota BA'),c('Teltonika FMB130'),this.statusBadge('online'),c('hace 12 s',{mono:true,right:true})] },
+          { id:'d3', name:'Utilitario 07',search:'utilitario 07 358723004411290', cells:[c('Utilitario 07',{bold:true}),c('358723004411290',{mono:true}),c('Flota BA'),c('Queclink GV300'),this.statusBadge('online'),c('hace 5 s',{mono:true,right:true})] },
+          { id:'d4', name:'Sedán 02',     search:'sedan 02 356938035601998', cells:[c('Sedán 02',{bold:true}),c('356938035601998',{mono:true}),c('Comerciales'),c('Teltonika FMB920'),this.statusBadge('online'),c('hace 4 min',{mono:true,right:true})] },
+          { id:'d5', name:'Furgón 03',    search:'furgon 03 358723004488321', cells:[c('Furgón 03',{bold:true}),c('358723004488321',{mono:true}),c('Flota BA'),c('Queclink GV300'),this.statusBadge('offline'),c('hace 3 h',{mono:true,right:true,color:K.red})] },
+          { id:'d6', name:'Sedán 21',     search:'sedan 21 356938035677043', cells:[c('Sedán 21',{bold:true}),c('356938035677043',{mono:true}),c('Comerciales'),c('Coban TK303'),this.statusBadge('unknown'),c('hace 42 min',{mono:true,right:true})] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Nombre',k:'name'},{label:'Identificador único (IMEI)',v:'356938035643809',mono:true},{label:'Grupo',v:'Flota BA'},{label:'Categoría',v:'Furgón'}] },
+          { title:'CONEXIÓN', fields:[{label:'Teléfono (SIM)',v:'+54 9 11 5555 0112',mono:true},{label:'Modelo',v:'Teltonika FMB920'},{label:'Contacto',v:'Logística · M. Rodríguez'}] },
+          { title:'ATRIBUTOS EXTRA', fields:[{label:'Límite de velocidad',v:'80 km/h',mono:true},{label:'Consumo medio',v:'11,8 L/100km',mono:true},{label:'Odómetro',v:'84.213 km',mono:true}] },
+        ],
+      },
+      grupos: {
+        title:'Grupos', sub:'3 grupos de vehículos', add:'Agregar grupo', ph:'Buscar grupo',
+        cols:[{label:'NOMBRE'},{label:'GRUPO PADRE'},{label:'DISPOSITIVOS',align:'right'},{label:'GEOCERCAS ASIGNADAS',align:'right'}],
+        rows:[
+          { id:'g1', name:'Flota BA',   search:'flota ba',   cells:[c('Flota BA',{bold:true}),c('—'),c('5',{mono:true,right:true}),c('3',{mono:true,right:true})] },
+          { id:'g2', name:'Comerciales',search:'comerciales',cells:[c('Comerciales',{bold:true}),c('Flota BA'),c('3',{mono:true,right:true}),c('2',{mono:true,right:true})] },
+          { id:'g3', name:'Motos',      search:'motos',      cells:[c('Motos',{bold:true}),c('Flota BA'),c('1',{mono:true,right:true}),c('1',{mono:true,right:true})] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Nombre',k:'name'},{label:'Grupo padre',v:'—'}] },
+          { title:'ATRIBUTOS EXTRA', fields:[{label:'Límite de velocidad',v:'80 km/h',mono:true},{label:'Zona horaria',v:'America/Argentina/Buenos_Aires',mono:true}] },
+        ],
+      },
+      conductores: {
+        title:'Conductores', sub:'7 conductores con identificación iButton/RFID', add:'Agregar conductor', ph:'Buscar conductor',
+        cols:[{label:'NOMBRE'},{label:'IDENTIFICADOR'},{label:'VEHÍCULO ASIGNADO'},{label:'ÚLT. VIAJE',align:'right'}],
+        rows:[
+          { id:'c1', name:'J. Medina',  search:'medina 04A3F2', cells:[c('J. Medina',{bold:true}),c('04A3F2C1',{mono:true}),c('Furgón 12'),c('hoy 10:22',{mono:true,right:true})] },
+          { id:'c2', name:'L. Suárez',  search:'suarez 09B411', cells:[c('L. Suárez',{bold:true}),c('09B411D8',{mono:true}),c('Camión 04'),c('hoy 09:47',{mono:true,right:true})] },
+          { id:'c3', name:'A. Ferreyra',search:'ferreyra 1180CC', cells:[c('A. Ferreyra',{bold:true}),c('1180CC72',{mono:true}),c('Utilitario 07'),c('ayer 18:03',{mono:true,right:true})] },
+          { id:'c4', name:'M. Paz',     search:'paz 33F09A', cells:[c('M. Paz',{bold:true}),c('33F09A15',{mono:true}),c('—'),c('mar 12:40',{mono:true,right:true})] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Nombre',k:'name'},{label:'Identificador único',v:'04A3F2C1',mono:true}] },
+          { title:'ATRIBUTOS EXTRA', fields:[{label:'Teléfono',v:'+54 9 11 4444 8821',mono:true},{label:'Licencia',v:'C1 · vence 03/2027'}] },
+        ],
+      },
+      geocercas: {
+        title:'Geocercas', sub:'5 zonas definidas en el mapa', add:'Agregar geocerca', ph:'Buscar geocerca',
+        cols:[{label:'NOMBRE'},{label:'TIPO'},{label:'ÁREA'},{label:'CALENDARIO'},{label:'DISPOSITIVOS',align:'right'}],
+        rows:[
+          { id:'z1', name:'Depósito Norte',  search:'deposito norte', cells:[c('Depósito Norte',{bold:true}),c('Círculo'),c('r = 450 m',{mono:true}),c('Siempre'),c('9',{mono:true,right:true})] },
+          { id:'z2', name:'Depósito Warnes', search:'deposito warnes', cells:[c('Depósito Warnes',{bold:true}),c('Polígono'),c('12.400 m²',{mono:true}),c('Siempre'),c('9',{mono:true,right:true})] },
+          { id:'z3', name:'CABA · Microcentro', search:'caba microcentro', cells:[c('CABA · Microcentro',{bold:true}),c('Polígono'),c('2,1 km²',{mono:true}),c('L–V 07–20',{mono:true}),c('5',{mono:true,right:true})] },
+          { id:'z4', name:'Corredor Au. 25 de Mayo', search:'corredor 25 mayo', cells:[c('Corredor Au. 25 de Mayo',{bold:true}),c('Polilínea'),c('8,4 km',{mono:true}),c('Siempre'),c('9',{mono:true,right:true})] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Nombre',k:'name'},{label:'Descripción',v:'Zona de carga y descarga'},{label:'Calendario',v:'Siempre'}] },
+          { title:'GEOMETRÍA', fields:[{label:'Tipo',v:'Círculo'},{label:'Centro',v:'-34,5712 · -58,4231',mono:true},{label:'Radio',v:'450 m',mono:true}] },
+          { title:'ATRIBUTOS EXTRA', fields:[{label:'Color en mapa',v:'#8A94A8',mono:true},{label:'Límite de velocidad interno',v:'20 km/h',mono:true}] },
+        ],
+      },
+      usuarios: {
+        title:'Usuarios', sub:'4 cuentas con acceso a la plataforma', add:'Agregar usuario', ph:'Buscar por nombre o email',
+        cols:[{label:'NOMBRE'},{label:'EMAIL'},{label:'ROL'},{label:'DISPOSITIVOS',align:'right'},{label:'ÚLT. ACCESO',align:'right'}],
+        rows:[
+          { id:'u1', name:'Martín Rodríguez', search:'martin rodriguez admin', cells:[c('Martín Rodríguez',{bold:true}),c('mrodriguez@ubimax.ar',{mono:true}),c('Administrador',{color:K.green}),c('9',{mono:true,right:true}),c('hace 5 min',{mono:true,right:true})] },
+          { id:'u2', name:'Carla Núñez',      search:'carla nunez', cells:[c('Carla Núñez',{bold:true}),c('cnunez@ubimax.ar',{mono:true}),c('Gestor'),c('9',{mono:true,right:true}),c('hoy 08:12',{mono:true,right:true})] },
+          { id:'u3', name:'Diego Salto',      search:'diego salto', cells:[c('Diego Salto',{bold:true}),c('dsalto@ubimax.ar',{mono:true}),c('Operador'),c('5',{mono:true,right:true}),c('ayer 19:44',{mono:true,right:true})] },
+          { id:'u4', name:'Cliente · Andes SA', search:'andes cliente', cells:[c('Cliente · Andes SA',{bold:true}),c('flota@andes.com.ar',{mono:true}),c('Solo lectura',{color:K.mut}),c('2',{mono:true,right:true}),c('lun 09:20',{mono:true,right:true})] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Nombre',k:'name'},{label:'Email',v:'mrodriguez@ubimax.ar',mono:true},{label:'Contraseña',v:'••••••••',mono:true}] },
+          { title:'PERMISOS', fields:[{label:'Rol',v:'Administrador'},{label:'Dispositivos visibles',v:'Todos (9)'},{label:'Vencimiento de cuenta',v:'—'}] },
+          { title:'PREFERENCIAS', fields:[{label:'Zona horaria',v:'America/Argentina/Buenos_Aires',mono:true},{label:'Unidades',v:'km/h · km · L'}] },
+        ],
+      },
+      notificaciones: {
+        title:'Notificaciones', sub:'4 reglas de alerta configuradas', add:'Agregar notificación', ph:'Buscar notificación',
+        cols:[{label:'TIPO'},{label:'DISPOSITIVOS'},{label:'CANALES'},{label:'ACTIVA',align:'right'}],
+        rows:[
+          { id:'n1', name:'Exceso de velocidad', search:'exceso velocidad', cells:[c('Exceso de velocidad',{bold:true,color:K.red}),c('Todos'),c('Web · Email · Telegram'),'TOGGLE'] },
+          { id:'n2', name:'Geocercas',           search:'geocerca entrada salida', cells:[c('Entrada / salida de geocerca',{bold:true,color:K.amber}),c('Flota BA'),c('Web · Email'),'TOGGLE'] },
+          { id:'n3', name:'Ignición',            search:'ignicion', cells:[c('Ignición encendida / apagada',{bold:true}),c('Comerciales'),c('Web'),'TOGGLE'] },
+          { id:'n4', name:'Dispositivo offline', search:'offline sin senal', cells:[c('Dispositivo sin señal',{bold:true,color:K.red}),c('Todos'),c('Web · Email'),'TOGGLE'] },
+        ],
+        form:[
+          { title:'INFORMACIÓN BÁSICA', fields:[{label:'Tipo de evento',k:'name'},{label:'Dispositivos',v:'Todos'},{label:'Solo alarmas',v:'No'}] },
+          { title:'CANALES', fields:[{label:'Web',v:'Sí'},{label:'Email',v:'operaciones@ubimax.ar',mono:true},{label:'Telegram',v:'@ubimax_alertas',mono:true}] },
+        ],
+      },
+    };
+  }
+
+  renderVals() {
+    const S = this.state;
+    const secs = this.sections();
+    const sec = secs[S.section];
+    const q = S.query.trim().toLowerCase();
+
+    const navGroups = this.groups.map(g => ({
+      title: g.title,
+      items: g.items.map(it => {
+        const a = it.key === S.section;
+        return {
+          ...it,
+          bg: a ? 'var(--acc-soft)' : 'transparent',
+          border: a ? 'var(--acc-border)' : 'transparent',
+          fg: a ? 'var(--tx)' : 'var(--dim2)',
+          iconFg: a ? 'var(--acc)' : 'var(--mut)',
+          onClick: () => this.setState({ section: it.key, query: '', drawerRow: null }),
+        };
+      }),
+    }));
+
+    const filtered = sec.rows.filter(r => !q || r.search.includes(q) || r.name.toLowerCase().includes(q));
+
+    const tableRows = filtered.map((r, i) => ({
+      bg: i % 2 === 1 ? 'var(--zebra)' : 'transparent',
+      open: () => this.setState({ drawerRow: { section: S.section, id: r.id, name: r.name } }),
+      cells: r.cells.map(cell => {
+        if (cell === 'TOGGLE') {
+          const on = S.notifOn[r.id];
+          return {
+            t:'', plain:false, badge:false, toggle:true, align:'right',
+            font:'Inter,sans-serif', size:'12px', weight:'400', color:'var(--tx)',
+            togBg: on ? 'var(--acc)' : 'var(--bd2)',
+            togBorder: on ? 'var(--acc)' : 'var(--bd)',
+            knobLeft: on ? '17px' : '2px',
+            knobBg: on ? 'var(--acc-fg)' : 'var(--fnt)',
+            onToggle: (ev) => { ev.stopPropagation(); this.setState(s => ({ notifOn: { ...s.notifOn, [r.id]: !s.notifOn[r.id] } })); },
+          };
+        }
+        return { ...cell, toggle:false };
+      }),
+    }));
+
+    // drawer
+    const dr = S.drawerRow;
+    const drawerSec = dr ? secs[dr.section] : null;
+    const formSections = (drawerSec ? drawerSec.form : []).map((fs, i) => {
+      const key = (dr ? dr.section : '') + '-' + i;
+      const closed = !!S.closedSections[key];
+      return {
+        title: fs.title,
+        open: !closed,
+        chev: closed ? '-90deg' : '0deg',
+        toggle: () => this.setState(s => ({ closedSections: { ...s.closedSections, [key]: !s.closedSections[key] } })),
+        fields: fs.fields.map(f => ({
+          label: f.label,
+          value: f.k === 'name' ? dr.name : (f.v || ''),
+          font: f.mono ? "'JetBrains Mono',monospace" : 'Inter,sans-serif',
+        })),
+      };
+    });
+
+    return {
+      navGroups,
+      sectionTitle: sec.title,
+      sectionSub: sec.sub,
+      addLabel: sec.add,
+      searchPlaceholder: sec.ph,
+      query: S.query,
+      onQuery: (ev) => this.setState({ query: ev.target.value }),
+      cols: sec.cols.map(c => ({ label: c.label, align: c.align || 'left' })),
+      tableRows,
+      rowCountLabel: filtered.length + ' de ' + sec.rows.length + ' registros',
+      drawerX: dr ? '0%' : '105%',
+      scrimOpacity: dr ? '1' : '0',
+      scrimEvents: dr ? 'auto' : 'none',
+      drawerTitle: dr ? dr.name : '',
+      drawerSub: dr ? 'Editar registro · ' + sec.title.toLowerCase() : '',
+      formSections,
+      closeDrawer: () => this.setState({ drawerRow: null }),
+      themeIcon: S.theme === 'dark' ? '☀' : '☾',
+      toggleTheme: this.toggleTheme,
+    };
+  }
+}
+</script>
+</body>
+</html>

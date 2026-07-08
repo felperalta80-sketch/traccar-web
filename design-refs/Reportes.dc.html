@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#EDF2F9;--acc-fg:#0B0E14;--acc-soft:rgba(226,236,250,.09);--acc-border:rgba(226,236,250,.38);--acc-strong:rgba(226,236,250,.85);--acc-glow:rgba(190,210,235,.05);--bg:#0B0E14;--sf:#131720;--sf2:#0D1119;--hv:#1A2030;--bd:#252B3A;--bd2:#1E2430;--bd3:#171D29;--bd4:#3A4356;--tx:#E6EAF2;--tx2:#C7CEDC;--dim:#AAB4C8;--dim2:#8A94A8;--mut:#7A8498;--fnt:#5B6579;--fnt2:#4A5468;--glass:rgba(19,23,32,.93);--glass2:rgba(15,19,27,.97);--zebra:rgba(120,140,180,.03);--grid:rgba(120,140,180,.055);--grid2:rgba(120,140,180,.028);--road:rgba(140,160,200,.10);--water1:rgba(46,84,120,.16);--water2:rgba(46,84,120,.22);--maplabel:rgba(160,175,205,.26);--shc:rgba(0,0,0,.5);--scrim:rgba(5,7,11,.5);--routecase:rgba(11,14,20,.85);}
+:root[data-theme="light"]{--acc:#1C2536;--acc-fg:#FFFFFF;--acc-soft:rgba(22,34,58,.07);--acc-border:rgba(22,34,58,.32);--acc-strong:rgba(22,34,58,.8);--acc-glow:rgba(22,34,58,.05);--bg:#E9EDF3;--sf:#FFFFFF;--sf2:#F6F8FB;--hv:#EDF1F7;--bd:#D8DFE9;--bd2:#E5EAF1;--bd3:#EEF1F6;--bd4:#C2CAD8;--tx:#17202F;--tx2:#2E3A52;--dim:#4E5A70;--dim2:#66738A;--mut:#75819A;--fnt:#8A94A8;--fnt2:#A6AFC0;--glass:rgba(255,255,255,.93);--glass2:rgba(252,253,255,.97);--zebra:rgba(90,110,150,.05);--grid:rgba(90,110,150,.14);--grid2:rgba(90,110,150,.07);--road:rgba(90,110,150,.22);--water1:rgba(110,150,195,.25);--water2:rgba(110,150,195,.33);--maplabel:rgba(90,105,135,.5);--shc:rgba(25,35,60,.15);--scrim:rgba(30,42,66,.4);}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+*{box-sizing:border-box;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div data-screen-label="Reportes" style="position:fixed;inset:0;display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);">
+
+  <!-- ============ HEADER GLOBAL ============ -->
+  <div style="height:52px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--bd2);background:var(--sf2);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--acc),var(--acc));display:flex;align-items:center;justify-content:center;font:700 11px/1 Inter,sans-serif;color:var(--acc-fg);">U</div>
+      <span style="font:600 13px/1 Inter,sans-serif;letter-spacing:-.01em;">UbimaxGPS</span>
+    </div>
+    <div style="width:1px;height:20px;background:var(--bd);"></div>
+    <nav style="display:flex;gap:2px;">
+      <a href="Monitoreo en vivo.dc.html" style="text-decoration:none;font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;" style-hover="background:var(--hv);color:var(--tx);">Monitoreo</a>
+      <a href="Reproducción de recorrido.dc.html" style="text-decoration:none;font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;" style-hover="background:var(--hv);color:var(--tx);">Historial</a>
+      <span style="font:600 12px/1 Inter,sans-serif;color:var(--acc);padding:7px 11px;border-radius:7px;background:var(--acc-soft);">Reportes</span>
+      <span style="font:500 12px/1 Inter,sans-serif;color:var(--dim2);padding:7px 11px;border-radius:7px;cursor:pointer;" style-hover="background:var(--hv);color:var(--tx);">Administración</span>
+    </nav>
+    <div style="flex:1;"></div>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">{{ themeIcon }}</button>
+    <div style="width:30px;height:30px;border-radius:50%;background:var(--hv);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;color:var(--acc);cursor:pointer;">MR</div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0;">
+
+    <!-- ============ RAIL DE TIPOS DE REPORTE ============ -->
+    <div style="width:216px;flex:none;border-right:1px solid var(--bd2);padding:14px 10px;display:flex;flex-direction:column;gap:2px;background:var(--sf2);">
+      <span style="font:600 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.1em;padding:0 10px 10px;">TIPO DE REPORTE</span>
+      <sc-for list="{{ reportTypes }}" as="rt" hint-placeholder-count="6">
+        <button onClick="{{ rt.onClick }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:{{ rt.bg }};border:1px solid {{ rt.border }};" style-hover="background:var(--hv);">
+          <span style="width:26px;height:26px;flex:none;border-radius:7px;background:{{ rt.iconBg }};border:1px solid {{ rt.iconBorder }};display:flex;align-items:center;justify-content:center;font-size:11px;color:{{ rt.iconFg }};">{{ rt.icon }}</span>
+          <span style="flex:1;font:500 12.5px/1.2 Inter,sans-serif;color:{{ rt.fg }};">{{ rt.label }}</span>
+        </button>
+      </sc-for>
+      <div style="flex:1;"></div>
+      <div style="margin:0 4px;padding:11px 12px;border:1px solid var(--bd2);border-radius:10px;background:var(--bg);display:flex;flex-direction:column;gap:5px;">
+        <span style="font:600 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">REPORTES PROGRAMADOS</span>
+        <span style="font:400 11.5px/1.4 Inter,sans-serif;color:var(--mut);">Resumen semanal · lunes 07:00 · 3 destinatarios</span>
+      </div>
+    </div>
+
+    <!-- ============ ÁREA PRINCIPAL ============ -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+      <!-- barra de configuración -->
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--bd2);flex-wrap:wrap;">
+        <button style="all:unset;cursor:pointer;display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:8px;border:1px solid var(--bd);font:500 12px/1 Inter,sans-serif;color:var(--tx);background:var(--sf);" style-hover="border-color:var(--bd4);"><span style="width:7px;height:7px;border-radius:50%;background:#22D3A5;"></span>Furgón 12<span style="font-size:8px;color:var(--fnt);">▼</span></button>
+        <button style="all:unset;cursor:pointer;display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:8px;border:1px solid var(--bd);font:500 12px/1 Inter,sans-serif;color:var(--dim);background:var(--sf);" style-hover="border-color:var(--bd4);">Grupo: Flota BA<span style="font-size:8px;color:var(--fnt);">▼</span></button>
+        <div style="width:1px;height:22px;background:var(--bd);"></div>
+        <div style="display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:3px;gap:2px;">
+          <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+            <button onClick="{{ p.onClick }}" style="all:unset;cursor:pointer;height:26px;padding:0 11px;border-radius:6px;font:500 11.5px/1 Inter,sans-serif;color:{{ p.fg }};background:{{ p.bg }};display:flex;align-items:center;" style-hover="color:var(--tx);">{{ p.label }}</button>
+          </sc-for>
+        </div>
+        <span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--fnt);">{{ rangeLabel }}</span>
+        <div style="flex:1;"></div>
+        <button style="all:unset;cursor:pointer;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--bd);font:500 12px/1 Inter,sans-serif;color:var(--tx2);display:flex;align-items:center;gap:6px;" style-hover="background:var(--hv);">⇩ CSV</button>
+        <button style="all:unset;cursor:pointer;height:32px;padding:0 14px;border-radius:8px;background:var(--acc);color:var(--acc-fg);font:600 12px/1 Inter,sans-serif;display:flex;align-items:center;gap:6px;" style-hover="filter:brightness(1.1);">Generar reporte</button>
+      </div>
+
+      <!-- resultados -->
+      <div style="flex:1;overflow:auto;padding:16px 18px;">
+
+        <!-- cards de resumen -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px;">
+          <sc-for list="{{ summaryCards }}" as="sc" hint-placeholder-count="4">
+            <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:11px;padding:13px 15px;display:flex;flex-direction:column;gap:6px;">
+              <span style="font:500 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">{{ sc.label }}</span>
+              <span style="font:600 19px/1 'JetBrains Mono',monospace;color:{{ sc.color }};font-variant-numeric:tabular-nums;">{{ sc.value }}<span style="font-size:10.5px;font-weight:500;color:var(--fnt);margin-left:4px;">{{ sc.unit }}</span></span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- gráfico (solo en Gráficos / Resumen) -->
+        <sc-if value="{{ showChart }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:12px;padding:16px 18px 10px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+              <span style="font:600 12.5px/1 Inter,sans-serif;">Velocidad a lo largo del día</span>
+              <div style="display:flex;gap:14px;font:500 10.5px/1 Inter,sans-serif;color:var(--mut);">
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:3px;border-radius:2px;background:#22D3A5;"></span>Velocidad</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:1px;border-top:1px dashed rgba(240,69,90,.6);"></span>Límite 80</span>
+              </div>
+            </div>
+            <svg viewBox="0 0 720 150" width="100%" height="150" preserveAspectRatio="none" style="display:block;">
+              <defs>
+                <linearGradient id="umxRep" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(34,211,165,.28)"></stop>
+                  <stop offset="100%" stop-color="rgba(34,211,165,0)"></stop>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="40" x2="720" y2="40" stroke="rgba(240,69,90,.4)" stroke-width="1" stroke-dasharray="4 5"></line>
+              <line x1="0" y1="75" x2="720" y2="75" stroke="var(--grid)" stroke-width="1"></line>
+              <line x1="0" y1="110" x2="720" y2="110" stroke="var(--grid)" stroke-width="1"></line>
+              <polyline points="{{ chartArea }}" fill="url(#umxRep)" stroke="none"></polyline>
+              <polyline points="{{ chartLine }}" fill="none" stroke="#22D3A5" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></polyline>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font:500 9.5px/1 'JetBrains Mono',monospace;color:var(--fnt2);padding-top:6px;">
+              <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- tabla -->
+        <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:12px;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <sc-for list="{{ cols }}" as="c" hint-placeholder-count="6">
+                  <th style="text-align:{{ c.align }};font:600 10px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;padding:11px 14px;border-bottom:1px solid var(--bd2);white-space:nowrap;">{{ c.label }}</th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="8">
+                <tr style="background:{{ r.bg }};cursor:pointer;" style-hover="background:var(--hv);">
+                  <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="6">
+                    <td style="text-align:{{ cell.align }};font-family:{{ cell.font }};font-size:{{ cell.size }};font-weight:{{ cell.weight }};color:{{ cell.color }};padding:{{ r.pad }} 14px;border-bottom:1px solid var(--bd3);white-space:nowrap;font-variant-numeric:tabular-nums;">{{ cell.t }}</td>
+                  </sc-for>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--sf2);">
+            <span style="font:400 11px/1 Inter,sans-serif;color:var(--fnt);">{{ rowCountLabel }}</span>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <button style="all:unset;cursor:pointer;width:24px;height:24px;border-radius:6px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:10px;" style-hover="background:var(--hv);color:var(--tx);">←</button>
+              <span style="font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--mut);padding:0 6px;">1 / 1</span>
+              <button style="all:unset;cursor:pointer;width:24px;height:24px;border-radius:6px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--fnt);font-size:10px;" style-hover="background:var(--hv);color:var(--tx);">→</button>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;filasCebradas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tabla&quot;},&quot;densidad&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;compacta&quot;,&quot;cómoda&quot;],&quot;default&quot;:&quot;cómoda&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Tabla&quot;}}">
+class Component extends DCLogic {
+  state = { report: 'viajes', preset: 'hoy', theme: localStorage.getItem('umx-theme') || 'dark' };
+
+  componentDidMount() { document.documentElement.dataset.theme = this.state.theme; }
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('umx-theme', t);
+    document.documentElement.dataset.theme = t;
+    this.setState({ theme: t });
+  };
+
+  types = [
+    { key:'recorridos', label:'Recorridos', icon:'〰' },
+    { key:'viajes',     label:'Viajes',     icon:'⇢' },
+    { key:'paradas',    label:'Paradas',    icon:'◼' },
+    { key:'eventos',    label:'Eventos',    icon:'◔' },
+    { key:'resumen',    label:'Resumen',    icon:'≡' },
+    { key:'graficos',   label:'Gráficos',   icon:'∿' },
+  ];
+
+  presetDefs = [
+    { key:'hoy',    label:'Hoy',         range:'04 JUL 00:00 – 23:59' },
+    { key:'ayer',   label:'Ayer',        range:'03 JUL 00:00 – 23:59' },
+    { key:'semana', label:'Esta semana', range:'29 JUN – 04 JUL' },
+    { key:'custom', label:'Personalizado', range:'ELEGIR RANGO…' },
+  ];
+
+  C = { txt:'var(--tx)', dim:'var(--dim2)', mut:'var(--fnt)', green:'#22D3A5', amber:'#E8A33D', red:'#F0455A' };
+
+  cell(t, o) {
+    o = o || {};
+    return {
+      t: String(t),
+      align: o.right ? 'right' : 'left',
+      font: o.mono ? "'JetBrains Mono',monospace" : 'Inter,sans-serif',
+      size: o.mono ? '11.5px' : '12px',
+      weight: o.bold ? '600' : '400',
+      color: o.color || (o.mono ? this.C.txt : this.C.dim),
+    };
+  }
+
+  datasets() {
+    const c = this.cell.bind(this), K = this.C;
+    return {
+      viajes: {
+        cols: [
+          { label:'INICIO', align:'left' }, { label:'FIN', align:'left' },
+          { label:'ORIGEN', align:'left' }, { label:'DESTINO', align:'left' },
+          { label:'DURACIÓN', align:'right' }, { label:'DISTANCIA', align:'right' },
+          { label:'VEL. PROM.', align:'right' }, { label:'VEL. MÁX.', align:'right' },
+        ],
+        rows: [
+          ['08:04','08:52','Base · Chacarita','Av. Warnes 1240','48 m','18,2 km',46,92],
+          ['09:06','09:48','Av. Warnes 1240','Cliente · Constitución','42 m','14,1 km',41,74],
+          ['10:00','10:22','Cliente · Constitución','Base · Chacarita','22 m','10,5 km',52,68],
+          ['12:15','12:58','Base · Chacarita','Depósito Norte','43 m','16,8 km',44,81],
+          ['13:40','14:22','Depósito Norte','Cliente · San Telmo','42 m','13,9 km',39,66],
+          ['15:05','15:51','Cliente · San Telmo','Base · Chacarita','46 m','15,4 km',43,77],
+        ].map(r => [
+          c(r[0],{mono:true}), c(r[1],{mono:true}), c(r[2]), c(r[3]),
+          c(r[4],{mono:true,right:true}), c(r[5],{mono:true,right:true,bold:true}),
+          c(r[6],{mono:true,right:true}), c(r[7],{mono:true,right:true,color:r[7]>80?K.red:K.txt}),
+        ]),
+      },
+      paradas: {
+        cols: [
+          { label:'INICIO', align:'left' }, { label:'FIN', align:'left' },
+          { label:'DIRECCIÓN', align:'left' }, { label:'ODÓMETRO', align:'right' }, { label:'DURACIÓN', align:'right' },
+        ],
+        rows: [
+          ['08:52','09:06','Av. Warnes 1240 · Depósito','84.231 km','14 m'],
+          ['09:48','10:00','Cliente · Constitución','84.245 km','12 m'],
+          ['10:22','12:15','Base · Chacarita','84.256 km','1 h 53 m'],
+          ['12:58','13:40','Depósito Norte','84.273 km','42 m'],
+          ['14:22','15:05','Cliente · San Telmo','84.287 km','43 m'],
+        ].map(r => [
+          c(r[0],{mono:true}), c(r[1],{mono:true}), c(r[2]),
+          c(r[3],{mono:true,right:true}), c(r[4],{mono:true,right:true,bold:true,color:K.amber}),
+        ]),
+      },
+      eventos: {
+        cols: [
+          { label:'HORA', align:'left' }, { label:'EVENTO', align:'left' },
+          { label:'DETALLE', align:'left' }, { label:'UBICACIÓN', align:'left' },
+        ],
+        rows: [
+          ['08:04','Ignición encendida', K.green,'—','Base · Chacarita'],
+          ['08:31','Exceso de velocidad', K.red,'92 km/h en zona de 80','Au. 25 de Mayo km 3'],
+          ['08:52','Entrada a geocerca', K.green,'Depósito Warnes','Av. Warnes 1240'],
+          ['09:06','Salida de geocerca', K.amber,'Depósito Warnes','Av. Warnes 1240'],
+          ['12:58','Entrada a geocerca', K.green,'Depósito Norte','Av. Libertador 4102'],
+          ['15:51','Ignición apagada', K.mut,'—','Base · Chacarita'],
+        ].map(r => [
+          c(r[0],{mono:true}), c(r[1],{bold:true,color:r[2]}), c(r[3]), c(r[4]),
+        ]),
+      },
+      recorridos: {
+        cols: [
+          { label:'HORA', align:'left' }, { label:'LATITUD', align:'right' }, { label:'LONGITUD', align:'right' },
+          { label:'VELOCIDAD', align:'right' }, { label:'RUMBO', align:'right' }, { label:'DIRECCIÓN', align:'left' },
+        ],
+        rows: [
+          ['08:04:12','-34,58712','-58,45231',0,'—','Base · Chacarita'],
+          ['08:09:42','-34,59034','-58,44102',34,'112°','Av. Corrientes 5200'],
+          ['08:15:12','-34,59517','-58,42876',52,'118°','Av. Corrientes 4400'],
+          ['08:20:42','-34,60101','-58,41504',71,'124°','Av. Corrientes 3400'],
+          ['08:26:12','-34,60693','-58,40233',92,'121°','Au. 25 de Mayo km 3'],
+          ['08:31:42','-34,61245','-58,39012',84,'119°','Au. 25 de Mayo km 5'],
+          ['08:37:12','-34,61710','-58,38115',60,'127°','Bajada San Juan'],
+          ['08:42:42','-34,62051','-58,37490',31,'133°','San Juan 1200'],
+        ].map(r => [
+          c(r[0],{mono:true}), c(r[1],{mono:true,right:true}), c(r[2],{mono:true,right:true}),
+          c(r[3]+' km/h',{mono:true,right:true,color:r[3]>80?K.red:r[3]>0?K.txt:K.mut}),
+          c(r[4],{mono:true,right:true}), c(r[5]),
+        ]),
+      },
+      resumen: {
+        cols: [
+          { label:'DÍA', align:'left' }, { label:'DISTANCIA', align:'right' }, { label:'HORAS MOTOR', align:'right' },
+          { label:'VEL. PROM.', align:'right' }, { label:'VEL. MÁX.', align:'right' }, { label:'COMBUSTIBLE', align:'right' },
+        ],
+        rows: [
+          ['Lunes 29','96,4 km','5 h 12 m',44,88,'11,2 L'],
+          ['Martes 30','112,8 km','6 h 05 m',47,94,'13,4 L'],
+          ['Miércoles 1','88,1 km','4 h 48 m',42,79,'10,1 L'],
+          ['Jueves 2','104,6 km','5 h 40 m',45,91,'12,3 L'],
+          ['Viernes 3','118,2 km','6 h 22 m',48,86,'13,9 L'],
+          ['Sábado 4 (hoy)','88,9 km','4 h 51 m',45,92,'10,4 L'],
+        ].map(r => [
+          c(r[0],{bold:true,color:K.txt}), c(r[1],{mono:true,right:true,bold:true}), c(r[2],{mono:true,right:true}),
+          c(r[3],{mono:true,right:true}), c(r[4],{mono:true,right:true,color:r[4]>85?K.red:K.txt}), c(r[5],{mono:true,right:true}),
+        ]),
+      },
+      graficos: { cols: [], rows: [] },
+    };
+  }
+
+  // curva de velocidad del día (24 h)
+  daySpeeds = [0,0,0,0,0,0,0,12,58,71,44,0,35,62,48,55,68,42,0,0,0,0,0,0,0];
+
+  renderVals() {
+    const S = this.state;
+    const zebra = this.props.filasCebradas ?? true;
+    const dense = (this.props.densidad ?? 'compacta') === 'compacta';
+    const ds = this.datasets()[S.report];
+
+    const reportTypes = this.types.map(t => {
+      const a = t.key === S.report;
+      return {
+        ...t,
+        bg: a ? 'var(--acc-soft)' : 'transparent',
+        border: a ? 'var(--acc-border)' : 'transparent',
+        fg: a ? 'var(--tx)' : 'var(--dim2)',
+        iconBg: a ? 'var(--acc-soft)' : 'var(--sf)',
+        iconBorder: a ? 'var(--acc-border)' : 'var(--bd)',
+        iconFg: a ? 'var(--acc)' : 'var(--mut)',
+        onClick: () => this.setState({ report: t.key }),
+      };
+    });
+
+    const presets = this.presetDefs.map(p => {
+      const a = p.key === S.preset;
+      return {
+        label: p.label,
+        fg: a ? 'var(--acc-fg)' : 'var(--dim2)',
+        bg: a ? 'var(--acc)' : 'transparent',
+        onClick: () => this.setState({ preset: p.key }),
+      };
+    });
+    const rangeLabel = this.presetDefs.find(p => p.key === S.preset).range;
+
+    const tableRows = ds.rows.map((cells, i) => ({
+      cells,
+      bg: zebra && i % 2 === 1 ? 'var(--zebra)' : 'transparent',
+      pad: dense ? '9px' : '13px',
+    }));
+
+    // gráfico 720x150
+    const W = 720, H = 150, maxS = 100;
+    const sp = this.daySpeeds;
+    const pts = sp.map((v, i) => (i * (W / (sp.length - 1))).toFixed(1) + ',' + (H - 8 - (v / maxS) * (H - 20)).toFixed(1));
+
+    const cardsByReport = {
+      viajes:   [ {label:'VIAJES',value:'6',unit:'',color:'var(--tx)'}, {label:'DISTANCIA TOTAL',value:'88,9',unit:'km',color:'var(--tx)'}, {label:'TIEMPO EN MOVIMIENTO',value:'4 h 03 m',unit:'',color:'#22D3A5'}, {label:'VEL. MÁXIMA',value:'92',unit:'km/h',color:'#F0455A'} ],
+      paradas:  [ {label:'PARADAS',value:'5',unit:'',color:'var(--tx)'}, {label:'TIEMPO DETENIDO',value:'3 h 44 m',unit:'',color:'#E8A33D'}, {label:'PARADA MÁS LARGA',value:'1 h 53 m',unit:'',color:'var(--tx)'}, {label:'EN GEOCERCAS',value:'2',unit:'de 5',color:'#22D3A5'} ],
+      eventos:  [ {label:'EVENTOS',value:'6',unit:'',color:'var(--tx)'}, {label:'ALARMAS',value:'1',unit:'',color:'#F0455A'}, {label:'GEOCERCAS',value:'3',unit:'',color:'#22D3A5'}, {label:'IGNICIÓN',value:'2',unit:'',color:'var(--tx)'} ],
+      recorridos:[ {label:'POSICIONES',value:'1.284',unit:'',color:'var(--tx)'}, {label:'DISTANCIA',value:'88,9',unit:'km',color:'var(--tx)'}, {label:'VEL. PROMEDIO',value:'45',unit:'km/h',color:'var(--tx)'}, {label:'VEL. MÁXIMA',value:'92',unit:'km/h',color:'#F0455A'} ],
+      resumen:  [ {label:'DISTANCIA SEMANAL',value:'609',unit:'km',color:'var(--tx)'}, {label:'HORAS MOTOR',value:'32 h 58 m',unit:'',color:'var(--tx)'}, {label:'COMBUSTIBLE',value:'71,3',unit:'L',color:'#E8A33D'}, {label:'VEL. MÁXIMA',value:'94',unit:'km/h',color:'#F0455A'} ],
+      graficos: [ {label:'VEL. PROMEDIO',value:'45',unit:'km/h',color:'var(--tx)'}, {label:'VEL. MÁXIMA',value:'92',unit:'km/h',color:'#F0455A'}, {label:'EXCESOS',value:'1',unit:'',color:'#F0455A'}, {label:'HORAS EN RUTA',value:'4 h 03 m',unit:'',color:'#22D3A5'} ],
+    };
+
+    return {
+      reportTypes, presets, rangeLabel,
+      cols: ds.cols,
+      tableRows,
+      showTable: S.report !== 'graficos',
+      showChart: S.report === 'graficos' || S.report === 'resumen',
+      summaryCards: cardsByReport[S.report],
+      rowCountLabel: ds.rows.length + ' registros · Furgón 12 · ' + rangeLabel.toLowerCase(),
+      chartLine: pts.join(' '),
+      chartArea: '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H,
+      themeIcon: S.theme === 'dark' ? '☀' : '☾',
+      toggleTheme: this.toggleTheme,
+    };
+  }
+}
+</script>
+</body>
+</html>

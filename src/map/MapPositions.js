@@ -167,15 +167,35 @@ const MapPositions = ({
     });
     map.addLayer({
       id: clusters,
+      type: 'circle',
+      source: id,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#1C2536',
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          16,
+          10, 20,
+          50, 26,
+        ],
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#FFFFFF',
+        'circle-stroke-opacity': 0.9,
+      },
+    });
+    map.addLayer({
+      id: `${clusters}-count`,
       type: 'symbol',
       source: id,
       filter: ['has', 'point_count'],
       layout: {
-        'icon-image': 'background',
-        'icon-size': iconScale,
         'text-field': '{point_count_abbreviated}',
         'text-font': findFonts(map),
         'text-size': 14,
+      },
+      paint: {
+        'text-color': '#FFFFFF',
       },
     });
 
@@ -190,6 +210,9 @@ const MapPositions = ({
       map.off('click', clusters, onClusterClick);
       map.off('click', onMapClickCallback);
 
+      if (map.getLayer(`${clusters}-count`)) {
+        map.removeLayer(`${clusters}-count`);
+      }
       if (map.getLayer(clusters)) {
         map.removeLayer(clusters);
       }

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#EDF2F9;--acc-fg:#0B0E14;--acc-soft:rgba(226,236,250,.09);--acc-border:rgba(226,236,250,.38);--acc-strong:rgba(226,236,250,.85);--acc-glow:rgba(190,210,235,.05);--bg:#0B0E14;--sf:#131720;--sf2:#0D1119;--hv:#1A2030;--bd:#252B3A;--bd2:#1E2430;--bd3:#171D29;--bd4:#3A4356;--tx:#E6EAF2;--tx2:#C7CEDC;--dim:#AAB4C8;--dim2:#8A94A8;--mut:#7A8498;--fnt:#5B6579;--fnt2:#4A5468;--glass:rgba(19,23,32,.93);--glass2:rgba(15,19,27,.97);--zebra:rgba(120,140,180,.03);--grid:rgba(120,140,180,.055);--grid2:rgba(120,140,180,.028);--road:rgba(140,160,200,.10);--water1:rgba(46,84,120,.16);--water2:rgba(46,84,120,.22);--maplabel:rgba(160,175,205,.26);--shc:rgba(0,0,0,.5);--scrim:rgba(5,7,11,.5);--routecase:rgba(11,14,20,.85);}
+:root[data-theme="light"]{--acc:#1C2536;--acc-fg:#FFFFFF;--acc-soft:rgba(22,34,58,.07);--acc-border:rgba(22,34,58,.32);--acc-strong:rgba(22,34,58,.8);--acc-glow:rgba(22,34,58,.05);--bg:#E9EDF3;--sf:#FFFFFF;--sf2:#F6F8FB;--hv:#EDF1F7;--bd:#D8DFE9;--bd2:#E5EAF1;--bd3:#EEF1F6;--bd4:#C2CAD8;--tx:#17202F;--tx2:#2E3A52;--dim:#4E5A70;--dim2:#66738A;--mut:#75819A;--fnt:#8A94A8;--fnt2:#A6AFC0;--glass:rgba(255,255,255,.93);--glass2:rgba(252,253,255,.97);--zebra:rgba(90,110,150,.05);--grid:rgba(90,110,150,.14);--grid2:rgba(90,110,150,.07);--road:rgba(90,110,150,.22);--water1:rgba(110,150,195,.25);--water2:rgba(110,150,195,.33);--maplabel:rgba(90,105,135,.5);--shc:rgba(25,35,60,.15);--scrim:rgba(30,42,66,.4);}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+*{box-sizing:border-box;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes umx-pulse{0%{transform:scale(1);opacity:.55;}100%{transform:scale(2.4);opacity:0;}}
+</style>
+</helmet>
+
+<div data-screen-label="Reproducción de recorrido" style="position:fixed;inset:0;font-family:Inter,system-ui,sans-serif;color:var(--tx);background:var(--bg);overflow:hidden;">
+
+  <!-- ============ MAPA ============ -->
+  <div style="position:absolute;inset:0;background:var(--bg);background-image:radial-gradient(ellipse 900px 600px at 50% 45%, rgba(34,211,165,.04), transparent 60%), repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 96px), repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 96px), repeating-linear-gradient(0deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 24px), repeating-linear-gradient(90deg, var(--grid2) 0px, var(--grid2) 1px, transparent 1px, transparent 24px);">
+    <div style="position:absolute;left:-10%;top:42%;width:120%;height:6px;background:var(--road);transform:rotate(-5deg);"></div>
+    <div style="position:absolute;left:48%;top:-10%;width:6px;height:120%;background:var(--road);transform:rotate(10deg);"></div>
+    <div style="position:absolute;left:24%;top:24%;font:500 11px/1 'JetBrains Mono',monospace;color:var(--maplabel);letter-spacing:.14em;">CHACARITA</div>
+    <div style="position:absolute;left:60%;top:66%;font:500 11px/1 'JetBrains Mono',monospace;color:var(--maplabel);letter-spacing:.14em;">CONSTITUCIÓN</div>
+  </div>
+
+  <!-- ruta coloreada por velocidad -->
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+    <sc-for list="{{ segments }}" as="s" hint-placeholder-count="10">
+      <line x1="{{ s.x1 }}" y1="{{ s.y1 }}" x2="{{ s.x2 }}" y2="{{ s.y2 }}" stroke="{{ s.shadow }}" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"></line>
+    </sc-for>
+    <sc-for list="{{ segments }}" as="s" hint-placeholder-count="10">
+      <line x1="{{ s.x1 }}" y1="{{ s.y1 }}" x2="{{ s.x2 }}" y2="{{ s.y2 }}" stroke="{{ s.color }}" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke" opacity="{{ s.opacity }}"></line>
+    </sc-for>
+  </svg>
+
+  <!-- inicio / fin -->
+  <div style="position:absolute;left:{{ startX }}%;top:{{ startY }}%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--sf);border:2.5px solid #22D3A5;"></div>
+  <div style="position:absolute;left:{{ endX }}%;top:{{ endY }}%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:3px;background:var(--sf);border:2.5px solid var(--dim2);"></div>
+
+  <!-- paradas sobre la ruta -->
+  <sc-for list="{{ stopPins }}" as="p" hint-placeholder-count="2">
+    <div title="{{ p.title }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--sf);border:2px solid #E8A33D;display:flex;align-items:center;justify-content:center;font:600 8.5px/1 'JetBrains Mono',monospace;color:#E8A33D;cursor:pointer;">P</div>
+  </sc-for>
+
+  <!-- marcador del vehículo -->
+  <div style="position:absolute;left:{{ carX }}%;top:{{ carY }}%;width:36px;height:36px;margin:-18px 0 0 -18px;z-index:20;">
+    <div style="position:absolute;inset:0;border-radius:50%;background:#22D3A5;animation:umx-pulse 1.6s ease-out infinite;"></div>
+    <div style="position:absolute;inset:0;border-radius:50%;background:var(--sf);border:2px solid #22D3A5;box-shadow:0 2px 12px var(--shc), 0 0 0 3px rgba(34,211,165,.22);display:flex;align-items:center;justify-content:center;transform:rotate({{ carHeading }}deg);">
+      <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid #22D3A5;margin-top:-2px;"></div>
+    </div>
+    <div style="position:absolute;top:40px;left:50%;transform:translateX(-50%);white-space:nowrap;font:600 10.5px/1 'JetBrains Mono',monospace;background:var(--sf);border:1px solid var(--bd);padding:4px 8px;border-radius:6px;color:var(--tx);">{{ carSpeedLabel }}</div>
+  </div>
+
+  <!-- ============ BARRA SUPERIOR ============ -->
+  <div style="position:absolute;top:16px;left:16px;z-index:40;max-width:calc(100% - 384px);display:flex;align-items:center;gap:8px;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:12px;padding:8px 10px;box-shadow:0 8px 32px var(--shc);">
+    <a href="Monitoreo en vivo.dc.html" title="Volver a monitoreo" style="text-decoration:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;" style-hover="background:var(--hv);color:var(--tx);">←</a>
+    <div style="display:flex;flex-direction:column;gap:2px;padding:0 6px;min-width:0;">
+      <span style="font:600 13px/1.2 Inter,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Reproducción de recorrido</span>
+      <span style="font:400 11px/1.2 Inter,sans-serif;color:var(--fnt);">Historial · UbimaxGPS</span>
+    </div>
+    <div style="width:1px;height:22px;background:var(--bd);"></div>
+    <button style="all:unset;cursor:pointer;display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:8px;border:1px solid var(--bd);font:500 12px/1 Inter,sans-serif;color:var(--tx);min-width:0;overflow:hidden;white-space:nowrap;" style-hover="background:var(--hv);"><span style="width:7px;height:7px;border-radius:50%;background:#22D3A5;flex:none;"></span>Furgón 12<span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--fnt);">AB 123 CD</span><span style="font-size:8px;color:var(--fnt);">▼</span></button>
+    <button style="all:unset;cursor:pointer;display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:8px;border:1px solid var(--bd);font:500 12px/1 Inter,sans-serif;color:var(--tx);min-width:0;overflow:hidden;white-space:nowrap;" style-hover="background:var(--hv);">Hoy · 08:04 – 10:22<span style="font-size:8px;color:var(--fnt);">▼</span></button>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px;flex:none;" style-hover="background:var(--hv);color:var(--tx);">{{ themeIcon }}</button>
+  </div>
+
+  <!-- ============ PANEL DE MÉTRICAS ============ -->
+  <div style="position:absolute;top:16px;right:16px;width:320px;z-index:30;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 40px var(--shc);overflow:hidden;">
+    <div style="padding:14px 16px 12px;border-bottom:1px solid var(--bd2);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font:600 13px/1 Inter,sans-serif;">Resumen del viaje</span>
+      <span style="font:500 10.5px/1 'JetBrains Mono',monospace;color:var(--fnt);">HOY · 08:04</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--bd2);">
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--bd2);">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">DISTANCIA</span>
+        <span style="font:600 18px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">42,8<span style="font-size:10px;color:var(--fnt);font-weight:500;margin-left:3px;">km</span></span>
+      </div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:4px;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">VEL. MÁXIMA</span>
+        <span style="font:600 18px/1 'JetBrains Mono',monospace;color:#F0455A;font-variant-numeric:tabular-nums;">{{ maxSpeedLabel }}<span style="font-size:10px;color:var(--fnt);font-weight:500;margin-left:3px;">{{ unit }}</span></span>
+      </div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--bd2);border-top:1px solid var(--bd2);">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">EN MOVIMIENTO</span>
+        <span style="font:600 14px/1.3 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">1 h 52 m</span>
+      </div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--bd2);">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">DETENIDO</span>
+        <span style="font:600 14px/1.3 'JetBrains Mono',monospace;color:#E8A33D;font-variant-numeric:tabular-nums;">26 m</span>
+      </div>
+    </div>
+    <!-- gráfico velocidad vs tiempo -->
+    <div style="padding:12px 16px 8px;display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">VELOCIDAD VS. TIEMPO</span>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--fnt);">prom {{ avgSpeedLabel }} {{ unit }}</span>
+      </div>
+      <svg viewBox="0 0 288 90" width="100%" height="90" preserveAspectRatio="none" style="display:block;">
+        <defs>
+          <linearGradient id="umxArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(34,211,165,.30)"></stop>
+            <stop offset="100%" stop-color="rgba(34,211,165,0)"></stop>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="24" x2="288" y2="24" stroke="rgba(240,69,90,.35)" stroke-width="1" stroke-dasharray="3 4"></line>
+        <polyline points="{{ chartArea }}" fill="url(#umxArea)" stroke="none"></polyline>
+        <polyline points="{{ chartLine }}" fill="none" stroke="#22D3A5" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <line x1="{{ chartCursorX }}" y1="0" x2="{{ chartCursorX }}" y2="90" stroke="var(--dim)" stroke-width="1"></line>
+        <circle cx="{{ chartCursorX }}" cy="{{ chartCursorY }}" r="3" fill="var(--tx)"></circle>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font:500 9.5px/1 'JetBrains Mono',monospace;color:var(--fnt2);">
+        <span>08:04</span><span>08:40</span><span>09:15</span><span>09:50</span><span>10:22</span>
+      </div>
+    </div>
+    <!-- paradas -->
+    <div style="padding:10px 16px 14px;border-top:1px solid var(--bd2);display:flex;flex-direction:column;gap:8px;">
+      <span style="font:500 9.5px/1 Inter,sans-serif;color:var(--fnt);letter-spacing:.08em;">PARADAS · 2</span>
+      <sc-for list="{{ stops }}" as="st" hint-placeholder-count="2">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:22px;height:22px;flex:none;border-radius:6px;background:rgba(232,163,61,.10);border:1px solid rgba(232,163,61,.3);display:flex;align-items:center;justify-content:center;font:600 9px/1 'JetBrains Mono',monospace;color:#E8A33D;">P</div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+            <span style="font:500 12px/1.3 Inter,sans-serif;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ st.place }}</span>
+            <span style="font:400 10.5px/1 Inter,sans-serif;color:var(--fnt);">{{ st.range }}</span>
+          </div>
+          <span style="font:600 11px/1 'JetBrains Mono',monospace;color:#E8A33D;flex:none;">{{ st.dur }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ SCRUBBER INFERIOR ============ -->
+  <div style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(860px, calc(100% - 32px));z-index:40;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 40px var(--shc);padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;">
+    <!-- línea de tiempo -->
+    <div onClick="{{ onScrub }}" style="position:relative;height:26px;cursor:pointer;">
+      <div style="position:absolute;left:0;right:0;top:11px;height:4px;border-radius:2px;background:var(--bd2);"></div>
+      <div style="position:absolute;left:0;top:11px;height:4px;border-radius:2px;background:var(--acc);width:{{ progressPct }};"></div>
+      <sc-for list="{{ timelineMarks }}" as="tm" hint-placeholder-count="4">
+        <div title="{{ tm.title }}" style="position:absolute;left:{{ tm.left }};top:7px;width:12px;height:12px;margin-left:-6px;border-radius:{{ tm.radius }};background:var(--sf);border:2px solid {{ tm.color }};z-index:2;"></div>
+      </sc-for>
+      <div style="position:absolute;left:{{ progressPct }};top:3px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--tx);border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--acc), 0 2px 8px var(--shc);z-index:3;"></div>
+    </div>
+    <!-- controles -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ togglePlay }}" style="all:unset;cursor:pointer;width:38px;height:38px;border-radius:10px;background:var(--acc);color:var(--acc-fg);display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;" style-hover="filter:brightness(1.1);">{{ playIcon }}</button>
+      <button onClick="{{ cycleRate }}" style="all:unset;cursor:pointer;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--bd);font:600 12px/1 'JetBrains Mono',monospace;color:var(--tx);flex:none;" style-hover="background:var(--hv);border-color:var(--acc);">{{ rateLabel }}</button>
+      <div style="width:1px;height:22px;background:var(--bd);"></div>
+      <span style="font:600 15px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">{{ clockLabel }}</span>
+      <span style="font:400 11.5px/1 Inter,sans-serif;color:var(--fnt);">/ 10:22</span>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:6px;font:500 11px/1 Inter,sans-serif;color:var(--mut);">
+        <span style="width:10px;height:3px;border-radius:2px;background:#22D3A5;"></span>&lt; 40
+        <span style="width:10px;height:3px;border-radius:2px;background:#E8A33D;margin-left:8px;"></span>40–75
+        <span style="width:10px;height:3px;border-radius:2px;background:#F0455A;margin-left:8px;"></span>&gt; 75 {{ unit }}
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;unidadVelocidad&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;km/h&quot;, &quot;mph&quot;], &quot;default&quot;: &quot;km/h&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Datos&quot; }
+}">
+class Component extends DCLogic {
+  state = { progress: 0.30, playing: false, rate: 1, theme: localStorage.getItem('umx-theme') || 'dark' };
+
+  componentDidMount() { document.documentElement.dataset.theme = this.state.theme; }
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('umx-theme', t);
+    document.documentElement.dataset.theme = t;
+    this.setState({ theme: t });
+  };
+
+  // ruta: puntos {x,y} en % del mapa + velocidad km/h en ese tramo
+  route = [
+    {x:18,y:22,s:0},{x:22,y:24,s:18},{x:27,y:23,s:34},{x:32,y:27,s:52},
+    {x:36,y:33,s:64},{x:41,y:35,s:71},{x:46,y:33,s:80},{x:51,y:36,s:92},
+    {x:55,y:41,s:84},{x:57,y:47,s:60},{x:56,y:52,s:31},{x:56,y:53,s:0},
+    {x:58,y:57,s:24},{x:62,y:61,s:45},{x:67,y:63,s:58},{x:72,y:66,s:66},
+    {x:75,y:71,s:49},{x:76,y:76,s:0},{x:78,y:79,s:22},{x:81,y:82,s:36},{x:84,y:84,s:12},
+  ];
+
+  tripStart = 8 * 60 + 4;   // 08:04 en minutos
+  tripEnd   = 10 * 60 + 22; // 10:22
+
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  play() {
+    clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      this.setState(s => {
+        const dp = (0.05 / 40) * s.rate;
+        const p = s.progress + dp;
+        if (p >= 1) { clearInterval(this.timer); return { progress: 1, playing: false }; }
+        return { progress: p };
+      });
+    }, 50);
+    this.setState({ playing: true });
+  }
+  pause() { clearInterval(this.timer); this.setState({ playing: false }); }
+
+  speedColor(s) { return s > 75 ? '#F0455A' : s >= 40 ? '#E8A33D' : '#22D3A5'; }
+
+  renderVals() {
+    const S = this.state;
+    const R = this.route;
+    const unit = this.props.unidadVelocidad ?? 'km/h';
+    const conv = (kmh) => unit === 'mph' ? Math.round(kmh * 0.621) : Math.round(kmh);
+    const n = R.length;
+
+    // posición interpolada
+    const f = S.progress * (n - 1);
+    const i = Math.min(Math.floor(f), n - 2);
+    const t = f - i;
+    const lerp = (a, b) => a + (b - a) * t;
+    const carX = lerp(R[i].x, R[i+1].x);
+    const carY = lerp(R[i].y, R[i+1].y);
+    const carSpeed = lerp(R[i].s, R[i+1].s);
+    const dx = R[i+1].x - R[i].x, dy = R[i+1].y - R[i].y;
+    const carHeading = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+
+    const segments = [];
+    const traveledIdx = f;
+    for (let k = 0; k < n - 1; k++) {
+      segments.push({
+        x1: R[k].x, y1: R[k].y, x2: R[k+1].x, y2: R[k+1].y,
+        color: this.speedColor((R[k].s + R[k+1].s) / 2),
+        shadow: 'var(--routecase)',
+        opacity: k < traveledIdx ? 1 : 0.35,
+      });
+    }
+
+    // gráfico
+    const W = 288, H = 90, maxS = 100;
+    const pts = R.map((p, k) => (k * (W / (n - 1))).toFixed(1) + ',' + (H - 6 - (p.s / maxS) * (H - 14)).toFixed(1));
+    const cursorX = S.progress * W;
+    const cursorY = H - 6 - (carSpeed / maxS) * (H - 14);
+
+    // reloj
+    const mins = this.tripStart + S.progress * (this.tripEnd - this.tripStart);
+    const hh = Math.floor(mins / 60), mm = Math.floor(mins % 60);
+    const clockLabel = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+
+    const speeds = R.map(p => p.s);
+    const maxSpeed = Math.max(...speeds);
+    const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+
+    return {
+      segments,
+      startX: R[0].x, startY: R[0].y,
+      endX: R[n-1].x, endY: R[n-1].y,
+      carX: carX.toFixed(2), carY: carY.toFixed(2),
+      carHeading: carHeading.toFixed(1),
+      carSpeedLabel: conv(carSpeed) + ' ' + unit,
+      stopPins: [
+        { x: 56, y: 52.5, title: 'Parada · 14 min · Av. Warnes 1240' },
+        { x: 76, y: 76,   title: 'Parada · 12 min · Cliente Constitución' },
+      ],
+      stops: [
+        { place: 'Av. Warnes 1240 · Depósito', range: '08:52 – 09:06', dur: '14 m' },
+        { place: 'Cliente · Constitución',      range: '09:48 – 10:00', dur: '12 m' },
+      ],
+      timelineMarks: [
+        { left: '38%', color: '#E8A33D', radius: '3px',  title: 'Parada 14 m · 08:52' },
+        { left: '76%', color: '#E8A33D', radius: '3px',  title: 'Parada 12 m · 09:48' },
+        { left: '35%', color: '#F0455A', radius: '50%',  title: 'Exceso de velocidad · 92 km/h' },
+        { left: '15%', color: '#22D3A5', radius: '50%',  title: 'Ignición encendida · 08:04' },
+      ],
+      progressPct: (S.progress * 100).toFixed(2) + '%',
+      onScrub: (ev) => {
+        const r = ev.currentTarget.getBoundingClientRect();
+        this.setState({ progress: Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)) });
+      },
+      togglePlay: () => S.playing ? this.pause() : (S.progress >= 1 ? (this.setState({ progress: 0 }, () => this.play())) : this.play()),
+      playIcon: S.playing ? '❚❚' : '▶',
+      cycleRate: () => this.setState(s => ({ rate: s.rate === 1 ? 2 : s.rate === 2 ? 5 : 1 })),
+      rateLabel: S.rate + 'x',
+      clockLabel,
+      chartLine: pts.join(' '),
+      chartArea: '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H,
+      chartCursorX: cursorX.toFixed(1),
+      chartCursorY: cursorY.toFixed(1),
+      maxSpeedLabel: String(conv(maxSpeed)),
+      avgSpeedLabel: String(conv(avgSpeed)),
+      unit,
+      themeIcon: S.theme === 'dark' ? '☀' : '☾',
+      toggleTheme: this.toggleTheme,
+    };
+  }
+}
+</script>
+</body>
+</html>
