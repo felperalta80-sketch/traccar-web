@@ -36,7 +36,7 @@ const MapPositions = ({
   disabledRef.current = disabled;
 
   const createFeature = useCallback(
-    (devices, position, selectedPositionId) => {
+    (devices, position) => {
       const device = devices[position.deviceId];
       let showDirection;
       switch (directionType) {
@@ -47,7 +47,7 @@ const MapPositions = ({
           showDirection = position.course > 0;
           break;
         default:
-          showDirection = selectedPositionId === position.id && position.course > 0;
+          showDirection = position.course > 0;
           break;
       }
       return {
@@ -59,6 +59,7 @@ const MapPositions = ({
         color: showStatus ? position.attributes.color || getStatusColor(device.status) : 'neutral',
         rotation: position.course,
         direction: showDirection,
+        moving: position.speed > 0,
       };
     },
     [directionType, showStatus],
@@ -126,6 +127,17 @@ const MapPositions = ({
     });
     [id, selected].forEach((source) => {
       map.addLayer({
+        id: `${source}-pulse`,
+        type: 'symbol',
+        source,
+        filter: ['all', ['!has', 'point_count'], ['==', 'color', 'success'], ['==', 'moving', true]],
+        layout: {
+          'icon-image': 'pulse',
+          'icon-size': iconScale,
+          'icon-allow-overlap': true,
+        },
+      });
+      map.addLayer({
         id: source,
         type: 'symbol',
         source,
@@ -145,19 +157,25 @@ const MapPositions = ({
         layout: {
           'icon-image': 'chip',
           'icon-text-fit': 'both',
-          'icon-text-fit-padding': [2, 8, 2, 8],
+          'icon-text-fit-padding': [4, 8, 4, 8],
           'icon-allow-overlap': true,
-          'text-field': `{${titleField || 'name'}}`,
+          'text-field': [
+            'case',
+            ['>', ['length', ['get', titleField || 'name']], 20],
+            ['concat', ['slice', ['get', titleField || 'name'], 0, 20], '…'],
+            ['get', titleField || 'name'],
+          ],
+          'text-max-width': 100,
           'text-allow-overlap': true,
           'text-anchor': 'bottom',
-          'text-offset': [0, -2.2 * iconScale],
+          'text-offset': [0, -2.6 * iconScale],
           'text-font': findFonts(map).map((font) => font.replace('Regular', 'Bold')),
           'text-justify': 'center',
           'text-size': 10,
           'symbol-sort-key': ['get', 'id'],
         },
         paint: {
-          'text-color': '#FFFFFF',
+          'text-color': '#1C2536',
         },
       });
       map.addLayer({
@@ -166,7 +184,7 @@ const MapPositions = ({
         source,
         filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
         layout: {
-          'icon-image': 'direction',
+          'icon-image': 'direction-{color}',
           'icon-size': iconScale,
           'icon-allow-overlap': true,
           'icon-rotate': ['get', 'rotation'],
@@ -252,6 +270,9 @@ const MapPositions = ({
         if (map.getLayer(`direction-${source}`)) {
           map.removeLayer(`direction-${source}`);
         }
+        if (map.getLayer(`${source}-pulse`)) {
+          map.removeLayer(`${source}-pulse`);
+        }
         if (map.getSource(source)) {
           map.removeSource(source);
         }
@@ -284,7 +305,7 @@ const MapPositions = ({
               type: 'Point',
               coordinates: toMapCoordinates(position.longitude, position.latitude),
             },
-            properties: createFeature(devices, position, selectedPosition && selectedPosition.id),
+            properties: createFeature(devices, position),
           })),
       });
     });

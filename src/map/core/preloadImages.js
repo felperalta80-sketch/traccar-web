@@ -1,8 +1,7 @@
 import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material';
-import { loadImage, prepareIcon } from './mapUtil';
+import { loadImage, prepareIcon, prepareMarker, prepareDirection, createPulse } from './mapUtil';
 
-import directionSvg from '../../resources/images/direction.svg';
 import backgroundSvg from '../../resources/images/background.svg';
 import animalSvg from '../../resources/images/icon/animal.svg';
 import bicycleSvg from '../../resources/images/icon/bicycle.svg';
@@ -75,7 +74,14 @@ const theme = createTheme({
 export default async () => {
   const background = await loadImage(backgroundSvg);
   mapImages.background = await prepareIcon(background);
-  mapImages.direction = await prepareIcon(await loadImage(directionSvg));
+
+  // Flecha de rumbo dibujada por color de estado, pegada al borde del círculo
+  ['info', 'success', 'error', 'neutral'].forEach((color) => {
+    mapImages[`direction-${color}`] = prepareDirection(theme.palette[color].main);
+  });
+
+  // Halo tipo sonar (verde) para los dispositivos online
+  mapImages.pulse = createPulse();
 
   // Chip: cápsula redondeada de fondo para el label del vehículo.
   // Base chica (18px) para que icon-text-fit la escale sin sobre-restringir
@@ -86,16 +92,22 @@ export default async () => {
   chipCanvas.width = chipW;
   chipCanvas.height = chipH;
   const ctx = chipCanvas.getContext('2d');
-  const r = chipH / 2;
-  ctx.fillStyle = '#1C2536';
+  const cy = chipH / 2;
+  const lineWidth = 1.5;
+  const m = lineWidth / 2 + 0.5; // margen para que el filete no se recorte
+  const r = cy - m; // radio de los extremos (con inset)
   ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(chipW - r, 0);
-  ctx.arc(chipW - r, r, r, -Math.PI / 2, Math.PI / 2);
-  ctx.lineTo(r, chipH);
-  ctx.arc(r, r, r, Math.PI / 2, -Math.PI / 2);
+  ctx.moveTo(cy, m);
+  ctx.lineTo(chipW - cy, m);
+  ctx.arc(chipW - cy, cy, r, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(cy, chipH - m);
+  ctx.arc(cy, cy, r, Math.PI / 2, -Math.PI / 2);
   ctx.closePath();
+  ctx.fillStyle = '#FFFFFF';
   ctx.fill();
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = '#1C2536';
+  ctx.stroke();
   const chipData = ctx.getImageData(0, 0, chipW, chipH);
   mapImages.chip = {
     width: chipW,
@@ -103,9 +115,9 @@ export default async () => {
     data: new Uint8Array(chipData.data),
     // El texto ocupa el rectángulo central; los extremos redondeados no se
     // estiran. Banda central estirable en ambos ejes para 1 o varias líneas.
-    content: [r, 1, chipW - r, chipH - 1],
-    stretchX: [[r, chipW - r]],
-    stretchY: [[r - 1, r + 1]],
+    content: [cy, m, chipW - cy, chipH - m],
+    stretchX: [[cy, chipW - cy]],
+    stretchY: [[cy - 1, cy + 1]],
   };
   await Promise.all(
     Object.keys(mapIcons).map(async (category) => {
@@ -113,11 +125,7 @@ export default async () => {
       ['info', 'success', 'error', 'neutral'].forEach((color) => {
         results.push(
           loadImage(mapIcons[category]).then((icon) => {
-            mapImages[`${category}-${color}`] = prepareIcon(
-              background,
-              icon,
-              theme.palette[color].main,
-            );
+            mapImages[`${category}-${color}`] = prepareMarker(icon, theme.palette[color].main);
           }),
         );
       });

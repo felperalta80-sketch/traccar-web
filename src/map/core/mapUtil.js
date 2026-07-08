@@ -55,6 +55,141 @@ const canvasTintImage = (image, color) => {
   return canvas;
 };
 
+// Mezcla un color hex con blanco. amount=0..1 (1 = blanco puro).
+const lightenColor = (color, amount) => {
+  const hex = color.replace('#', '');
+  const full =
+    hex.length === 3
+      ? hex
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : hex;
+  const num = parseInt(full, 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  const mix = (v) => Math.round(v + (255 - v) * amount);
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+};
+
+// Marcador circular: relleno con tinte muy claro del color de estado, aro del
+// color, y el ícono de categoría tinteado con ese color (con sombra sutil).
+export const prepareMarker = (icon, color) => {
+  const size = 48;
+  const canvas = document.createElement('canvas');
+  canvas.width = size * devicePixelRatio;
+  canvas.height = size * devicePixelRatio;
+  canvas.style.width = `${size}px`;
+  canvas.style.height = `${size}px`;
+
+  const s = canvas.width;
+  const context = canvas.getContext('2d');
+  const cx = s / 2;
+  const cy = s / 2;
+  const ring = s * 0.03;
+  const radius = s * 0.4 - ring / 2;
+
+  // Fondo: círculo con tinte muy claro del color + sombra
+  context.save();
+  context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  context.shadowBlur = s * 0.06;
+  context.shadowOffsetY = s * 0.02;
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI);
+  context.fillStyle = lightenColor(color, 0.9);
+  context.fill();
+  context.restore();
+
+  // Aro del color de estado
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI);
+  context.lineWidth = ring;
+  context.strokeStyle = color;
+  context.stroke();
+
+  // Ícono de categoría tinteado con el color de estado
+  const iconSize = s * 0.46;
+  context.drawImage(
+    canvasTintImage(icon, color),
+    (s - iconSize) / 2,
+    (s - iconSize) / 2,
+    iconSize,
+    iconSize,
+  );
+
+  return context.getImageData(0, 0, s, s);
+};
+
+// Halo tipo sonar: imagen animada (StyleImageInterface) que MapLibre
+// re-renderiza cada frame. Círculo verde suave que se expande y se desvanece en
+// loop; se usa como icon-image en una capa filtrada a los dispositivos online.
+export const createPulse = () => {
+  const size = 120;
+  return {
+    width: size,
+    height: size,
+    data: new Uint8Array(size * size * 4),
+    onAdd() {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      this.context = canvas.getContext('2d');
+    },
+    render() {
+      const duration = 1800;
+      const t = (performance.now() % duration) / duration;
+      const context = this.context;
+      const radius = (size / 2) * t;
+      context.clearRect(0, 0, size, size);
+      context.beginPath();
+      context.arc(size / 2, size / 2, radius, 0, 2 * Math.PI);
+      context.fillStyle = `rgba(46, 125, 50, ${(1 - t) * 0.55})`;
+      context.fill();
+      this.data = context.getImageData(0, 0, size, size).data;
+      map.triggerRepaint();
+      return true;
+    },
+  };
+};
+
+// Flecha de rumbo dibujada vectorialmente (nítida), como un "pico" cuya base
+// nace en el borde del círculo del marcador y apunta hacia afuera. Rumbo 0 =
+// arriba; la capa la rota con icon-rotate según el course. Usa el mismo tamaño
+// base (48) que prepareMarker para que, con el mismo icon-size, quede pegada.
+export const prepareDirection = (color) => {
+  // Canvas 64px (más grande que el marcador 48) para dejar margen transparente
+  // a la punta de la flecha y su filete blanco sin recortarlos. La geometría va
+  // en px absolutos que coinciden con el radio del círculo de prepareMarker
+  // (48 * 0.4 - ring/2 ≈ 18.5), así con el mismo icon-size queda pegada al aro.
+  const dpr = devicePixelRatio;
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = `${size}px`;
+  canvas.style.height = `${size}px`;
+
+  const s = canvas.width;
+  const context = canvas.getContext('2d');
+  const cx = s / 2;
+  const cy = s / 2;
+  const radius = 21.5 * dpr; // un poco afuera del borde del círculo (gap con el aro)
+  const halfWidth = 7 * dpr;
+  const height = 9 * dpr; // largo hacia afuera
+
+  context.beginPath();
+  context.moveTo(cx, cy - radius - height); // punta hacia arriba (rumbo 0)
+  context.lineTo(cx - halfWidth, cy - radius + dpr);
+  context.lineTo(cx + halfWidth, cy - radius + dpr);
+  context.closePath();
+  // Flecha sólida del color de estado (como el aro), sin filete.
+  context.fillStyle = color;
+  context.fill();
+
+  return context.getImageData(0, 0, s, s);
+};
+
 export const prepareIcon = (background, icon, color) => {
   const canvas = document.createElement('canvas');
   canvas.width = background.width * devicePixelRatio;

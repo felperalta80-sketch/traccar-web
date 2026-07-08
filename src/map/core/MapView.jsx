@@ -53,6 +53,8 @@ const initMap = async () => {
           stretchY,
           content,
         });
+      } else if (typeof value.render === 'function') {
+        map.addImage(key, value, { pixelRatio: 1 });
       } else {
         map.addImage(key, value, {
           pixelRatio: window.devicePixelRatio,
