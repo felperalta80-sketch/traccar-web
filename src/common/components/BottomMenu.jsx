@@ -14,10 +14,11 @@ import {
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-import { sessionActions } from '../../store';
+import { sessionActions, devicesActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
@@ -31,6 +32,7 @@ const BottomMenu = ({ floating = false }) => {
   const readonly = useRestriction('readonly');
   const disableReports = useRestriction('disableReports');
   const devices = useSelector((state) => state.devices.items);
+  const devicesOpen = useSelector((state) => state.devices.panelOpen);
   const user = useSelector((state) => state.session.user);
   const socket = useSelector((state) => state.session.socket);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
@@ -48,7 +50,7 @@ const BottomMenu = ({ floating = false }) => {
       return 'reports';
     }
     if (location.pathname === '/') {
-      return 'map';
+      return devicesOpen ? 'list' : 'map';
     }
     return null;
   };
@@ -92,7 +94,12 @@ const BottomMenu = ({ floating = false }) => {
 
   const handleSelection = (event, value) => {
     switch (value) {
+      case 'list':
+        dispatch(devicesActions.setPanelOpen(true));
+        navigate('/');
+        break;
       case 'map':
+        dispatch(devicesActions.setPanelOpen(false));
         navigate('/');
         break;
       case 'reports': {
@@ -135,7 +142,23 @@ const BottomMenu = ({ floating = false }) => {
           : { borderTop: 1, borderColor: 'divider' }
       }
     >
-      <BottomNavigation value={currentSelection()} onChange={handleSelection} showLabels>
+      <BottomNavigation
+        value={currentSelection()}
+        onChange={handleSelection}
+        showLabels
+        sx={{
+          px: 1.5,
+          '& .MuiBottomNavigationAction-root': {
+            minWidth: 0,
+            padding: '6px 4px',
+          },
+        }}
+      >
+        <BottomNavigationAction
+          label={t('sharedList')}
+          icon={<FormatListBulletedOutlinedIcon />}
+          value="list"
+        />
         <BottomNavigationAction
           label={t('mapTitle')}
           icon={

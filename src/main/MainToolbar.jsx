@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
   Toolbar,
@@ -23,14 +23,13 @@ import {
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme } from '@mui/material/styles';
-import MapIcon from '@mui/icons-material/Map';
-import DnsIcon from '@mui/icons-material/Dns';
 import AddIcon from '@mui/icons-material/Add';
 import TuneIcon from '@mui/icons-material/Tune';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useDeviceReadonly } from '../common/util/permissions';
+import { devicesActions } from '../store';
 import DeviceRow from './DeviceRow';
 
 const useStyles = makeStyles()((theme) => ({
@@ -157,8 +156,6 @@ const useStyles = makeStyles()((theme) => ({
 
 const MainToolbar = ({
   filteredDevices,
-  devicesOpen,
-  setDevicesOpen,
   keyword,
   setKeyword,
   filter,
@@ -170,6 +167,7 @@ const MainToolbar = ({
 }) => {
   const { classes } = useStyles();
   const theme = useTheme();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -177,6 +175,7 @@ const MainToolbar = ({
 
   const groups = useSelector((state) => state.groups.items);
   const devices = useSelector((state) => state.devices.items);
+  const devicesOpen = useSelector((state) => state.devices.panelOpen);
   const devicesLoaded = useSelector((state) => state.devices.loaded);
   const geofences = useSelector((state) => state.geofences.items);
 
@@ -215,9 +214,6 @@ const MainToolbar = ({
   return (
     <>
       <Toolbar ref={toolbarRef} className={classes.toolbar}>
-        <IconButton edge="start" onClick={() => setDevicesOpen(!devicesOpen)}>
-          {devicesOpen ? <MapIcon /> : <DnsIcon />}
-        </IconButton>
         <OutlinedInput
           ref={inputRef}
           className={classes.search}
@@ -275,7 +271,10 @@ const MainToolbar = ({
             <DeviceRow key={device.id} device={device} />
           ))}
           {filteredDevices.length > 3 && (
-            <ListItemButton alignItems="center" onClick={() => setDevicesOpen(true)}>
+            <ListItemButton
+              alignItems="center"
+              onClick={() => dispatch(devicesActions.setPanelOpen(true))}
+            >
               <ListItemText primary={t('notificationAlways')} style={{ textAlign: 'center' }} />
             </ListItemButton>
           )}

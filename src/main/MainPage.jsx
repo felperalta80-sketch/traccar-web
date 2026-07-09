@@ -51,8 +51,8 @@ const useStyles = makeStyles()((theme) => ({
     pointerEvents: 'auto',
     zIndex: 6,
   },
-  // Con la lista colapsada, la cabecera flota como card (mismo radio y sombra
-  // que el bottom nav flotante).
+  // Lista colapsada: la cabecera (grupo top) queda visible y flota como card,
+  // con el mismo radio y sombra que el bottom nav flotante.
   headerFloating: {
     borderRadius: '12px',
     overflow: 'hidden',
@@ -107,16 +107,16 @@ const MainPage = () => {
   const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
   const [filterMap, setFilterMap] = usePersistedState('filterMap', false);
 
-  const [devicesOpen, setDevicesOpen] = useState(desktop);
+  const devicesOpen = useSelector((state) => state.devices.panelOpen);
   const [eventsOpen, setEventsOpen] = useState(false);
 
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
 
   useEffect(() => {
     if (!desktop && mapOnSelect && selectedDeviceId) {
-      setDevicesOpen(false);
+      dispatch(devicesActions.setPanelOpen(false));
     }
-  }, [desktop, mapOnSelect, selectedDeviceId]);
+  }, [dispatch, desktop, mapOnSelect, selectedDeviceId]);
 
   useFilter(
     keyword,
@@ -147,8 +147,6 @@ const MainPage = () => {
         >
           <MainToolbar
             filteredDevices={filteredDevices}
-            devicesOpen={devicesOpen}
-            setDevicesOpen={setDevicesOpen}
             keyword={keyword}
             setKeyword={setKeyword}
             filter={filter}

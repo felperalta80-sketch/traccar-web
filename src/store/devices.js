@@ -6,8 +6,12 @@ const { reducer, actions } = createSlice({
     items: {},
     selectedId: null,
     loaded: false,
+    panelOpen: false,
   },
   reducers: {
+    setPanelOpen(state, action) {
+      state.panelOpen = action.payload;
+    },
     refresh(state, action) {
       state.items = {};
       action.payload.forEach((item) => (state.items[item.id] = item));
