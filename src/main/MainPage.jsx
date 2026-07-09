@@ -38,6 +38,15 @@ const useStyles = makeStyles()((theme) => ({
       width: '100%',
     },
   },
+  // Card unificado (bordes redondeados + sombra) solo con la lista abierta;
+  // colapsada, evita el rectángulo de sombra sobre el mapa vacío.
+  sidebarCard: {
+    [theme.breakpoints.up('md')]: {
+      borderRadius: theme.spacing(2),
+      overflow: 'hidden',
+      boxShadow: theme.shadows[6],
+    },
+  },
   header: {
     pointerEvents: 'auto',
     zIndex: 6,
@@ -123,8 +132,8 @@ const MainPage = () => {
           />
         </Suspense>
       )}
-      <div className={classes.sidebar}>
-        <Paper square elevation={3} className={classes.header}>
+      <div className={`${classes.sidebar} ${devicesOpen ? classes.sidebarCard : ''}`}>
+        <Paper square={devicesOpen} elevation={devicesOpen ? 0 : 3} className={classes.header}>
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}
@@ -153,6 +162,7 @@ const MainPage = () => {
           )}
           <Paper
             square
+            elevation={0}
             className={classes.contentList}
             style={devicesOpen ? {} : { visibility: 'hidden' }}
           >

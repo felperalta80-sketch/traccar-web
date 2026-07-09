@@ -11,11 +11,11 @@ import {
   Badge,
 } from '@mui/material';
 
-import DescriptionIcon from '@mui/icons-material/Description';
-import SettingsIcon from '@mui/icons-material/Settings';
-import MapIcon from '@mui/icons-material/Map';
-import PersonIcon from '@mui/icons-material/Person';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 import { sessionActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
@@ -126,13 +126,13 @@ const BottomMenu = () => {
   };
 
   return (
-    <Paper square elevation={3}>
+    <Paper square elevation={0} sx={{ borderTop: 1, borderColor: 'divider' }}>
       <BottomNavigation value={currentSelection()} onChange={handleSelection} showLabels>
         <BottomNavigationAction
           label={t('mapTitle')}
           icon={
             <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
-              <MapIcon />
+              <MapOutlinedIcon />
             </Badge>
           }
           value="map"
@@ -140,25 +140,25 @@ const BottomMenu = () => {
         {!disableReports && (
           <BottomNavigationAction
             label={t('reportTitle')}
-            icon={<DescriptionIcon />}
+            icon={<AssessmentOutlinedIcon />}
             value="reports"
           />
         )}
         {!readonly && (
           <BottomNavigationAction
             label={t('settingsTitle')}
-            icon={<SettingsIcon />}
+            icon={<SettingsOutlinedIcon />}
             value="settings"
           />
         )}
         {readonly ? (
-          <BottomNavigationAction
-            label={t('loginLogout')}
-            icon={<ExitToAppIcon />}
-            value="logout"
-          />
+          <BottomNavigationAction label={t('loginLogout')} icon={<LogoutIcon />} value="logout" />
         ) : (
-          <BottomNavigationAction label={t('settingsUser')} icon={<PersonIcon />} value="account" />
+          <BottomNavigationAction
+            label={t('settingsUser')}
+            icon={<AccountCircleOutlinedIcon />}
+            value="account"
+          />
         )}
       </BottomNavigation>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>

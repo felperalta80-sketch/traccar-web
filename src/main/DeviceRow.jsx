@@ -31,10 +31,22 @@ dayjs.extend(relativeTime);
 const useStyles = makeStyles()((theme) => ({
   root: {
     position: 'relative',
+    height: '100%',
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1.25),
     padding: theme.spacing(1, 1.5, 1, 2),
+    borderTop: `1px solid ${theme.palette.divider}`,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      left: 0,
+      top: 6,
+      bottom: 6,
+      width: 3,
+      borderRadius: '0 3px 3px 0',
+      backgroundColor: 'var(--st)',
+    },
     '&.Mui-selected': {
       backgroundColor:
         theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.07)' : 'rgba(28, 37, 54, 0.06)',
@@ -45,8 +57,8 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   iconWrap: {
-    width: 38,
-    height: 38,
+    width: 30,
+    height: 30,
     borderRadius: '50%',
     flexShrink: 0,
     display: 'flex',
@@ -54,8 +66,8 @@ const useStyles = makeStyles()((theme) => ({
     justifyContent: 'center',
   },
   icon: {
-    width: 21,
-    height: 21,
+    width: 18,
+    height: 18,
     backgroundColor: 'currentColor',
     WebkitMaskRepeat: 'no-repeat',
     maskRepeat: 'no-repeat',
@@ -69,9 +81,9 @@ const useStyles = makeStyles()((theme) => ({
     minWidth: 0,
   },
   title: {
-    fontSize: '0.9rem',
+    fontSize: '0.8rem',
     fontWeight: 600,
-    lineHeight: 1.35,
+    lineHeight: 1.3,
     color: theme.palette.text.primary,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -79,8 +91,8 @@ const useStyles = makeStyles()((theme) => ({
   },
   meta: {
     marginTop: 1,
-    fontSize: '0.75rem',
-    lineHeight: 1.35,
+    fontSize: '0.72rem',
+    lineHeight: 1.3,
     color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -143,7 +155,7 @@ const batteryIcon = (level, charge) => {
   return charge ? <BatteryCharging20Icon /> : <Battery20Icon />;
 };
 
-const DeviceRow = ({ devices, index, style }) => {
+const DeviceRow = ({ device, style }) => {
   const { classes, cx } = useStyles();
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -152,7 +164,7 @@ const DeviceRow = ({ devices, index, style }) => {
   const admin = useAdministrator();
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
-  const item = devices[index];
+  const item = device;
   const selected = selectedDeviceId === item.id;
   const position = useSelector((state) => state.session.positions[item.id]);
 
@@ -176,6 +188,7 @@ const DeviceRow = ({ devices, index, style }) => {
       <ListItemButton
         key={item.id}
         className={classes.root}
+        style={{ '--st': statusColor }}
         onClick={() => dispatch(devicesActions.selectId(item.id))}
         disabled={!admin && item.disabled}
         selected={selected}
@@ -184,8 +197,7 @@ const DeviceRow = ({ devices, index, style }) => {
           className={classes.iconWrap}
           style={{
             color: statusColor,
-            backgroundColor: alpha(statusColor, 0.14),
-            boxShadow: `inset 0 0 0 1.5px ${alpha(statusColor, 0.5)}`,
+            backgroundColor: alpha(statusColor, 0.16),
           }}
         >
           <span
