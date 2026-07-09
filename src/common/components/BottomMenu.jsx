@@ -22,7 +22,7 @@ import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
 import { nativePostMessage } from './NativeInterface';
 
-const BottomMenu = () => {
+const BottomMenu = ({ floating = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -126,7 +126,15 @@ const BottomMenu = () => {
   };
 
   return (
-    <Paper square elevation={0} sx={{ borderTop: 1, borderColor: 'divider' }}>
+    <Paper
+      square
+      elevation={0}
+      sx={
+        floating
+          ? { borderRadius: '12px', overflow: 'hidden', boxShadow: 6 }
+          : { borderTop: 1, borderColor: 'divider' }
+      }
+    >
       <BottomNavigation value={currentSelection()} onChange={handleSelection} showLabels>
         <BottomNavigationAction
           label={t('mapTitle')}

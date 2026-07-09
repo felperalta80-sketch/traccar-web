@@ -51,6 +51,13 @@ const useStyles = makeStyles()((theme) => ({
     pointerEvents: 'auto',
     zIndex: 6,
   },
+  // Con la lista colapsada, la cabecera flota como card (mismo radio y sombra
+  // que el bottom nav flotante).
+  headerFloating: {
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: theme.shadows[6],
+  },
   footer: {
     pointerEvents: 'auto',
     zIndex: 5,
@@ -133,7 +140,11 @@ const MainPage = () => {
         </Suspense>
       )}
       <div className={`${classes.sidebar} ${devicesOpen ? classes.sidebarCard : ''}`}>
-        <Paper square={devicesOpen} elevation={devicesOpen ? 0 : 3} className={classes.header}>
+        <Paper
+          square
+          elevation={0}
+          className={devicesOpen ? classes.header : `${classes.header} ${classes.headerFloating}`}
+        >
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}
@@ -171,7 +182,7 @@ const MainPage = () => {
         </div>
         {desktop && (
           <div className={classes.footer}>
-            <BottomMenu />
+            <BottomMenu floating={!devicesOpen} />
           </div>
         )}
       </div>

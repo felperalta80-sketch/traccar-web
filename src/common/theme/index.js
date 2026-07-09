@@ -37,6 +37,9 @@ export default (server, darkMode, direction) =>
             letterSpacing: '0.08em',
           },
         },
+        shape: {
+          borderRadius: 8,
+        },
         palette: palette(server, darkMode),
         direction,
         dimensions,
