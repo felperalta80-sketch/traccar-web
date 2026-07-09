@@ -34,8 +34,19 @@ const useStyles = makeStyles()((theme) => ({
   drawer: {
     display: 'flex',
     flexDirection: 'column',
+    backgroundColor: theme.palette.background.paper,
+    // Card flotante redondeado Ubimax sobre el mapa (como ModuleMenuLayout).
     [theme.breakpoints.up('sm')]: {
+      position: 'fixed',
+      zIndex: 3,
+      left: 0,
+      top: 0,
+      margin: theme.spacing(1.5),
       width: theme.dimensions.drawerWidthDesktop,
+      height: `calc(100% - ${theme.spacing(3)})`,
+      borderRadius: theme.spacing(2),
+      overflow: 'hidden',
+      boxShadow: theme.shadows[6],
     },
     [theme.breakpoints.down('sm')]: {
       height: theme.dimensions.drawerHeightPhone,
@@ -93,7 +104,7 @@ const GeofencesPage = () => {
   return (
     <div className={classes.root}>
       <div className={classes.content}>
-        <Paper square className={classes.drawer}>
+        <Paper elevation={0} className={classes.drawer}>
           <Toolbar>
             <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
               <BackIcon />

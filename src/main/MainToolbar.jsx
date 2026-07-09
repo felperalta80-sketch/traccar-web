@@ -34,7 +34,7 @@ const useStyles = makeStyles()((theme) => ({
     gap: theme.spacing(1),
   },
   search: {
-    borderRadius: 11,
+    borderRadius: 10,
     backgroundColor: theme.palette.action.hover,
     fontSize: '0.8125rem',
     '& .MuiOutlinedInput-notchedOutline': {

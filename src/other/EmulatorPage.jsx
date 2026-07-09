@@ -1,16 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Divider,
-  Typography,
-  IconButton,
-  useMediaQuery,
-  Toolbar,
-  List,
-  ListItem,
-} from '@mui/material';
+import { Divider, Typography, IconButton, Toolbar, List, ListItem, Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
-import Drawer from '@mui/material/Drawer';
 import { useNavigate } from 'react-router-dom';
 import MapView from '../map/core/MapView';
 import MapCurrentLocation from '../map/MapCurrentLocation';
@@ -41,12 +31,20 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   drawer: {
-    zIndex: 1,
-  },
-  drawerPaper: {
-    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.palette.background.paper,
+    // Card flotante redondeado Ubimax sobre el mapa (como ModuleMenuLayout).
     [theme.breakpoints.up('sm')]: {
+      position: 'fixed',
+      zIndex: 3,
+      left: 0,
+      top: 0,
+      margin: theme.spacing(1.5),
       width: theme.dimensions.drawerWidthDesktop,
+      borderRadius: theme.spacing(2),
+      overflow: 'hidden',
+      boxShadow: theme.shadows[6],
     },
     [theme.breakpoints.down('sm')]: {
       height: theme.dimensions.drawerHeightPhone,
@@ -61,13 +59,10 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 const EmulatorPage = () => {
-  const theme = useTheme();
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const t = useTranslation();
-
-  const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
 
   const devices = useSelector(
     (state) => state.devices.items,
@@ -106,12 +101,7 @@ const EmulatorPage = () => {
   return (
     <div className={classes.root}>
       <div className={classes.content}>
-        <Drawer
-          className={classes.drawer}
-          anchor={isPhone ? 'top' : 'left'}
-          variant="permanent"
-          slotProps={{ paper: { className: classes.drawerPaper } }}
-        >
+        <Paper elevation={0} className={classes.drawer}>
           <Toolbar>
             <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
               <BackIcon />
@@ -132,7 +122,7 @@ const EmulatorPage = () => {
               />
             </ListItem>
           </List>
-        </Drawer>
+        </Paper>
         <div className={classes.mapContainer}>
           <MapView>
             <MapPositions

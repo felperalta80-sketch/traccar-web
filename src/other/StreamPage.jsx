@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Typography, IconButton, Toolbar, Paper, TextField } from '@mui/material';
+import { Typography, IconButton, Toolbar, AppBar, TextField } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { default as Hls, Events } from 'hls.js/light';
@@ -82,7 +82,7 @@ const StreamPage = () => {
 
   return (
     <div className={classes.root}>
-      <Paper square>
+      <AppBar position="static" color="inherit" elevation={1}>
         <Toolbar>
           <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
             <BackIcon />
@@ -110,7 +110,7 @@ const StreamPage = () => {
             {playing ? <StopIcon /> : <PlayArrowIcon />}
           </IconButton>
         </Toolbar>
-      </Paper>
+      </AppBar>
       <div className={classes.video}>
         {error && <Typography>{t('errorConnection')}</Typography>}
         {playing && !error && (

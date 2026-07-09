@@ -72,7 +72,7 @@ const PositionPage = () => {
 
   return (
     <div className={classes.root}>
-      <AppBar position="sticky" color="inherit">
+      <AppBar position="sticky" color="inherit" elevation={1}>
         <Toolbar>
           <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
             <BackIcon />

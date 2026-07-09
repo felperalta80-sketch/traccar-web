@@ -144,7 +144,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     borderTop: `1px solid ${theme.palette.divider}`,
     '& .MuiIconButton-root': {
       flex: 1,
-      borderRadius: 9,
+      borderRadius: 8,
     },
   },
   root: {

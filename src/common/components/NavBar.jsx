@@ -2,7 +2,7 @@ import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 const Navbar = ({ setOpenDrawer, title }) => (
-  <AppBar position="sticky" color="inherit">
+  <AppBar position="sticky" color="inherit" elevation={1}>
     <Toolbar>
       <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => setOpenDrawer(true)}>
         <MenuIcon />

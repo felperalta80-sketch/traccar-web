@@ -38,10 +38,20 @@ const useStyles = makeStyles()((theme) => ({
     top: 0,
     margin: theme.spacing(1.5),
     width: theme.dimensions.drawerWidthDesktop,
+    // Card Ubimax: superficie única redondeada con sombra (como ModuleMenuLayout).
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.spacing(2),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[6],
     [theme.breakpoints.down('md')]: {
       width: '100%',
       margin: 0,
+      borderRadius: 0,
+      boxShadow: 'none',
     },
+  },
+  header: {
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
   title: {
     flexGrow: 1,
@@ -65,12 +75,6 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     padding: theme.spacing(2),
-    [theme.breakpoints.down('md')]: {
-      margin: theme.spacing(1),
-    },
-    [theme.breakpoints.up('md')]: {
-      marginTop: theme.spacing(1),
-    },
   },
 }));
 
@@ -190,7 +194,7 @@ const ReplayPage = () => {
       <MapScale />
       <MapCamera positions={positions} />
       <div className={classes.sidebar}>
-        <Paper elevation={3} square>
+        <Paper elevation={0} className={classes.header}>
           <Toolbar>
             <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
               <BackIcon />
@@ -210,7 +214,7 @@ const ReplayPage = () => {
             )}
           </Toolbar>
         </Paper>
-        <Paper className={classes.content} square>
+        <Paper elevation={0} className={classes.content}>
           {loaded && !filterOpen && (
             <>
               <Typography variant="subtitle1" align="center">

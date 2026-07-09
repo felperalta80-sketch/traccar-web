@@ -80,7 +80,7 @@ const EventPage = () => {
 
   return (
     <div className={classes.root}>
-      <AppBar color="inherit" position="static" className={classes.toolbar}>
+      <AppBar color="inherit" position="static" elevation={1} className={classes.toolbar}>
         <Toolbar>
           <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate('/')}>
             <BackIcon />

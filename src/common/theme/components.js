@@ -50,6 +50,44 @@ export default {
       },
     },
   },
+  // Tarjetas: mismo redondeo Ubimax que Paper.
+  MuiCard: {
+    styleOverrides: {
+      root: {
+        borderRadius: 12,
+      },
+    },
+  },
+  // Acordeones redondeados y separados entre sí (sin la línea divisoria
+  // superior por defecto). El margen uniforme deja aire entre secciones,
+  // tanto colapsadas como expandidas.
+  MuiAccordion: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        borderRadius: 8,
+        marginBottom: theme.spacing(1),
+        '&:before': {
+          display: 'none',
+        },
+        '&.Mui-expanded': {
+          margin: 0,
+          marginBottom: theme.spacing(1),
+        },
+      }),
+    },
+  },
+  // Tooltip con radio Ubimax (el default MUI es ~4px).
+  MuiTooltip: {
+    defaultProps: {
+      enterDelay: 500,
+      enterNextDelay: 500,
+    },
+    styleOverrides: {
+      tooltip: {
+        borderRadius: 8,
+      },
+    },
+  },
   MuiFormControl: {
     defaultProps: {
       size: 'small',
@@ -61,12 +99,6 @@ export default {
         vertical: 'bottom',
         horizontal: 'center',
       },
-    },
-  },
-  MuiTooltip: {
-    defaultProps: {
-      enterDelay: 500,
-      enterNextDelay: 500,
     },
   },
   MuiTableCell: {

@@ -28,7 +28,7 @@ export default (server, darkMode, direction) =>
           subtitle2: { fontFamily: fonts.head, fontWeight: 600, fontSize: '0.8125rem' },
           body1: { fontSize: '0.875rem' },
           body2: { fontSize: '0.8125rem' },
-          button: { fontWeight: 600, fontSize: '0.8125rem' },
+          button: { fontWeight: 600, fontSize: '0.8125rem', textTransform: 'none' },
           caption: { fontSize: '0.6875rem' },
           overline: {
             fontFamily: fonts.head,

@@ -12,6 +12,11 @@ export default makeStyles()((theme) => ({
   },
   containerMain: {
     overflow: 'auto',
+    // Marco ligero Ubimax: card sutil enmarcando filtros + tabla.
+    backgroundColor: theme.palette.background.paper,
+    margin: theme.spacing(1.5),
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
   },
   header: {
     position: 'sticky',
@@ -19,6 +24,8 @@ export default makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
+    backgroundColor: theme.palette.background.paper,
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
   columnAction: {
     width: '1%',

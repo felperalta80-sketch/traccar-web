@@ -2,9 +2,14 @@ import { makeStyles } from 'tss-react/mui';
 import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   menuItemText: {
-    whiteSpace: 'nowrap',
+    // Título de opción en Lato, coherente con las filas de dispositivo.
+    '& .MuiListItemText-primary': {
+      fontFamily: theme.fonts.head,
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    },
   },
 }));
 
