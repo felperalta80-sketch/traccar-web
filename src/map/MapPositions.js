@@ -7,12 +7,7 @@ import { formatTime, getStatusColor } from '../common/util/formatter';
 import { mapIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
-import {
-  buildLabelImage,
-  findFonts,
-  fromMapCoordinates,
-  toMapCoordinates,
-} from './core/mapUtil';
+import { buildLabelImage, findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
 
 const MapPositions = ({
   positions,
@@ -144,7 +139,12 @@ const MapPositions = ({
         id: `${source}-pulse`,
         type: 'symbol',
         source,
-        filter: ['all', ['!has', 'point_count'], ['==', 'color', 'success'], ['==', 'moving', true]],
+        filter: [
+          'all',
+          ['!has', 'point_count'],
+          ['==', 'color', 'success'],
+          ['==', 'moving', true],
+        ],
         layout: {
           'icon-image': 'pulse',
           'icon-size': iconScale,
@@ -200,22 +200,28 @@ const MapPositions = ({
       map.on('click', `${source}-label`, onMarkerClickCallback);
     });
     map.addLayer({
+      id: `${clusters}-halo`,
+      type: 'circle',
+      source: id,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#1C2536',
+        'circle-opacity': 0.28,
+        'circle-blur': 0.7,
+        'circle-radius': ['step', ['get', 'point_count'], 31, 10, 37, 50, 46],
+      },
+    });
+    map.addLayer({
       id: clusters,
       type: 'circle',
       source: id,
       filter: ['has', 'point_count'],
       paint: {
         'circle-color': '#1C2536',
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          16,
-          10, 20,
-          50, 26,
-        ],
+        'circle-radius': ['step', ['get', 'point_count'], 17, 10, 21, 50, 27],
         'circle-stroke-width': 3,
         'circle-stroke-color': '#FFFFFF',
-        'circle-stroke-opacity': 0.9,
+        'circle-stroke-opacity': 0.95,
       },
     });
     map.addLayer({
@@ -225,8 +231,10 @@ const MapPositions = ({
       filter: ['has', 'point_count'],
       layout: {
         'text-field': '{point_count_abbreviated}',
-        'text-font': findFonts(map),
-        'text-size': 14,
+        'text-font': findFonts(map).map((font) => font.replace('Regular', 'Bold')),
+        'text-size': 15,
+        'text-allow-overlap': true,
+        'text-ignore-placement': true,
       },
       paint: {
         'text-color': '#FFFFFF',
@@ -249,6 +257,9 @@ const MapPositions = ({
       }
       if (map.getLayer(clusters)) {
         map.removeLayer(clusters);
+      }
+      if (map.getLayer(`${clusters}-halo`)) {
+        map.removeLayer(`${clusters}-halo`);
       }
 
       [id, selected].forEach((source) => {

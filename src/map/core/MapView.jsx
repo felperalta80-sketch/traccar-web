@@ -22,6 +22,7 @@ maplibregl.addProtocol('pmtiles', new Protocol().tile);
 export const map = new maplibregl.Map({
   container: element,
   attributionControl: false,
+  fadeDuration: 0,
 });
 
 let ready = false;
