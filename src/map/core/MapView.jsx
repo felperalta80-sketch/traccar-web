@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { googleProtocol } from 'maplibre-google-maps';
 import { Protocol } from 'pmtiles';
 import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
-import { useTheme } from '@mui/material';
+import { useTheme, GlobalStyles } from '@mui/material';
 import MapSwitcher from '../control/MapSwitcher';
 import { useAttributePreference, usePreference } from '../../common/util/preferences';
 import usePersistedState from '../../common/util/usePersistedState';
@@ -18,6 +18,51 @@ element.style.boxSizing = 'initial';
 
 maplibregl.addProtocol('google', googleProtocol);
 maplibregl.addProtocol('pmtiles', new Protocol().tile);
+
+// Ícono Material como data URI (para reemplazar los del NavigationControl).
+const navIcon = (path) =>
+  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333333'%3E%3Cpath d='${path.replace(
+    / /g,
+    '%20',
+  )}'/%3E%3C/svg%3E")`;
+
+// Estilo Ubimax para los botones del mapa: tarjetas redondeadas tipo píldora,
+// con separadores entre botones agrupados e íconos Material.
+const mapControlStyles = {
+  '.maplibregl-ctrl-group': {
+    borderRadius: '8px !important',
+    background: '#fff',
+    border: '1px solid rgba(28, 37, 54, 0.06)',
+    boxShadow: '0 2px 4px rgba(28, 37, 54, 0.22), 0 6px 18px rgba(28, 37, 54, 0.24) !important',
+    overflow: 'hidden',
+  },
+  '.maplibregl-ctrl-group button': {
+    width: '29px !important',
+    height: '29px !important',
+  },
+  '.maplibregl-ctrl-group button + button': {
+    borderTop: '1px solid rgba(28, 37, 54, 0.08)',
+  },
+  '.maplibregl-ctrl-group button:hover': {
+    backgroundColor: 'rgba(28, 37, 54, 0.05)',
+  },
+  '.maplibregl-ctrl-group button svg': {
+    width: '18px',
+    height: '18px',
+  },
+  '.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon': {
+    backgroundImage: `${navIcon('M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z')} !important`,
+    backgroundSize: '18px',
+  },
+  '.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon': {
+    backgroundImage: `${navIcon('M19 13H5v-2h14z')} !important`,
+    backgroundSize: '18px',
+  },
+  '.maplibregl-ctrl-compass .maplibregl-ctrl-icon': {
+    backgroundImage: `${navIcon('M12 2 4.5 20.29l.71.71L12 18l6.79 3 .71-.71z')} !important`,
+    backgroundSize: '19px',
+  },
+};
 
 export const map = new maplibregl.Map({
   container: element,
@@ -150,6 +195,7 @@ const MapView = ({ children }) => {
 
   return (
     <div style={{ width: '100%', height: '100%' }} ref={containerRef}>
+      <GlobalStyles styles={mapControlStyles} />
       <MapSwitcher styles={styles} selectedId={selectedStyleId} onSelect={setSelectedStyleId} />
       {mapReady && children}
     </div>

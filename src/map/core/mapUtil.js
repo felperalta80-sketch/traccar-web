@@ -200,7 +200,7 @@ export const buildLabelImage = (text) => {
   const font = `bold ${fontSize}px "Open Sans", Roboto, "Helvetica Neue", Arial, sans-serif`;
   const padX = 11;
   const padY = 3;
-  const border = 1.5;
+  const border = 1.1;
 
   const measure = document.createElement('canvas').getContext('2d');
   measure.font = font;

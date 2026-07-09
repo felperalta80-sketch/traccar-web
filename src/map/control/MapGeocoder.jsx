@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { createRoot } from 'react-dom/client';
-import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import SearchIcon from '@mui/icons-material/Search';
 import { map } from '../core/MapView';
 import { toMapCoordinates } from '../core/mapUtil';
 import { errorsActions } from '../../store';
@@ -91,7 +91,7 @@ const MapGeocoder = () => {
         button.onclick = () => setAnchorEl(button);
         element.appendChild(button);
         iconRoot = createRoot(button);
-        iconRoot.render(<TravelExploreIcon fontSize="small" />);
+        iconRoot.render(<SearchIcon fontSize="small" />);
         return element;
       },
       onRemove: () => {

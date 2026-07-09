@@ -20,6 +20,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { useTheme, alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import RouteIcon from '@mui/icons-material/Route';
 import SendIcon from '@mui/icons-material/Send';
@@ -28,6 +29,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PendingIcon from '@mui/icons-material/Pending';
 
 import { useTranslation } from './LocalizationProvider';
+import { getStatusColor, formatStatus } from '../util/formatter';
 import RemoveDialog from './RemoveDialog';
 import PositionValue from './PositionValue';
 import { useDeviceReadonly, useRestriction } from '../util/permissions';
@@ -41,13 +43,52 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
     pointerEvents: 'auto',
     width: theme.dimensions.popupMaxWidth,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  strip: {
+    height: 4,
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(1, 1, 0, 2),
+    alignItems: 'flex-start',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1.25, 1, 1, 1.75),
+  },
+  headerText: {
+    minWidth: 0,
+  },
+  title: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    fontSize: '0.9375rem',
+    lineHeight: 1.2,
+    color: theme.palette.text.primary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  model: {
+    fontWeight: 400,
     color: theme.palette.text.secondary,
+  },
+  subtitle: {
+    marginTop: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    fontSize: '0.72rem',
+    color: theme.palette.text.secondary,
+  },
+  pill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: '0.66rem',
+    fontWeight: 700,
+    padding: '1px 8px',
+    borderRadius: 999,
+    whiteSpace: 'nowrap',
   },
   media: {
     height: theme.dimensions.popupImageHeight,
@@ -57,30 +98,54 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     },
   },
   content: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
+    padding: 0,
     maxHeight: theme.dimensions.cardContentMaxHeight,
     overflow: 'auto',
-  },
-  icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
+    '&:last-child': {
+      paddingBottom: 0,
+    },
   },
   table: {
-    '& .MuiTableCell-sizeSmall': {
-      paddingLeft: 0,
-      paddingRight: 0,
+    '& .MuiTableCell-root': {
+      borderBottom: 'none',
+      padding: theme.spacing(0.85, 1.75),
     },
-    '& .MuiTableCell-sizeSmall:first-of-type': {
-      paddingRight: theme.spacing(1),
+    '& .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root': {
+      borderTop: `1px solid ${theme.palette.divider}`,
     },
   },
-  cell: {
-    borderBottom: 'none',
+  keyCell: {
+    backgroundColor: theme.palette.action.hover,
+    width: '1%',
+    whiteSpace: 'nowrap',
+    verticalAlign: 'top',
+  },
+  key: {
+    fontSize: '0.72rem',
+    color: theme.palette.text.secondary,
+  },
+  value: {
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    textAlign: 'right',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  footerCell: {
+    borderTop: `1px solid ${theme.palette.divider}`,
+  },
+  detailsLink: {
+    fontSize: '0.72rem',
+    fontWeight: 600,
   },
   actions: {
-    justifyContent: 'space-between',
+    padding: theme.spacing(1),
+    gap: theme.spacing(0.25),
+    backgroundColor: theme.palette.action.hover,
+    borderTop: `1px solid ${theme.palette.divider}`,
+    '& .MuiIconButton-root': {
+      flex: 1,
+      borderRadius: 9,
+    },
   },
   root: {
     pointerEvents: 'none',
@@ -104,11 +169,13 @@ const StatusRow = ({ name, content }) => {
 
   return (
     <TableRow>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2">{name}</Typography>
+      <TableCell className={classes.keyCell}>
+        <Typography variant="body2" className={classes.key}>
+          {name}
+        </Typography>
       </TableCell>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2" color="textSecondary">
+      <TableCell>
+        <Typography variant="body2" className={classes.value}>
           {content}
         </Typography>
       </TableCell>
@@ -118,6 +185,7 @@ const StatusRow = ({ name, content }) => {
 
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
   const { classes } = useStyles({ desktopPadding });
+  const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -128,6 +196,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
+
+  const statusColor = theme.palette[getStatusColor(device?.status)].main;
 
   const deviceImage = device?.attributes?.deviceImage;
 
@@ -182,15 +252,29 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
             style={{ position: 'relative' }}
           >
             <Card elevation={3} className={classes.card}>
+              <div className={classes.strip} style={{ backgroundColor: statusColor }} />
               <CardMedia
                 className={`draggable-header ${deviceImage ? classes.media : ''}`}
                 image={deviceImage && `/api/media/${device.uniqueId}/${deviceImage}`}
               >
                 <div className={classes.header}>
-                  <Typography variant="body2" color="inherit">
-                    {device.name}
-                  </Typography>
-                  <IconButton size="small" color="inherit" onClick={onClose} onTouchStart={onClose}>
+                  <div className={classes.headerText}>
+                    <Typography className={classes.title}>
+                      {device.name}
+                      {device.model && (
+                        <span className={classes.model}>{` (${device.model})`}</span>
+                      )}
+                    </Typography>
+                    <div className={classes.subtitle}>
+                      <span
+                        className={classes.pill}
+                        style={{ color: statusColor, backgroundColor: alpha(statusColor, 0.15) }}
+                      >
+                        {formatStatus(device.status, t)}
+                      </span>
+                    </div>
+                  </div>
+                  <IconButton size="small" onClick={onClose} onTouchStart={onClose}>
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </div>
@@ -221,12 +305,15 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     </TableBody>
                     <TableFooter>
                       <TableRow>
-                        <TableCell colSpan={2} className={classes.cell}>
-                          <Typography variant="body2">
-                            <Link component={RouterLink} to={`/position/${position.id}`}>
-                              {t('sharedShowDetails')}
-                            </Link>
-                          </Typography>
+                        <TableCell colSpan={2} className={classes.footerCell}>
+                          <Link
+                            component={RouterLink}
+                            to={`/position/${position.id}`}
+                            className={classes.detailsLink}
+                            underline="hover"
+                          >
+                            {t('sharedShowDetails')}
+                          </Link>
                         </TableCell>
                       </TableRow>
                     </TableFooter>
