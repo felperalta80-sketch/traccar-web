@@ -10,6 +10,7 @@ import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
+import searchItems from '../common/util/searchItems';
 import { useRestriction } from '../common/util/permissions';
 import useSettingsStyles from './common/useSettingsStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
@@ -62,7 +63,7 @@ const CommandsPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item) => (
+          {searchItems(items, searchKeyword).map((item) => (
             <TableRow key={item.id}>
               <TableCell>{item.description}</TableCell>
               <TableCell>{t(prefixString('command', item.type))}</TableCell>

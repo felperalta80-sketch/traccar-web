@@ -10,6 +10,7 @@ import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
+import searchItems from '../common/util/searchItems';
 import useSettingsStyles from './common/useSettingsStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
@@ -73,7 +74,7 @@ const NotificationsPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item) => (
+          {searchItems(items, searchKeyword).map((item) => (
             <TableRow key={item.id}>
               <TableCell>{item.description}</TableCell>
               <TableCell>{t(prefixString('event', item.type))}</TableCell>

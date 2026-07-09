@@ -22,6 +22,7 @@ import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
+import searchItems from '../common/util/searchItems';
 import { formatAddress, formatStatus, formatTime } from '../common/util/formatter';
 import { useDeviceReadonly, useManager } from '../common/util/permissions';
 import { usePreference } from '../common/util/preferences';
@@ -67,6 +68,10 @@ const DevicesPage = () => {
   );
 
   const sentinelRef = useScrollToLoad(() => loadItems(items.length));
+
+  // Respaldo client-side: algunos servidores no filtran por `keyword` en el
+  // endpoint (devuelven todo); filtramos igual sobre lo ya cargado.
+  const filteredItems = searchItems(items, searchKeyword);
 
   useAsyncTask(
     async ({ signal }) => {
@@ -123,7 +128,7 @@ const DevicesPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <TableRow key={item.id}>
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.uniqueId}</TableCell>

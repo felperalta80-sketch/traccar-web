@@ -22,6 +22,7 @@ import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import { useManager } from '../common/util/permissions';
 import SearchHeader from './components/SearchHeader';
+import searchItems from '../common/util/searchItems';
 import useSettingsStyles from './common/useSettingsStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import UserDevicesValue from './components/UserDevicesValue';
@@ -99,7 +100,7 @@ const UsersPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items
+          {searchItems(items, searchKeyword)
             .filter((u) => temporary || !u.temporary)
             .map((item) => (
               <TableRow key={item.id}>
