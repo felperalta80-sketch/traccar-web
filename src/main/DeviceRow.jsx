@@ -1,14 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
-import {
-  IconButton,
-  Tooltip,
-  Avatar,
-  ListItemAvatar,
-  ListItemText,
-  ListItemButton,
-  Typography,
-} from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { Tooltip, ListItemButton } from '@mui/material';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import Battery60Icon from '@mui/icons-material/Battery60';
@@ -25,48 +18,134 @@ import {
   formatPercentage,
   formatStatus,
   getStatusColor,
+  getBatteryStatus,
 } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { mapIconKey, mapIcons } from '../map/core/preloadImages';
 import { useAdministrator } from '../common/util/permissions';
 import EngineIcon from '../resources/images/data/engine.svg?react';
 import { useAttributePreference } from '../common/util/preferences';
-import GeofencesValue from '../common/components/GeofencesValue';
-import DriverValue from '../common/components/DriverValue';
-import MotionBar from './components/MotionBar';
 
 dayjs.extend(relativeTime);
 
 const useStyles = makeStyles()((theme) => ({
+  root: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1.25),
+    padding: theme.spacing(1, 1.5, 1, 2),
+    '&.Mui-selected': {
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.07)' : 'rgba(28, 37, 54, 0.06)',
+    },
+    '&.Mui-selected:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.10)' : 'rgba(28, 37, 54, 0.09)',
+    },
+  },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: '50%',
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
+    width: 21,
+    height: 21,
+    backgroundColor: 'currentColor',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    maskPosition: 'center',
+    WebkitMaskSize: 'contain',
+    maskSize: 'contain',
   },
-  batteryText: {
+  body: {
+    flex: 1,
+    minWidth: 0,
+  },
+  title: {
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    lineHeight: 1.35,
+    color: theme.palette.text.primary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  meta: {
+    marginTop: 1,
     fontSize: '0.75rem',
-    fontWeight: 'normal',
-    lineHeight: '0.875rem',
+    lineHeight: 1.35,
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    fontVariantNumeric: 'tabular-nums',
   },
-  success: {
-    color: theme.palette.success.main,
+  side: {
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: 5,
   },
-  warning: {
-    color: theme.palette.warning.main,
+  status: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 5,
+    fontSize: '0.72rem',
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
   },
-  error: {
-    color: theme.palette.error.main,
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
+    flexShrink: 0,
   },
-  neutral: {
-    color: theme.palette.neutral.main,
+  stats: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    color: theme.palette.text.secondary,
   },
-  selected: {
-    backgroundColor: theme.palette.action.selected,
+  stat: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 3,
+    fontSize: '0.72rem',
+    fontVariantNumeric: 'tabular-nums',
+    '& svg': {
+      fontSize: 15,
+      width: 15,
+      height: 15,
+    },
   },
+  success: { color: theme.palette.success.main },
+  warning: { color: theme.palette.warning.main },
+  error: { color: theme.palette.error.main },
+  neutral: { color: theme.palette.neutral.main },
 }));
 
+const batteryIcon = (level, charge) => {
+  if (level > 70) {
+    return charge ? <BatteryChargingFullIcon /> : <BatteryFullIcon />;
+  }
+  if (level > 30) {
+    return charge ? <BatteryCharging60Icon /> : <Battery60Icon />;
+  }
+  return charge ? <BatteryCharging20Icon /> : <Battery20Icon />;
+};
+
 const DeviceRow = ({ devices, index, style }) => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
+  const theme = useTheme();
   const dispatch = useDispatch();
   const t = useTranslation();
 
@@ -74,124 +153,101 @@ const DeviceRow = ({ devices, index, style }) => {
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
   const item = devices[index];
+  const selected = selectedDeviceId === item.id;
   const position = useSelector((state) => state.session.positions[item.id]);
 
   const devicePrimary = useAttributePreference('devicePrimary', 'name');
-  const deviceSecondary = useAttributePreference('deviceSecondary', '');
 
-  const resolveFieldValue = (field) => {
-    if (field === 'geofenceIds') {
-      const geofenceIds = position?.geofenceIds;
-      return geofenceIds?.length ? <GeofencesValue geofenceIds={geofenceIds} /> : null;
-    }
-    if (field === 'driverUniqueId') {
-      const driverUniqueId = position?.attributes?.driverUniqueId;
-      return driverUniqueId ? <DriverValue driverUniqueId={driverUniqueId} /> : null;
-    }
-    if (field === 'motion') {
-      return <MotionBar deviceId={item.id} />;
-    }
-    return item[field];
-  };
+  const statusKey = getStatusColor(item.status);
+  const statusColor = theme.palette[statusKey].main;
 
-  const primaryValue = resolveFieldValue(devicePrimary);
-  const secondaryValue = resolveFieldValue(deviceSecondary);
+  const name = item[devicePrimary] || item.name;
 
-  const secondaryText = () => {
-    let status;
-    if (item.status === 'online' || !item.lastUpdate) {
-      status = formatStatus(item.status, t);
-    } else {
-      status = dayjs(item.lastUpdate).fromNow();
-    }
-    return (
-      <>
-        {secondaryValue && (
-          <>
-            {secondaryValue}
-            {' • '}
-          </>
-        )}
-        <span className={classes[getStatusColor(item.status)]}>{status}</span>
-      </>
-    );
-  };
+  const metaText = [
+    item.model,
+    item.uniqueId,
+    item.lastUpdate ? dayjs(item.lastUpdate).fromNow() : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div style={style}>
       <ListItemButton
         key={item.id}
+        className={classes.root}
         onClick={() => dispatch(devicesActions.selectId(item.id))}
         disabled={!admin && item.disabled}
-        selected={selectedDeviceId === item.id}
-        className={selectedDeviceId === item.id ? classes.selected : null}
+        selected={selected}
       >
-        <ListItemAvatar>
-          <Avatar>
-            <img className={classes.icon} src={mapIcons[mapIconKey(item.category)]} alt="" />
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={primaryValue}
-          secondary={secondaryText()}
-          slots={{
-            primary: Typography,
-            secondary: Typography,
+        <div
+          className={classes.iconWrap}
+          style={{
+            color: statusColor,
+            backgroundColor: alpha(statusColor, 0.14),
+            boxShadow: `inset 0 0 0 1.5px ${alpha(statusColor, 0.5)}`,
           }}
-          slotProps={{
-            primary: { noWrap: true },
-            secondary: { noWrap: true },
-          }}
-        />
-        {position && (
-          <>
-            {position.attributes.hasOwnProperty('alarm') && (
-              <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
-                <IconButton size="small">
-                  <ErrorIcon fontSize="small" className={classes.error} />
-                </IconButton>
-              </Tooltip>
-            )}
-            {position.attributes.hasOwnProperty('ignition') && (
-              <Tooltip
-                title={`${t('positionIgnition')}: ${formatBoolean(position.attributes.ignition, t)}`}
-              >
-                <IconButton size="small">
-                  {position.attributes.ignition ? (
-                    <EngineIcon width={20} height={20} className={classes.success} />
-                  ) : (
-                    <EngineIcon width={20} height={20} className={classes.neutral} />
-                  )}
-                </IconButton>
-              </Tooltip>
-            )}
-            {position.attributes.hasOwnProperty('batteryLevel') && (
-              <Tooltip
-                title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
-              >
-                <IconButton size="small">
-                  {(position.attributes.batteryLevel > 70 &&
-                    (position.attributes.charge ? (
-                      <BatteryChargingFullIcon fontSize="small" className={classes.success} />
-                    ) : (
-                      <BatteryFullIcon fontSize="small" className={classes.success} />
-                    ))) ||
-                    (position.attributes.batteryLevel > 30 &&
-                      (position.attributes.charge ? (
-                        <BatteryCharging60Icon fontSize="small" className={classes.warning} />
-                      ) : (
-                        <Battery60Icon fontSize="small" className={classes.warning} />
-                      ))) ||
-                    (position.attributes.charge ? (
-                      <BatteryCharging20Icon fontSize="small" className={classes.error} />
-                    ) : (
-                      <Battery20Icon fontSize="small" className={classes.error} />
-                    ))}
-                </IconButton>
-              </Tooltip>
-            )}
-          </>
-        )}
+        >
+          <span
+            className={classes.icon}
+            style={{
+              WebkitMaskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
+              maskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
+            }}
+          />
+        </div>
+
+        <div className={classes.body}>
+          <div className={classes.title}>{name}</div>
+          <div className={classes.meta}>{metaText}</div>
+        </div>
+
+        <div className={classes.side}>
+          <span className={cx(classes.status, classes[statusKey])}>
+            <span className={classes.dot} />
+            {formatStatus(item.status, t)}
+          </span>
+          {position && (
+            <div className={classes.stats}>
+              {position.attributes.hasOwnProperty('alarm') && (
+                <Tooltip title={`${t('eventAlarm')}: ${formatAlarm(position.attributes.alarm, t)}`}>
+                  <span className={cx(classes.stat, classes.error)}>
+                    <ErrorIcon />
+                  </span>
+                </Tooltip>
+              )}
+              {position.attributes.hasOwnProperty('ignition') && (
+                <Tooltip
+                  title={`${t('positionIgnition')}: ${formatBoolean(position.attributes.ignition, t)}`}
+                >
+                  <span
+                    className={cx(
+                      classes.stat,
+                      position.attributes.ignition ? classes.success : classes.neutral,
+                    )}
+                  >
+                    <EngineIcon width={15} height={15} />
+                  </span>
+                </Tooltip>
+              )}
+              {position.attributes.hasOwnProperty('batteryLevel') && (
+                <Tooltip
+                  title={`${t('positionBatteryLevel')}: ${formatPercentage(position.attributes.batteryLevel)}`}
+                >
+                  <span
+                    className={cx(
+                      classes.stat,
+                      classes[getBatteryStatus(position.attributes.batteryLevel)],
+                    )}
+                  >
+                    {batteryIcon(position.attributes.batteryLevel, position.attributes.charge)}
+                    {formatPercentage(position.attributes.batteryLevel)}
+                  </span>
+                </Tooltip>
+              )}
+            </div>
+          )}
+        </div>
       </ListItemButton>
     </div>
   );
