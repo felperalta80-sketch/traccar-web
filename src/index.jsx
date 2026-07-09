@@ -12,6 +12,15 @@ import ServerProvider from './ServerProvider';
 import ErrorBoundary from './ErrorBoundary';
 import AppThemeProvider from './AppThemeProvider';
 
+// Fuentes empaquetadas (estilo Ubimax): Lato para títulos, Noto Sans para cuerpo
+import '@fontsource/noto-sans/400.css';
+import '@fontsource/noto-sans/500.css';
+import '@fontsource/noto-sans/600.css';
+import '@fontsource/noto-sans/700.css';
+import '@fontsource/lato/400.css';
+import '@fontsource/lato/700.css';
+import '@fontsource/lato/900.css';
+
 preloadImages();
 
 const root = createRoot(document.getElementById('root'));

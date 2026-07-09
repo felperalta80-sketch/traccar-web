@@ -42,6 +42,7 @@ const useStyles = makeStyles()((theme) => ({
     flex: 1,
     minWidth: 0,
     textAlign: 'start',
+    fontFamily: theme.fonts.head,
     fontSize: '0.75rem',
     fontWeight: 700,
     color: theme.palette.text.primary,
@@ -50,7 +51,7 @@ const useStyles = makeStyles()((theme) => ({
     textOverflow: 'ellipsis',
   },
   groupCount: {
-    fontSize: '0.7rem',
+    fontSize: '0.6875rem',
     fontWeight: 800,
     color: theme.palette.text.secondary,
     fontVariantNumeric: 'tabular-nums',

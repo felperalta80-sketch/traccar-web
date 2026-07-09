@@ -40,7 +40,7 @@ const useStyles = makeStyles()((theme) => ({
   search: {
     borderRadius: 11,
     backgroundColor: theme.palette.action.hover,
-    fontSize: '0.85rem',
+    fontSize: '0.8125rem',
     '& .MuiOutlinedInput-notchedOutline': {
       borderColor: 'transparent',
     },
@@ -73,7 +73,7 @@ const useStyles = makeStyles()((theme) => ({
       flexDirection: 'row',
       padding: theme.spacing(0.5, 0.875),
       textTransform: 'none',
-      fontSize: '0.66rem',
+      fontSize: '0.6875rem',
       fontWeight: 600,
       lineHeight: 1.1,
       whiteSpace: 'nowrap',
@@ -89,7 +89,7 @@ const useStyles = makeStyles()((theme) => ({
     },
     '& .m-count': {
       marginLeft: theme.spacing(0.5),
-      fontSize: '0.63rem',
+      fontSize: '0.6875rem',
       fontWeight: 700,
       fontVariantNumeric: 'tabular-nums',
       opacity: 0.5,
@@ -98,12 +98,53 @@ const useStyles = makeStyles()((theme) => ({
       opacity: 0.8,
     },
   },
+  filterPaper: {
+    borderRadius: theme.spacing(2),
+    marginTop: theme.spacing(1),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[8],
+  },
   filterPanel: {
     display: 'flex',
     flexDirection: 'column',
     padding: theme.spacing(2),
-    gap: theme.spacing(2),
+    gap: theme.spacing(1.75),
     width: theme.dimensions.drawerWidthTablet,
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 10,
+      backgroundColor: theme.palette.action.hover,
+      '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'transparent',
+      },
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.divider,
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: '1px',
+      },
+    },
+    '& .MuiInputBase-input': {
+      fontSize: '0.8125rem',
+    },
+    '& .MuiInputLabel-root': {
+      fontSize: '0.8125rem',
+    },
+    '& .MuiFormControlLabel-label': {
+      fontSize: '0.8125rem',
+    },
+  },
+  filterHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(0.25),
+    paddingBottom: theme.spacing(1),
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    fontFamily: theme.fonts.head,
+    fontSize: '0.8125rem',
+    fontWeight: 700,
+    color: theme.palette.text.primary,
   },
 }));
 
@@ -240,8 +281,13 @@ const MainToolbar = ({
             vertical: 'bottom',
             horizontal: 'left',
           }}
+          slotProps={{ paper: { className: classes.filterPaper } }}
         >
           <div className={classes.filterPanel}>
+            <div className={classes.filterHeader}>
+              <TuneIcon fontSize="small" />
+              {t('sharedFilters')}
+            </div>
             <FormControl>
               <InputLabel>{t('deviceStatus')}</InputLabel>
               <Select

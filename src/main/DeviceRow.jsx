@@ -81,8 +81,9 @@ const useStyles = makeStyles()((theme) => ({
     minWidth: 0,
   },
   title: {
-    fontSize: '0.8rem',
-    fontWeight: 600,
+    fontFamily: theme.fonts.head,
+    fontSize: '0.8125rem',
+    fontWeight: 700,
     lineHeight: 1.3,
     color: theme.palette.text.primary,
     whiteSpace: 'nowrap',
@@ -91,7 +92,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   meta: {
     marginTop: 1,
-    fontSize: '0.72rem',
+    fontSize: '0.6875rem',
     lineHeight: 1.3,
     color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
@@ -110,7 +111,7 @@ const useStyles = makeStyles()((theme) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: 5,
-    fontSize: '0.72rem',
+    fontSize: '0.6875rem',
     fontWeight: 600,
     whiteSpace: 'nowrap',
   },
@@ -131,7 +132,7 @@ const useStyles = makeStyles()((theme) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: 3,
-    fontSize: '0.72rem',
+    fontSize: '0.6875rem',
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
       fontSize: 15,
