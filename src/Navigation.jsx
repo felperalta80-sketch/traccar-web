@@ -62,6 +62,8 @@ const AnnouncementPage = lazy(() => import('./settings/AnnouncementPage'));
 const EmulatorPage = lazy(() => import('./other/EmulatorPage'));
 const StreamPage = lazy(() => import('./other/StreamPage'));
 const AuditPage = lazy(() => import('./reports/AuditPage'));
+const SettingsPage = lazy(() => import('./settings/SettingsPage'));
+const ReportsPage = lazy(() => import('./reports/ReportsPage'));
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -138,6 +140,7 @@ const Navigation = () => {
           <Route path="stream" element={<StreamPage />} />
 
           <Route path="settings">
+            <Route index element={<SettingsPage />} />
             <Route path=":type/:id/share" element={<SharePage />} />
             <Route path="accumulators/:deviceId" element={<AccumulatorsPage />} />
             <Route path="announcement" element={<AnnouncementPage />} />
@@ -180,6 +183,7 @@ const Navigation = () => {
           </Route>
 
           <Route path="reports">
+            <Route index element={<ReportsPage />} />
             <Route path="combined" element={<CombinedReportPage />} />
             <Route path="chart" element={<ChartReportPage />} />
             <Route path="events" element={<EventReportPage />} />

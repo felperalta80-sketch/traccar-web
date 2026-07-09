@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
@@ -13,13 +13,28 @@ import TermsDialog from './common/components/TermsDialog';
 import Loader from './common/components/Loader';
 import fetchOrThrow from './common/util/fetchOrThrow';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   page: {
     flexGrow: 1,
     overflow: 'auto',
   },
   menu: {
     zIndex: 4,
+    '@media print': {
+      display: 'none',
+    },
+  },
+  // Bottom flotante persistente en desktop (abajo-izquierda), fuera del mapa.
+  menuFloating: {
+    position: 'fixed',
+    left: theme.spacing(1.5),
+    bottom: theme.spacing(1.5),
+    width: theme.dimensions.drawerWidthDesktop,
+    zIndex: 4,
+    pointerEvents: 'none',
+    '& > *': {
+      pointerEvents: 'auto',
+    },
     '@media print': {
       display: 'none',
     },
@@ -32,7 +47,10 @@ const App = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const location = useLocation();
+
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const isMap = location.pathname === '/';
 
   const newServer = useSelector((state) => state.session.server.newServer);
   const termsUrl = useSelector((state) => state.session.server.attributes.termsUrl);
@@ -81,7 +99,13 @@ const App = () => {
       <div className={classes.page}>
         <Outlet />
       </div>
-      {!desktop && (
+      {desktop ? (
+        !isMap && (
+          <div className={classes.menuFloating}>
+            <BottomMenu floating />
+          </div>
+        )
+      ) : (
         <div className={classes.menu}>
           <BottomMenu />
         </div>

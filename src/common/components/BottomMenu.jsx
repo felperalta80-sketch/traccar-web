@@ -32,11 +32,9 @@ const BottomMenu = ({ floating = false }) => {
 
   const readonly = useRestriction('readonly');
   const disableReports = useRestriction('disableReports');
-  const devices = useSelector((state) => state.devices.items);
   const devicesOpen = useSelector((state) => state.devices.panelOpen);
   const user = useSelector((state) => state.session.user);
   const socket = useSelector((state) => state.session.socket);
-  const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -103,24 +101,11 @@ const BottomMenu = ({ floating = false }) => {
         dispatch(devicesActions.setPanelOpen(false));
         navigate('/');
         break;
-      case 'reports': {
-        let id = selectedDeviceId;
-        if (id == null) {
-          const deviceIds = Object.keys(devices);
-          if (deviceIds.length === 1) {
-            id = deviceIds[0];
-          }
-        }
-
-        if (id != null) {
-          navigate(`/reports/combined?deviceId=${id}`);
-        } else {
-          navigate('/reports/combined');
-        }
+      case 'reports':
+        navigate('/reports');
         break;
-      }
       case 'settings':
-        navigate('/settings/preferences?menu=true');
+        navigate('/settings');
         break;
       case 'account':
         setAnchorEl(event.currentTarget);
