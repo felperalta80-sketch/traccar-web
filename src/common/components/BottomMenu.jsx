@@ -10,6 +10,7 @@ import {
   Typography,
   Badge,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -146,13 +147,20 @@ const BottomMenu = ({ floating = false }) => {
         value={currentSelection()}
         onChange={handleSelection}
         showLabels
-        sx={{
-          px: 1.5,
+        sx={(theme) => ({
+          height: 'auto',
+          px: 1.25,
+          py: 1,
+          gap: 0.5,
           '& .MuiBottomNavigationAction-root': {
             minWidth: 0,
             padding: '6px 4px',
+            borderRadius: '12px',
           },
-        }}
+          '& .MuiBottomNavigationAction-root.Mui-selected': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.12),
+          },
+        })}
       >
         <BottomNavigationAction
           label={t('sharedList')}

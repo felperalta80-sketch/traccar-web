@@ -54,9 +54,9 @@ const useStyles = makeStyles()((theme) => ({
   // Lista colapsada: la cabecera (grupo top) queda visible y flota como card,
   // con el mismo radio y sombra que el bottom nav flotante.
   headerFloating: {
-    borderRadius: '12px',
+    borderRadius: '10px',
     overflow: 'hidden',
-    boxShadow: theme.shadows[6],
+    border: `1px solid ${theme.palette.divider}`,
   },
   footer: {
     pointerEvents: 'auto',
