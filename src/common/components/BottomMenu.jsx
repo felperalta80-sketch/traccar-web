@@ -1,15 +1,6 @@
-import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Paper,
-  BottomNavigation,
-  BottomNavigationAction,
-  Menu,
-  MenuItem,
-  Typography,
-  Badge,
-} from '@mui/material';
+import { Paper, BottomNavigation, BottomNavigationAction, Badge } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
@@ -19,16 +10,17 @@ import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBullet
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-import { sessionActions, devicesActions } from '../../store';
+import { devicesActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
 import { useRestriction } from '../util/permissions';
-import { nativePostMessage } from './NativeInterface';
+import useLogout from '../util/useLogout';
 
 const BottomMenu = ({ floating = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const t = useTranslation();
+  const logout = useLogout();
 
   const readonly = useRestriction('readonly');
   const disableReports = useRestriction('disableReports');
@@ -36,10 +28,8 @@ const BottomMenu = ({ floating = false }) => {
   const user = useSelector((state) => state.session.user);
   const socket = useSelector((state) => state.session.socket);
 
-  const [anchorEl, setAnchorEl] = useState(null);
-
   const currentSelection = () => {
-    if (location.pathname === `/settings/user/${user.id}`) {
+    if (location.pathname === '/account' || location.pathname === `/settings/user/${user.id}`) {
       return 'account';
     }
     if (location.pathname.startsWith('/settings')) {
@@ -52,43 +42,6 @@ const BottomMenu = ({ floating = false }) => {
       return devicesOpen ? 'list' : 'map';
     }
     return null;
-  };
-
-  const handleAccount = () => {
-    setAnchorEl(null);
-    navigate(`/settings/user/${user.id}`);
-  };
-
-  const handleLogout = async () => {
-    setAnchorEl(null);
-
-    const notificationToken = window.localStorage.getItem('notificationToken');
-    if (notificationToken && !user.readonly) {
-      window.localStorage.removeItem('notificationToken');
-      const tokens = user.attributes.notificationTokens?.split(',') || [];
-      if (tokens.includes(notificationToken)) {
-        const updatedUser = {
-          ...user,
-          attributes: {
-            ...user.attributes,
-            notificationTokens:
-              tokens.length > 1
-                ? tokens.filter((it) => it !== notificationToken).join(',')
-                : undefined,
-          },
-        };
-        await fetch(`/api/users/${user.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedUser),
-        });
-      }
-    }
-
-    await fetch('/api/session', { method: 'DELETE' });
-    nativePostMessage('logout');
-    navigate('/login');
-    dispatch(sessionActions.updateUser(null));
   };
 
   const handleSelection = (event, value) => {
@@ -108,10 +61,10 @@ const BottomMenu = ({ floating = false }) => {
         navigate('/settings');
         break;
       case 'account':
-        setAnchorEl(event.currentTarget);
+        navigate('/account');
         break;
       case 'logout':
-        handleLogout();
+        logout();
         break;
       default:
         break;
@@ -120,11 +73,10 @@ const BottomMenu = ({ floating = false }) => {
 
   return (
     <Paper
-      square
       elevation={0}
-      sx={
+      sx={(theme) =>
         floating
-          ? { borderRadius: '12px', overflow: 'hidden', boxShadow: 6 }
+          ? { borderRadius: theme.spacing(2), overflow: 'hidden', boxShadow: 6 }
           : { borderTop: 1, borderColor: 'divider' }
       }
     >
@@ -139,8 +91,8 @@ const BottomMenu = ({ floating = false }) => {
           gap: 0.5,
           '& .MuiBottomNavigationAction-root': {
             minWidth: 0,
-            padding: '6px 4px',
-            borderRadius: '12px',
+            padding: theme.spacing(0.75, 0.5),
+            borderRadius: theme.spacing(1.5),
           },
           '& .MuiBottomNavigationAction-root.Mui-selected': {
             backgroundColor: alpha(theme.palette.primary.main, 0.12),
@@ -185,14 +137,6 @@ const BottomMenu = ({ floating = false }) => {
           />
         )}
       </BottomNavigation>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        <MenuItem onClick={handleAccount}>
-          <Typography color="textPrimary">{t('settingsUser')}</Typography>
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <Typography color="error">{t('loginLogout')}</Typography>
-        </MenuItem>
-      </Menu>
     </Paper>
   );
 };

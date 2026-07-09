@@ -64,6 +64,7 @@ const StreamPage = lazy(() => import('./other/StreamPage'));
 const AuditPage = lazy(() => import('./reports/AuditPage'));
 const SettingsPage = lazy(() => import('./settings/SettingsPage'));
 const ReportsPage = lazy(() => import('./reports/ReportsPage'));
+const AccountPage = lazy(() => import('./settings/AccountPage'));
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -130,6 +131,7 @@ const Navigation = () => {
         <Route path="/change-server" element={<ChangeServerPage />} />
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />
+          <Route path="account" element={<AccountPage />} />
 
           <Route path="position/:id" element={<PositionPage />} />
           <Route path="network/:positionId" element={<NetworkPage />} />

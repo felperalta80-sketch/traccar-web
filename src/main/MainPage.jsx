@@ -1,19 +1,19 @@
-import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Paper } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
+import { useOutletContext } from 'react-router-dom';
 import DeviceList from './DeviceList';
 import BottomMenu from '../common/components/BottomMenu';
 import StatusCard from '../common/components/StatusCard';
 import { devicesActions } from '../store';
-import usePersistedState from '../common/util/usePersistedState';
-import EventsDrawer from './EventsDrawer';
-import useFilter from './useFilter';
 import MainToolbar from './MainToolbar';
 import { useAttributePreference } from '../common/util/preferences';
 
+// El mapa persistente vive en App (desktop). MainPage renderiza el panel de la
+// lista sobre él, y en mobile su propio mapa.
 const MainMap = lazy(() => import('./MainMap'));
 
 const useStyles = makeStyles()((theme) => ({
@@ -38,8 +38,6 @@ const useStyles = makeStyles()((theme) => ({
       width: '100%',
     },
   },
-  // Card unificado (bordes redondeados + sombra) solo con la lista abierta;
-  // colapsada, evita el rectángulo de sombra sobre el mapa vacío.
   sidebarCard: {
     [theme.breakpoints.up('md')]: {
       borderRadius: theme.spacing(2),
@@ -51,8 +49,6 @@ const useStyles = makeStyles()((theme) => ({
     pointerEvents: 'auto',
     zIndex: 6,
   },
-  // Lista colapsada: la cabecera (grupo top) queda visible y flota como card,
-  // con el mismo radio y sombra que el bottom nav flotante.
   headerFloating: {
     borderRadius: '10px',
     overflow: 'hidden',
@@ -90,27 +86,22 @@ const MainPage = () => {
   const mapOnSelect = useAttributePreference('mapOnSelect', true);
 
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
-  const positions = useSelector((state) => state.session.positions);
-  const [filteredPositions, setFilteredPositions] = useState([]);
-  const selectedPosition = filteredPositions.find(
-    (position) => selectedDeviceId && position.deviceId === selectedDeviceId,
-  );
-
-  const [filteredDevices, setFilteredDevices] = useState([]);
-
-  const [keyword, setKeyword] = useState('');
-  const [filter, setFilter] = usePersistedState('deviceFilter', {
-    statuses: [],
-    groups: [],
-    geofences: [],
-  });
-  const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
-  const [filterMap, setFilterMap] = usePersistedState('filterMap', false);
-
   const devicesOpen = useSelector((state) => state.devices.panelOpen);
-  const [eventsOpen, setEventsOpen] = useState(false);
 
-  const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
+  const {
+    filteredDevices,
+    filteredPositions,
+    selectedPosition,
+    keyword,
+    setKeyword,
+    filter,
+    setFilter,
+    filterSort,
+    setFilterSort,
+    filterMap,
+    setFilterMap,
+    onEventsClick,
+  } = useOutletContext();
 
   useEffect(() => {
     if (!desktop && mapOnSelect && selectedDeviceId) {
@@ -118,27 +109,8 @@ const MainPage = () => {
     }
   }, [dispatch, desktop, mapOnSelect, selectedDeviceId]);
 
-  useFilter(
-    keyword,
-    filter,
-    filterSort,
-    filterMap,
-    positions,
-    setFilteredDevices,
-    setFilteredPositions,
-  );
-
   return (
     <div className={classes.root}>
-      {desktop && (
-        <Suspense fallback={null}>
-          <MainMap
-            filteredPositions={filteredPositions}
-            selectedPosition={selectedPosition}
-            onEventsClick={onEventsClick}
-          />
-        </Suspense>
-      )}
       <div className={`${classes.sidebar} ${devicesOpen ? classes.sidebarCard : ''}`}>
         <Paper
           square
@@ -184,7 +156,6 @@ const MainPage = () => {
           </div>
         )}
       </div>
-      <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
       {selectedDeviceId && (
         <StatusCard
           deviceId={selectedDeviceId}

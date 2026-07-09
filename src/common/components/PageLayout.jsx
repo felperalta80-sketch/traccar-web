@@ -9,6 +9,8 @@ const useStyles = makeStyles()((theme) => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    pointerEvents: 'auto',
+    backgroundColor: theme.palette.background.default,
   },
   toolbar: {
     zIndex: 1,

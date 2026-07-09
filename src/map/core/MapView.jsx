@@ -189,7 +189,12 @@ const MapView = ({ children }) => {
     currentEl.appendChild(element);
     map.resize();
     return () => {
-      currentEl.removeChild(element);
+      // `element` es un singleton a nivel de módulo: si otro MapView ya lo
+      // adoptó (transición entre una ruta con mapa persistente y otra con mapa
+      // propio) puede haber sido movido, así que solo lo quitamos si sigue aquí.
+      if (element.parentNode === currentEl) {
+        currentEl.removeChild(element);
+      }
     };
   }, [containerRef]);
 
