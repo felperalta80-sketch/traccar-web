@@ -28,6 +28,7 @@ import DnsIcon from '@mui/icons-material/Dns';
 import AddIcon from '@mui/icons-material/Add';
 import TuneIcon from '@mui/icons-material/Tune';
 import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useDeviceReadonly } from '../common/util/permissions';
 import DeviceRow from './DeviceRow';
@@ -137,10 +138,15 @@ const useStyles = makeStyles()((theme) => ({
   filterHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    justifyContent: 'space-between',
     marginBottom: theme.spacing(0.25),
     paddingBottom: theme.spacing(1),
     borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  filterTitle: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
     fontFamily: theme.fonts.head,
     fontSize: '0.8125rem',
     fontWeight: 700,
@@ -285,8 +291,18 @@ const MainToolbar = ({
         >
           <div className={classes.filterPanel}>
             <div className={classes.filterHeader}>
-              <TuneIcon fontSize="small" />
-              {t('sharedFilters')}
+              <span className={classes.filterTitle}>
+                <TuneIcon fontSize="small" />
+                {t('sharedFilters')}
+              </span>
+              <IconButton
+                size="small"
+                edge="end"
+                onClick={() => setFilterAnchorEl(null)}
+                sx={{ my: -0.5 }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </div>
             <FormControl>
               <InputLabel>{t('deviceStatus')}</InputLabel>
