@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,9 +14,7 @@ import MapDefaultCamera from '../map/main/MapDefaultCamera';
 import MapLiveRoutes from '../map/main/MapLiveRoutes';
 import MapPositions from '../map/MapPositions';
 import MapOverlay from '../map/overlay/MapOverlay';
-import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
-import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
 import MapLabels from '../map/control/MapLabels';
 import useFeatures from '../common/util/useFeatures';
@@ -32,7 +30,6 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
 
   const features = useFeatures();
 
-  const [rulerActive, setRulerActive] = useState(false);
   const [showLabels, setShowLabels] = usePersistedState('mapShowNames', true);
 
   const onMarkerClick = useCallback(
@@ -54,13 +51,11 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
           onMarkerClick={onMarkerClick}
           selectedPosition={selectedPosition}
           showStatus
-          disabled={rulerActive}
           showLabels={showLabels}
         />
         <MapDefaultCamera filteredPositions={filteredPositions} />
         <MapSelectedDevice />
         <PoiMap />
-        <MapRuler positions={filteredPositions} onActiveChange={setRulerActive} />
         <MapLabels enabled={showLabels} onToggle={() => setShowLabels(!showLabels)} />
         {!features.disableEvents && (
           <MapNotification enabled={eventsAvailable} onClick={onEventsClick} />
@@ -68,7 +63,6 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       </MapView>
       <MapScale />
       <MapCurrentLocation />
-      <MapGeocoder />
       {desktop && (
         <MapPadding
           start={

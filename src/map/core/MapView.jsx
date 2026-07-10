@@ -63,6 +63,31 @@ const mapControlStyles = {
     backgroundImage: `${navIcon('M12 2 4.5 20.29l.71.71L12 18l6.79 3 .71-.71z')} !important`,
     backgroundSize: '19px',
   },
+  // Atribución minimalista: solo la (i), colapsada y sin halo. Al tocar/hover
+  // se expande el texto con un fondo sutil para leerlo.
+  '.maplibregl-ctrl-attrib.maplibregl-compact': {
+    background: 'transparent !important',
+    boxShadow: 'none !important',
+    border: 'none !important',
+  },
+  '.maplibregl-ctrl-attrib-button': {
+    backgroundColor: 'transparent !important',
+    boxShadow: 'none !important',
+    backgroundImage: `${navIcon(
+      'M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z',
+    )} !important`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    backgroundSize: '18px',
+    opacity: 0.85,
+  },
+  '.maplibregl-ctrl-attrib-button:hover': {
+    opacity: 1,
+  },
+  '.maplibregl-ctrl-attrib.maplibregl-compact-show': {
+    background: 'rgba(255, 255, 255, 0.9) !important',
+    borderRadius: '6px !important',
+  },
 };
 
 export const map = new maplibregl.Map({
@@ -138,6 +163,11 @@ const MapView = ({ children }) => {
     const navigation = new maplibregl.NavigationControl();
     map.addControl(attribution, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
     map.addControl(navigation, theme.direction === 'rtl' ? 'top-left' : 'top-right');
+    // Arranca colapsada (MapLibre a veces la muestra expandida por defecto).
+    map
+      .getContainer()
+      .querySelector('.maplibregl-ctrl-attrib')
+      ?.classList.remove('maplibregl-compact-show');
     return () => {
       map.removeControl(navigation);
       map.removeControl(attribution);
