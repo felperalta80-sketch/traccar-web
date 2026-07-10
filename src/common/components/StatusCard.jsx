@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import {
   Card,
@@ -31,6 +31,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import { useTranslation } from './LocalizationProvider';
 import { getStatusColor, formatStatus } from '../util/formatter';
 import RemoveDialog from './RemoveDialog';
+import PositionDrawer from './PositionDrawer';
 import PositionValue from './PositionValue';
 import { useDeviceReadonly, useRestriction } from '../util/permissions';
 import usePositionAttributes from '../attributes/usePositionAttributes';
@@ -214,6 +215,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
 
   const [removing, setRemoving] = useState(false);
 
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   const handleRemove = useCatch(async (removed) => {
     if (removed) {
       const response = await fetchOrThrow('/api/devices');
@@ -307,8 +310,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                       <TableRow>
                         <TableCell colSpan={2} className={classes.footerCell}>
                           <Link
-                            component={RouterLink}
-                            to={`/position/${position.id}`}
+                            component="button"
+                            type="button"
+                            onClick={() => setDetailsOpen(true)}
                             className={classes.detailsLink}
                             underline="hover"
                           >
@@ -421,6 +425,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
         endpoint="devices"
         itemId={deviceId}
         onResult={(removed) => handleRemove(removed)}
+      />
+      <PositionDrawer
+        position={position}
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
       />
     </>
   );
