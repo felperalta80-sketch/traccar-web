@@ -18,6 +18,7 @@ import {
   TableFooter,
   Link,
   Tooltip,
+  useMediaQuery,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -43,9 +44,16 @@ import fetchOrThrow from '../util/fetchOrThrow';
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
     pointerEvents: 'auto',
-    width: theme.dimensions.popupMaxWidth,
-    borderRadius: 16,
     overflow: 'hidden',
+    [theme.breakpoints.up('md')]: {
+      width: theme.dimensions.popupMaxWidth,
+      borderRadius: 16,
+    },
+    // Mobile: hoja inferior a ancho completo, solo redondeada arriba.
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
+      borderRadius: theme.spacing(2, 2, 0, 0),
+    },
   },
   strip: {
     height: 4,
@@ -152,16 +160,21 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     pointerEvents: 'none',
     position: 'fixed',
     zIndex: 5,
-    left: '50%',
     [theme.breakpoints.up('md')]: {
       left: `calc(50% + ${desktopPadding} / 2)`,
       bottom: theme.spacing(3),
+      transform: 'translateX(-50%)',
     },
+    // Mobile: hoja inferior modal sobre la barra de módulos, a ancho completo.
     [theme.breakpoints.down('md')]: {
-      left: '50%',
-      bottom: `calc(${theme.spacing(3)} + ${theme.dimensions.bottomBarHeight}px)`,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 6,
+      '& > *': {
+        width: '100% !important',
+      },
     },
-    transform: 'translateX(-50%)',
   },
 }));
 
@@ -187,6 +200,7 @@ const StatusRow = ({ name, content }) => {
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
   const { classes } = useStyles({ desktopPadding });
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -251,6 +265,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
           <Rnd
             default={{ x: 0, y: 0, width: 'auto', height: 'auto' }}
             enableResizing={false}
+            disableDragging={!desktop}
             dragHandleClassName="draggable-header"
             style={{ position: 'relative' }}
           >
