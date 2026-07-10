@@ -8,6 +8,7 @@ import MapSwitcher from '../control/MapSwitcher';
 import { useAttributePreference, usePreference } from '../../common/util/preferences';
 import usePersistedState from '../../common/util/usePersistedState';
 import { mapImages } from './preloadImages';
+import { preparePin } from './mapUtil';
 import useMapStyles from './useMapStyles';
 import { useAsyncTask } from '../../reactHelper';
 
@@ -148,6 +149,21 @@ const MapView = ({ children }) => {
       map.setMaxZoom(maxZoom);
     }
   }, [maxZoom]);
+
+  // Pin del recorrido: se hornea con el color primary (branding del servidor),
+  // no hardcodeado. Se re-hornea al cambiar el branding o recargar el estilo
+  // (el estilo limpia las imágenes, por eso depende de mapReady).
+  useEffect(() => {
+    if (!mapReady) {
+      return;
+    }
+    const image = preparePin(theme.palette.primary.main);
+    if (map.hasImage('pin')) {
+      map.updateImage('pin', image);
+    } else {
+      map.addImage('pin', image, { pixelRatio: window.devicePixelRatio });
+    }
+  }, [mapReady, theme.palette.primary.main]);
 
   useEffect(() => {
     maplibregl.accessToken = mapboxAccessToken;

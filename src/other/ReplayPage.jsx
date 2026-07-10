@@ -1,5 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { IconButton, Paper, Slider, Toolbar, Typography } from '@mui/material';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  IconButton,
+  Paper,
+  Slider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Toolbar,
+  Typography,
+} from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import TuneIcon from '@mui/icons-material/Tune';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -64,6 +72,14 @@ const useStyles = makeStyles()((theme) => ({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  speed: {
+    marginTop: theme.spacing(1),
+    '& .MuiToggleButton-root': {
+      flex: 1,
+      padding: theme.spacing(0.25, 1),
+      textTransform: 'none',
+    },
+  },
   formControlLabel: {
     height: '100%',
     width: '100%',
@@ -78,11 +94,24 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
+// Rumbo (grados) del punto a hacia b, para orientar el pin en el sentido de
+// marcha durante la interpolación.
+const bearing = (a, b) => {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const lat1 = toRad(a.latitude);
+  const lat2 = toRad(b.latitude);
+  const dLon = toRad(b.longitude - a.longitude);
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+};
+
 const ReplayPage = () => {
   const t = useTranslation();
   const { classes } = useStyles();
   const navigate = useNavigate();
-  const timerRef = useRef();
+  const frameRef = useRef(0);
+  const stateRef = useRef({ index: 0, progress: 0 });
 
   const [searchParams] = useSearchParams();
 
@@ -95,8 +124,14 @@ const ReplayPage = () => {
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  // progress = fracción (0..1) del tramo entre positions[index] y el siguiente,
+  // para animar el marcador de forma fluida en vez de saltar de punto a punto.
+  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  stateRef.current = { index, progress };
 
   const loaded = Boolean(from && to && !loading && positions.length);
 
@@ -116,28 +151,42 @@ const ReplayPage = () => {
     }
   }, [from, to, setPositions]);
 
+  // Reproducción fluida: un bucle de animación avanza un "frame" fraccional a
+  // 500/speed ms por punto; de él se derivan el índice entero (slider/tiempo) y
+  // el progreso del tramo (interpolación del marcador).
   useEffect(() => {
-    if (playing && positions.length > 0) {
-      timerRef.current = setInterval(() => {
-        setIndex((index) => index + 1);
-      }, 500);
-    } else {
-      clearInterval(timerRef.current);
+    if (!playing || positions.length < 2) {
+      return undefined;
     }
-
-    return () => clearInterval(timerRef.current);
-  }, [playing, positions]);
-
-  useEffect(() => {
-    if (index >= positions.length - 1) {
-      clearInterval(timerRef.current);
-      setPlaying(false);
-    }
-  }, [index, positions]);
+    const maxFrame = positions.length - 1;
+    frameRef.current = stateRef.current.index + stateRef.current.progress;
+    let raf;
+    let last = null;
+    const tick = (now) => {
+      if (last === null) {
+        last = now;
+      }
+      frameRef.current += (now - last) / (500 / speed);
+      last = now;
+      if (frameRef.current >= maxFrame) {
+        setIndex(maxFrame);
+        setProgress(0);
+        setPlaying(false);
+        return;
+      }
+      const whole = Math.floor(frameRef.current);
+      setIndex(whole);
+      setProgress(frameRef.current - whole);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, speed, positions]);
 
   const onPointClick = useCallback(
     (_, index) => {
       setIndex(index);
+      setProgress(0);
     },
     [setIndex],
   );
@@ -148,6 +197,26 @@ const ReplayPage = () => {
     },
     [setShowCard],
   );
+
+  // Posición interpolada del marcador: mezcla positions[index] con el siguiente
+  // punto según progress, y orienta el pin por el rumbo del tramo.
+  const currentPosition = useMemo(() => {
+    const a = positions[index];
+    if (!a) {
+      return null;
+    }
+    const b = positions[index + 1];
+    if (!b || progress <= 0) {
+      return a;
+    }
+    const moved = a.latitude !== b.latitude || a.longitude !== b.longitude;
+    return {
+      ...a,
+      latitude: a.latitude + (b.latitude - a.latitude) * progress,
+      longitude: a.longitude + (b.longitude - a.longitude) * progress,
+      course: moved ? bearing(a, b) : a.course,
+    };
+  }, [positions, index, progress]);
 
   const onShow = useCatchCallback(
     async ({ deviceIds, from, to }) => {
@@ -183,11 +252,13 @@ const ReplayPage = () => {
         <MapGeofence />
         <MapRoutePath positions={positions} />
         <MapRoutePoints positions={positions} onClick={onPointClick} showSpeedControl />
-        {index < positions.length && (
+        {currentPosition && (
           <MapPositions
-            positions={[positions[index]]}
+            positions={[currentPosition]}
             onMarkerClick={onMarkerClick}
             titleField="fixTime"
+            markerImage="pin"
+            showLabels={!playing}
           />
         )}
       </MapView>
@@ -226,12 +297,18 @@ const ReplayPage = () => {
                 step={null}
                 marks={positions.map((_, index) => ({ value: index }))}
                 value={index}
-                onChange={(_, index) => setIndex(index)}
+                onChange={(_, index) => {
+                  setIndex(index);
+                  setProgress(0);
+                }}
               />
               <div className={classes.controls}>
                 <Typography variant="caption">{`${index + 1}/${positions.length}`}</Typography>
                 <IconButton
-                  onClick={() => setIndex((index) => index - 1)}
+                  onClick={() => {
+                    setIndex((index) => index - 1);
+                    setProgress(0);
+                  }}
                   disabled={playing || index <= 0}
                 >
                   <FastRewindIcon />
@@ -243,7 +320,10 @@ const ReplayPage = () => {
                   {playing ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
                 <IconButton
-                  onClick={() => setIndex((index) => index + 1)}
+                  onClick={() => {
+                    setIndex((index) => index + 1);
+                    setProgress(0);
+                  }}
                   disabled={playing || index >= positions.length - 1}
                 >
                   <FastForwardIcon />
@@ -252,6 +332,20 @@ const ReplayPage = () => {
                   {formatTime(positions[index].fixTime, 'seconds')}
                 </Typography>
               </div>
+              <ToggleButtonGroup
+                exclusive
+                fullWidth
+                size="small"
+                value={speed}
+                onChange={(_, value) => value && setSpeed(value)}
+                className={classes.speed}
+              >
+                {[0.5, 1, 2, 4].map((value) => (
+                  <ToggleButton key={value} value={value}>
+                    {`${value}x`}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
             </>
           )}
           <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>

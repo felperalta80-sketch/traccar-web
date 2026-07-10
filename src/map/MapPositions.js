@@ -18,6 +18,7 @@ const MapPositions = ({
   titleField,
   disabled,
   showLabels = true,
+  markerImage,
 }) => {
   const id = useId();
   const clusters = `${id}-clusters`;
@@ -165,30 +166,38 @@ const MapPositions = ({
           'symbol-z-order': 'source',
         },
       });
-      map.addLayer({
-        id: `direction-${source}`,
-        type: 'symbol',
-        source,
-        filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
-        layout: {
-          'icon-image': 'direction-{color}',
-          'icon-size': iconScale,
-          'icon-allow-overlap': true,
-          'icon-rotate': ['get', 'rotation'],
-          'icon-rotation-alignment': 'map',
-          'symbol-z-order': 'source',
-        },
-      });
+      // Con un marcador fijo (recorrido) el propio pin indica el rumbo, así que
+      // no se dibuja la flecha de dirección separada.
+      if (!markerImage) {
+        map.addLayer({
+          id: `direction-${source}`,
+          type: 'symbol',
+          source,
+          filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
+          layout: {
+            'icon-image': 'direction-{color}',
+            'icon-size': iconScale,
+            'icon-allow-overlap': true,
+            'icon-rotate': ['get', 'rotation'],
+            'icon-rotation-alignment': 'map',
+            'symbol-z-order': 'source',
+          },
+        });
+      }
       map.addLayer({
         id: source,
         type: 'symbol',
         source,
         filter: ['!has', 'point_count'],
         layout: {
-          'icon-image': '{category}-{color}',
+          'icon-image': markerImage || '{category}-{color}',
           'icon-size': iconScale,
           'icon-allow-overlap': true,
           'symbol-z-order': 'source',
+          ...(markerImage && {
+            'icon-rotate': ['get', 'rotation'],
+            'icon-rotation-alignment': 'map',
+          }),
         },
       });
       map.on('mouseenter', source, onMouseEnter);
@@ -298,6 +307,7 @@ const MapPositions = ({
     id,
     selected,
     titleField,
+    markerImage,
   ]);
 
   useEffect(() => {

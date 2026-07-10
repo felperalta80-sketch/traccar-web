@@ -190,6 +190,63 @@ export const prepareDirection = (color) => {
   return context.getImageData(0, 0, s, s);
 };
 
+// Pin direccional estandarizado (Opción B): insignia circular de la tinta de
+// marca con aro blanco, punto central y un cono que nace arriba (rumbo 0). La
+// capa lo rota con icon-rotate según el course, así el cono apunta al sentido de
+// marcha. Centrado en el punto (icon-anchor por defecto), gira sobre la posición.
+export const preparePin = (color) => {
+  const dpr = devicePixelRatio;
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = `${size}px`;
+  canvas.style.height = `${size}px`;
+
+  const s = canvas.width;
+  const context = canvas.getContext('2d');
+  const cx = s / 2;
+  const cy = s / 2;
+  const radius = 15 * dpr;
+  const ring = 3 * dpr;
+
+  context.save();
+  context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  context.shadowBlur = 4 * dpr;
+  context.shadowOffsetY = 1.5 * dpr;
+
+  // Cono de rumbo (apunta hacia arriba = rumbo 0)
+  context.beginPath();
+  context.moveTo(cx, cy - radius - 11 * dpr);
+  context.lineTo(cx - 11 * dpr, cy - radius + 4 * dpr);
+  context.lineTo(cx + 11 * dpr, cy - radius + 4 * dpr);
+  context.closePath();
+  context.fillStyle = color;
+  context.fill();
+
+  // Círculo relleno
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI);
+  context.fillStyle = color;
+  context.fill();
+  context.restore();
+
+  // Aro blanco
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI);
+  context.lineWidth = ring;
+  context.strokeStyle = '#FFFFFF';
+  context.stroke();
+
+  // Punto central blanco
+  context.beginPath();
+  context.arc(cx, cy, 5.5 * dpr, 0, 2 * Math.PI);
+  context.fillStyle = '#FFFFFF';
+  context.fill();
+
+  return context.getImageData(0, 0, s, s);
+};
+
 // Pill "horneado": imagen completa (fondo blanco + borde + nombre ya dibujado)
 // para el label del vehículo. Al ser un ícono sólido (y no chip + texto), cuando
 // dos se superponen el de arriba tapa por completo al de abajo — MapLibre dibuja
