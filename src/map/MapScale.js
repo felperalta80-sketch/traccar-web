@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material';
 import { useAttributePreference } from '../common/util/preferences';
 import { map } from './core/MapView';
 
-const MapScale = () => {
+const MapScale = ({ position }) => {
   const theme = useTheme();
 
   const distanceUnit = useAttributePreference('distanceUnit');
@@ -12,9 +12,10 @@ const MapScale = () => {
   const control = useMemo(() => new maplibregl.ScaleControl(), []);
 
   useEffect(() => {
-    map.addControl(control, theme.direction === 'rtl' ? 'bottom-right' : 'bottom-left');
+    const anchor = position || (theme.direction === 'rtl' ? 'bottom-right' : 'bottom-left');
+    map.addControl(control, anchor);
     return () => map.removeControl(control);
-  }, [control, theme.direction]);
+  }, [control, theme.direction, position]);
 
   useEffect(() => {
     switch (distanceUnit) {

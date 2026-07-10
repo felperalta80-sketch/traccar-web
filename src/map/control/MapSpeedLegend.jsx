@@ -48,7 +48,8 @@ const MapSpeedLegend = ({ positions }) => {
       },
       onRemove: () => container?.remove(),
     };
-    map.addControl(control, theme.direction === 'rtl' ? 'bottom-right' : 'bottom-left');
+    // A la derecha (libre del menú de módulos, que va abajo-izquierda).
+    map.addControl(control, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
     return () => map.removeControl(control);
   }, [positions, speedUnit, t, theme.direction, classes.colorBar]);
 

@@ -262,7 +262,7 @@ const ReplayPage = () => {
           />
         )}
       </MapView>
-      <MapScale />
+      <MapScale position="bottom-right" />
       <MapCamera positions={positions} />
       <div className={classes.sidebar}>
         <Paper elevation={0} className={classes.header}>
