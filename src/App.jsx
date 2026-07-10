@@ -83,6 +83,10 @@ const App = () => {
   // duplicar la instancia singleton de MapView.
   const mapShellPaths = ['/', '/reports', '/settings', '/account'];
   const showPersistentMap = desktop && mapShellPaths.includes(location.pathname);
+  // En estas rutas el panel (ModuleMenuLayout) doca su propia barra inferior en
+  // desktop, así que App no renderiza la barra flotante para no duplicarla.
+  const moduleIndexPaths = ['/reports', '/settings', '/account'];
+  const panelDocksNav = desktop && moduleIndexPaths.includes(location.pathname);
 
   const newServer = useSelector((state) => state.session.server.newServer);
   const termsUrl = useSelector((state) => state.session.server.attributes.termsUrl);
@@ -207,7 +211,8 @@ const App = () => {
       </div>
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
       {desktop ? (
-        !isMap && (
+        !isMap &&
+        !panelDocksNav && (
           <div className={classes.menuFloating}>
             <BottomMenu floating />
           </div>

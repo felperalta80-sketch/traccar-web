@@ -1,6 +1,8 @@
-import { Toolbar, Typography } from '@mui/material';
+import { Toolbar, Typography, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import { useTranslation } from './LocalizationProvider';
+import BottomMenu from './BottomMenu';
 
 // Índice de opciones de un módulo (Ajustes/Reportes/Cuenta) con la misma línea
 // que la lista de dispositivos: panel flotante a la izquierda sobre el mapa
@@ -15,9 +17,9 @@ const useStyles = makeStyles()((theme) => ({
       position: 'fixed',
       left: theme.spacing(1.5),
       top: theme.spacing(1.5),
+      // Card unificado (como en Lista): cuerpo + bottom nav docado, sin gap.
+      bottom: theme.spacing(1.5),
       width: theme.dimensions.drawerWidthDesktop,
-      // deja lugar abajo para el bottom flotante
-      height: `calc(100% - ${theme.spacing(1.5)} - 90px)`,
       borderRadius: theme.spacing(2),
       overflow: 'hidden',
       boxShadow: theme.shadows[6],
@@ -43,6 +45,8 @@ const useStyles = makeStyles()((theme) => ({
 const ModuleMenuLayout = ({ title, footer, children }) => {
   const { classes } = useStyles();
   const t = useTranslation();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
     <div className={classes.panel}>
@@ -53,6 +57,9 @@ const ModuleMenuLayout = ({ title, footer, children }) => {
       </Toolbar>
       <div className={classes.content}>{children}</div>
       {footer && <div className={classes.footer}>{footer}</div>}
+      {/* En desktop la barra queda docada dentro del card (como en Lista); en
+          mobile la barra global de App se encarga. */}
+      {desktop && <BottomMenu />}
     </div>
   );
 };

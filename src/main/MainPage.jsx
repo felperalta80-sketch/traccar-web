@@ -50,9 +50,16 @@ const useStyles = makeStyles()((theme) => ({
     zIndex: 6,
   },
   headerFloating: {
-    borderRadius: '10px',
-    overflow: 'hidden',
-    border: `1px solid ${theme.palette.divider}`,
+    [theme.breakpoints.up('md')]: {
+      borderRadius: '10px',
+      overflow: 'hidden',
+      border: `1px solid ${theme.palette.divider}`,
+    },
+    // En mobile el header va pegado arriba a ancho completo (sin redondeo, que
+    // contra el borde de la pantalla creaba una esquina rara); solo borde inferior.
+    [theme.breakpoints.down('md')]: {
+      borderBottom: `1px solid ${theme.palette.divider}`,
+    },
   },
   footer: {
     pointerEvents: 'auto',

@@ -74,11 +74,14 @@ const BottomMenu = ({ floating = false }) => {
   return (
     <Paper
       elevation={0}
-      sx={(theme) =>
-        floating
+      sx={(theme) => ({
+        // Fondo neutral (un toque más oscuro que el blanco) en modo claro;
+        // en oscuro se mantiene el paper del theme.
+        backgroundColor: theme.palette.mode === 'light' ? '#E8EAEE' : undefined,
+        ...(floating
           ? { borderRadius: theme.spacing(2), overflow: 'hidden', boxShadow: 6 }
-          : { borderTop: 1, borderColor: 'divider' }
-      }
+          : { borderTop: 1, borderColor: 'divider' }),
+      })}
     >
       <BottomNavigation
         value={currentSelection()}
@@ -96,6 +99,14 @@ const BottomMenu = ({ floating = false }) => {
           },
           '& .MuiBottomNavigationAction-root.Mui-selected': {
             backgroundColor: alpha(theme.palette.primary.main, 0.12),
+          },
+          // El label del ítem seleccionado no crece (MUI lo pasa de 12→14px):
+          // ese cambio de altura causaba un pestañeo al cambiar de módulo.
+          '& .MuiBottomNavigationAction-label': {
+            fontSize: '0.75rem',
+            '&.Mui-selected': {
+              fontSize: '0.75rem',
+            },
           },
         })}
       >
