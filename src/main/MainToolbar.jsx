@@ -26,12 +26,20 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { devicesActions } from '../store';
+import usePersistedState from '../common/util/usePersistedState';
 import DeviceRow from './DeviceRow';
 
 const useStyles = makeStyles()((theme) => ({
   toolbar: {
     display: 'flex',
     gap: theme.spacing(1),
+    // Sin el min-height/gutters por defecto de MuiToolbar: así el buscador no
+    // queda centrado en 64px y el aire top = gap(buscador↔pestañas) = bottom.
+    // El selector .MuiToolbar-root gana a la regla .MuiToolbar-regular.
+    '&.MuiToolbar-root': {
+      minHeight: 'auto',
+      padding: theme.spacing(1, 1.25, 0),
+    },
   },
   search: {
     borderRadius: 10,
@@ -174,6 +182,9 @@ const MainToolbar = ({
   const inputRef = useRef();
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [devicesAnchorEl, setDevicesAnchorEl] = useState(null);
+  // Agrupar o no la lista por grupos (persistente por usuario, se sincroniza
+  // con DeviceList vía usePersistedState).
+  const [devicesGrouped, setDevicesGrouped] = usePersistedState('devicesGrouped', true);
 
   const deviceStatusCount = (status) =>
     Object.values(devices).filter((d) => d.status === status).length;
@@ -205,7 +216,7 @@ const MainToolbar = ({
   return (
     <>
       {devicesOpen && (
-        <Toolbar ref={toolbarRef} className={classes.toolbar}>
+        <Toolbar ref={toolbarRef} disableGutters className={classes.toolbar}>
           <OutlinedInput
             ref={inputRef}
             className={classes.search}
@@ -358,6 +369,15 @@ const MainToolbar = ({
                 </Select>
               </FormControl>
               <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={devicesGrouped}
+                      onChange={(e) => setDevicesGrouped(e.target.checked)}
+                    />
+                  }
+                  label={t('sharedGroupDevices')}
+                />
                 <FormControlLabel
                   control={
                     <Checkbox

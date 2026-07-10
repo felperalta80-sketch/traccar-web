@@ -94,6 +94,7 @@ const DeviceList = ({ devices }) => {
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [collapsed, setCollapsed] = usePersistedState('deviceGroupsCollapsed', []);
+  const [grouped] = usePersistedState('devicesGrouped', true);
 
   useEffect(() => {
     const interval = setInterval(forceUpdate, 60000);
@@ -124,6 +125,10 @@ const DeviceList = ({ devices }) => {
   // los grupos colapsados. Los grupos con nombre van alfabéticos y "sin grupo"
   // queda al final.
   const rows = useMemo(() => {
+    // Sin agrupar: lista plana de dispositivos (respeta el orden ya filtrado).
+    if (!grouped) {
+      return devices.map((device) => ({ type: 'device', device }));
+    }
     const buckets = new Map();
     devices.forEach((device) => {
       const groupId = device.groupId || 0;
@@ -156,7 +161,7 @@ const DeviceList = ({ devices }) => {
       }
     });
     return result;
-  }, [devices, groups, collapsed, noGroupLabel]);
+  }, [devices, groups, collapsed, noGroupLabel, grouped]);
 
   return (
     <List
