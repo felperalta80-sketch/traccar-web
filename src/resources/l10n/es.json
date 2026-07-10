@@ -248,6 +248,8 @@
     "deviceIdentifier": "Identificador",
     "deviceModel": "Modelo",
     "deviceContact": "Contacto",
+    "deviceVehicleDetails": "Detalles del vehículo",
+    "deviceClient": "Cliente",
     "deviceCategory": "Categoría",
     "deviceLastUpdate": "Última Actualización",
     "deviceCommand": "Comando",

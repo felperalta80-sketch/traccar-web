@@ -80,7 +80,19 @@ const BottomMenu = ({ floating = false }) => {
         backgroundColor: theme.palette.mode === 'light' ? '#E8EAEE' : undefined,
         ...(floating
           ? { borderRadius: theme.spacing(2), overflow: 'hidden', boxShadow: 6 }
-          : { borderTop: 1, borderColor: 'divider' }),
+          : {
+              borderTop: 1,
+              borderColor: 'divider',
+              // En mobile la barra queda pegada al borde inferior; una línea
+              // muy sutil abajo la separa de los botones del sistema del teléfono.
+              [theme.breakpoints.down('md')]: {
+                borderBottom: `1px solid ${
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.05)'
+                    : 'rgba(0, 0, 0, 0.045)'
+                }`,
+              },
+            }),
       })}
     >
       <BottomNavigation
@@ -111,11 +123,6 @@ const BottomMenu = ({ floating = false }) => {
         })}
       >
         <BottomNavigationAction
-          label={t('sharedList')}
-          icon={<FormatListBulletedOutlinedIcon />}
-          value="list"
-        />
-        <BottomNavigationAction
           label={t('mapTitle')}
           icon={
             <Badge color="error" variant="dot" overlap="circular" invisible={socket !== false}>
@@ -123,6 +130,11 @@ const BottomMenu = ({ floating = false }) => {
             </Badge>
           }
           value="map"
+        />
+        <BottomNavigationAction
+          label={t('sharedList')}
+          icon={<FormatListBulletedOutlinedIcon />}
+          value="list"
         />
         {!disableReports && (
           <BottomNavigationAction

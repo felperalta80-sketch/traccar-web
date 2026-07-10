@@ -247,6 +247,8 @@
     "deviceIdentifier": "Identifier",
     "deviceModel": "Model",
     "deviceContact": "Contact",
+    "deviceVehicleDetails": "Vehicle details",
+    "deviceClient": "Client",
     "deviceCategory": "Category",
     "deviceLastUpdate": "Last Update",
     "deviceCommand": "Command",

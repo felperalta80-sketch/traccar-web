@@ -9,6 +9,7 @@ import BatteryCharging60Icon from '@mui/icons-material/BatteryCharging60';
 import Battery20Icon from '@mui/icons-material/Battery20';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 import ErrorIcon from '@mui/icons-material/Error';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { devicesActions } from '../store';
@@ -28,33 +29,39 @@ import { useAttributePreference } from '../common/util/preferences';
 
 dayjs.extend(relativeTime);
 
+// Separación entre tarjetas y sangría lateral (px). Gaps un toque juntos.
+const CARD_GAP = 5;
+const CARD_INSET = 6;
+const foldBg = (theme) =>
+  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#F5F6F9';
+
 const useStyles = makeStyles()((theme) => ({
   root: {
-    position: 'relative',
-    height: '100%',
     display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1.25),
-    padding: theme.spacing(1, 1.5, 1, 2),
-    borderTop: `1px solid ${theme.palette.divider}`,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      left: 0,
-      top: 6,
-      bottom: 6,
-      width: 3,
-      borderRadius: '0 3px 3px 0',
-      backgroundColor: 'var(--st)',
-    },
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    padding: 0,
+    overflow: 'hidden',
+    borderRadius: 9,
+    border: `1px solid ${theme.palette.divider}`,
+    borderLeft: '3px solid var(--st)',
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.06)',
     '&.Mui-selected': {
-      backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.07)' : 'rgba(28, 37, 54, 0.06)',
+      backgroundColor: theme.palette.background.paper,
+      borderColor: theme.palette.primary.main,
+      borderLeftColor: 'var(--st)',
+      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
     },
     '&.Mui-selected:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.10)' : 'rgba(28, 37, 54, 0.09)',
+      backgroundColor: theme.palette.action.hover,
     },
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1, 1.25, 0, 1.25),
   },
   iconWrap: {
     width: 30,
@@ -66,8 +73,8 @@ const useStyles = makeStyles()((theme) => ({
     justifyContent: 'center',
   },
   icon: {
-    width: 18,
-    height: 18,
+    width: 17,
+    height: 17,
     backgroundColor: 'currentColor',
     WebkitMaskRepeat: 'no-repeat',
     maskRepeat: 'no-repeat',
@@ -80,19 +87,50 @@ const useStyles = makeStyles()((theme) => ({
     flex: 1,
     minWidth: 0,
   },
+  titleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+  },
   title: {
+    flex: 1,
+    minWidth: 0,
     fontFamily: theme.fonts.head,
-    fontSize: '0.8125rem',
+    fontSize: '0.84375rem',
     fontWeight: 700,
-    lineHeight: 1.3,
+    lineHeight: 1.25,
     color: theme.palette.text.primary,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  meta: {
-    marginTop: 1,
-    fontSize: '0.6875rem',
+  status: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: '0.59375rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    padding: theme.spacing(0.25, 0.875),
+    borderRadius: 999,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
+    flexShrink: 0,
+  },
+  locMetrics: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(0.25, 1.25, 1, 1.25),
+  },
+  locline: {
+    minWidth: 0,
+    fontSize: '0.65625rem',
     lineHeight: 1.3,
     color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
@@ -100,45 +138,95 @@ const useStyles = makeStyles()((theme) => ({
     textOverflow: 'ellipsis',
     fontVariantNumeric: 'tabular-nums',
   },
-  side: {
-    flexShrink: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 5,
+  spacer: {
+    flex: 1,
   },
-  status: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 5,
-    fontSize: '0.6875rem',
-    fontWeight: 600,
-    whiteSpace: 'nowrap',
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: '50%',
-    backgroundColor: 'currentColor',
-    flexShrink: 0,
+  ago: {
+    color: theme.palette.text.disabled,
   },
   stats: {
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(0.75),
+    flexShrink: 0,
     color: theme.palette.text.secondary,
   },
   stat: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 3,
-    fontSize: '0.6875rem',
+    gap: 2,
+    fontSize: '0.65625rem',
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
-      fontSize: 15,
-      width: 15,
-      height: 15,
+      fontSize: 14,
+      width: 14,
+      height: 14,
     },
+  },
+  expand: {
+    appearance: 'none',
+    background: 'none',
+    border: 0,
+    cursor: 'pointer',
+    flexShrink: 0,
+    alignSelf: 'stretch',
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 0.5),
+    color: theme.palette.text.disabled,
+  },
+  chevron: {
+    fontSize: 17,
+    transition: 'transform .15s ease',
+  },
+  chevronOpen: {
+    transform: 'rotate(180deg)',
+  },
+  foldBody: {
+    padding: theme.spacing(0.875, 1.25, 1, 1.25),
+    borderTop: `1px solid ${theme.palette.divider}`,
+    backgroundColor: foldBg(theme),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.75),
+  },
+  clientBlock: {
+    paddingTop: theme.spacing(0.75),
+    borderTop: `1px dashed ${theme.palette.divider}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+  },
+  clientLabel: {
+    fontSize: '0.59375rem',
+    fontWeight: 800,
+    letterSpacing: '.05em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.disabled,
+  },
+  kv: {
+    margin: 0,
+    display: 'grid',
+    gridTemplateColumns: 'auto 1fr',
+    columnGap: theme.spacing(1.5),
+    rowGap: 2,
+    fontSize: '0.65625rem',
+  },
+  kvKey: {
+    color: theme.palette.text.disabled,
+    whiteSpace: 'nowrap',
+  },
+  kvVal: {
+    margin: 0,
+    textAlign: 'end',
+    fontWeight: 600,
+    color: theme.palette.text.primary,
+    overflowWrap: 'anywhere',
+  },
+  noData: {
+    fontSize: '0.65625rem',
+    color: theme.palette.text.disabled,
+    fontStyle: 'italic',
   },
   success: { color: theme.palette.success.main },
   warning: { color: theme.palette.warning.main },
@@ -156,7 +244,32 @@ const batteryIcon = (level, charge) => {
   return charge ? <BatteryCharging20Icon /> : <Battery20Icon />;
 };
 
-const DeviceRow = ({ device, style }) => {
+// Los atributos "modelo" y "contacto" viajan como JSON en los campos nativos
+// model/contact del dispositivo. Los mostramos tal cual vienen (todas las claves
+// en orden); si no parsea o está vacío, la sección dice "Sin datos".
+const parseJson = (value) => {
+  if (!value) {
+    return null;
+  }
+  if (typeof value === 'object') {
+    return value;
+  }
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const renderValue = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+};
+
+const DeviceRow = ({ device, style, expanded, onToggleExpand }) => {
   const { classes, cx } = useStyles();
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -176,16 +289,34 @@ const DeviceRow = ({ device, style }) => {
 
   const name = item[devicePrimary] || item.name;
 
-  const metaText = [
-    item.model,
-    item.uniqueId,
-    item.lastUpdate ? dayjs(item.lastUpdate).fromNow() : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const locTime = position?.fixTime || item.lastUpdate;
+  const modelData = parseJson(item.model);
+  const contactData = admin ? parseJson(item.contact) : null;
+
+  const kv = (data) => (
+    <dl className={classes.kv}>
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} style={{ display: 'contents' }}>
+          <dt className={classes.kvKey}>{key}</dt>
+          <dd className={classes.kvVal}>{renderValue(value)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+
+  const dataOrNoData = (data) =>
+    data ? kv(data) : <span className={classes.noData}>{t('sharedNoData')}</span>;
 
   return (
-    <div style={style}>
+    <div
+      style={{
+        ...style,
+        boxSizing: 'border-box',
+        paddingTop: CARD_GAP,
+        paddingLeft: CARD_INSET,
+        paddingRight: CARD_INSET,
+      }}
+    >
       <ListItemButton
         key={item.id}
         className={classes.root}
@@ -194,32 +325,55 @@ const DeviceRow = ({ device, style }) => {
         disabled={!admin && item.disabled}
         selected={selected}
       >
-        <div
-          className={classes.iconWrap}
-          style={{
-            color: statusColor,
-            backgroundColor: alpha(statusColor, 0.16),
-          }}
-        >
-          <span
-            className={classes.icon}
+        <div className={classes.header}>
+          <div
+            className={classes.iconWrap}
             style={{
-              WebkitMaskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
-              maskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
+              color: statusColor,
+              backgroundColor: alpha(statusColor, 0.16),
             }}
-          />
+          >
+            <span
+              className={classes.icon}
+              style={{
+                WebkitMaskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
+                maskImage: `url("${mapIcons[mapIconKey(item.category)]}")`,
+              }}
+            />
+          </div>
+
+          <div className={classes.body}>
+            <div className={classes.titleRow}>
+              <span className={classes.title}>{name}</span>
+              <span
+                className={classes.status}
+                style={{ color: statusColor, backgroundColor: alpha(statusColor, 0.13) }}
+              >
+                <span className={classes.dot} />
+                {formatStatus(item.status, t)}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={classes.expand}
+            title={t('deviceVehicleDetails')}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleExpand(item.id);
+            }}
+          >
+            <ExpandMoreIcon className={cx(classes.chevron, expanded && classes.chevronOpen)} />
+          </button>
         </div>
 
-        <div className={classes.body}>
-          <div className={classes.title}>{name}</div>
-          <div className={classes.meta}>{metaText}</div>
-        </div>
-
-        <div className={classes.side}>
-          <span className={cx(classes.status, classes[statusKey])}>
-            <span className={classes.dot} />
-            {formatStatus(item.status, t)}
+        <div className={classes.locMetrics}>
+          <span className={classes.locline}>
+            {locTime ? dayjs(locTime).format('DD/MM/YY-HH:mm') : '—'}
+            {locTime && <span className={classes.ago}>{` · ${dayjs(locTime).fromNow()}`}</span>}
           </span>
+          <span className={classes.spacer} />
           {position && (
             <div className={classes.stats}>
               {position.attributes.hasOwnProperty('alarm') && (
@@ -261,6 +415,18 @@ const DeviceRow = ({ device, style }) => {
             </div>
           )}
         </div>
+
+        {expanded && (
+          <div className={classes.foldBody}>
+            {dataOrNoData(modelData)}
+            {admin && (
+              <div className={classes.clientBlock}>
+                <div className={classes.clientLabel}>{t('deviceClient')}</div>
+                {dataOrNoData(contactData)}
+              </div>
+            )}
+          </div>
+        )}
       </ListItemButton>
     </div>
   );

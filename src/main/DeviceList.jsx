@@ -1,7 +1,7 @@
-import { useEffect, useReducer, useMemo, useCallback } from 'react';
+import { useEffect, useReducer, useMemo, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
-import { List } from 'react-window';
+import { List, useDynamicRowHeight } from 'react-window';
 import { ButtonBase } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { devicesActions } from '../store';
@@ -12,7 +12,9 @@ import DeviceRow from './DeviceRow';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const GROUP_HEIGHT = 40;
-const DEVICE_HEIGHT = 57;
+// Estimación inicial antes de medir; las filas se autoajustan por contenido
+// (detalle del vehículo colapsable + banda de contacto en admin).
+const DEVICE_HEIGHT = 92;
 
 const useStyles = makeStyles()((theme) => ({
   list: {
@@ -21,7 +23,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   groupHeader: {
     width: '100%',
-    height: '100%',
+    height: GROUP_HEIGHT,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -77,12 +79,19 @@ const GroupHeader = ({ style, group, onToggle }) => {
   );
 };
 
-const DeviceListRow = ({ index, style, rows, onToggle }) => {
+const DeviceListRow = ({ index, style, rows, onToggle, expanded, onToggleExpand }) => {
   const row = rows[index];
   if (row.type === 'group') {
     return <GroupHeader style={style} group={row} onToggle={onToggle} />;
   }
-  return <DeviceRow style={style} device={row.device} />;
+  return (
+    <DeviceRow
+      style={style}
+      device={row.device}
+      expanded={expanded.has(row.device.id)}
+      onToggleExpand={onToggleExpand}
+    />
+  );
 };
 
 const DeviceList = ({ devices }) => {
@@ -95,6 +104,20 @@ const DeviceList = ({ devices }) => {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [collapsed, setCollapsed] = usePersistedState('deviceGroupsCollapsed', []);
   const [grouped] = usePersistedState('devicesGrouped', true);
+  const [expanded, setExpanded] = useState(() => new Set());
+  const rowHeight = useDynamicRowHeight({ defaultRowHeight: DEVICE_HEIGHT });
+
+  const onToggleExpand = useCallback((deviceId) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(deviceId)) {
+        next.delete(deviceId);
+      } else {
+        next.add(deviceId);
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(forceUpdate, 60000);
@@ -168,8 +191,8 @@ const DeviceList = ({ devices }) => {
       className={classes.list}
       rowComponent={DeviceListRow}
       rowCount={rows.length}
-      rowHeight={(index) => (rows[index].type === 'group' ? GROUP_HEIGHT : DEVICE_HEIGHT)}
-      rowProps={{ rows, onToggle }}
+      rowHeight={rowHeight}
+      rowProps={{ rows, onToggle, expanded, onToggleExpand }}
       overscanCount={5}
     />
   );

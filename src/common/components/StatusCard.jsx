@@ -49,10 +49,16 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
       width: theme.dimensions.popupMaxWidth,
       borderRadius: 16,
     },
-    // Mobile: hoja inferior a ancho completo, solo redondeada arriba.
+    // Mobile: hoja inferior a ancho completo, solo redondeada arriba, pegada al
+    // fondo. Sin sombra inferior; solo una sombra hacia arriba para separarla
+    // del contenido de atrás.
     [theme.breakpoints.down('md')]: {
       width: '100%',
       borderRadius: theme.spacing(2, 2, 0, 0),
+      boxShadow:
+        theme.palette.mode === 'dark'
+          ? '0 -6px 18px rgba(0, 0, 0, 0.5)'
+          : '0 -4px 16px rgba(0, 0, 0, 0.14)',
     },
   },
   strip: {
@@ -269,7 +275,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
             dragHandleClassName="draggable-header"
             style={{ position: 'relative' }}
           >
-            <Card elevation={3} className={classes.card}>
+            <Card elevation={desktop ? 3 : 0} className={classes.card}>
               <div className={classes.strip} style={{ backgroundColor: statusColor }} />
               <CardMedia
                 className={`draggable-header ${deviceImage ? classes.media : ''}`}
