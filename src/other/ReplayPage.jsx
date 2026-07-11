@@ -7,7 +7,9 @@ import {
   ToggleButtonGroup,
   Toolbar,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import TuneIcon from '@mui/icons-material/Tune';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -21,7 +23,8 @@ import MapView from '../map/core/MapView';
 import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapPositions from '../map/MapPositions';
-import { formatTime } from '../common/util/formatter';
+import { formatTime, formatSpeed } from '../common/util/formatter';
+import { useAttributePreference } from '../common/util/preferences';
 import ReportFilter from '../reports/components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatchCallback } from '../reactHelper';
@@ -92,6 +95,94 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     padding: theme.spacing(2),
   },
+  // --- Mobile: mapa a pantalla completa + barra inferior compacta ---
+  mTop: {
+    position: 'fixed',
+    top: theme.spacing(1.5),
+    left: theme.spacing(1.5),
+    right: theme.spacing(1.5),
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    zIndex: 4,
+  },
+  mBtn: {
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[3],
+    '&:hover': {
+      backgroundColor: theme.palette.background.paper,
+    },
+  },
+  mTitle: {
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 999,
+    padding: theme.spacing(1, 1.75),
+    boxShadow: theme.shadows[3],
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    fontSize: '0.8125rem',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  mBottom: {
+    position: 'fixed',
+    left: theme.spacing(1.5),
+    right: theme.spacing(1.5),
+    // Por encima de la barra de módulos que App muestra en mobile.
+    bottom: `calc(${theme.dimensions.bottomBarHeight}px + ${theme.spacing(1.5)})`,
+    zIndex: 4,
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 16,
+    boxShadow: theme.shadows[6],
+    padding: theme.spacing(1.25, 1.5),
+  },
+  mInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing(1.5),
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+    fontVariantNumeric: 'tabular-nums',
+    marginBottom: theme.spacing(0.5),
+  },
+  mInfoSpeed: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 800,
+    color: theme.palette.text.primary,
+  },
+  mBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.25),
+  },
+  mBarSlider: {
+    flex: 1,
+    margin: theme.spacing(0, 1),
+  },
+  mIdx: {
+    fontSize: '0.6875rem',
+    color: theme.palette.text.disabled,
+    whiteSpace: 'nowrap',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  mSheet: {
+    position: 'fixed',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 5,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.spacing(2, 2, 0, 0),
+    boxShadow: theme.shadows[8],
+    padding: theme.spacing(2),
+    maxHeight: '85%',
+    overflowY: 'auto',
+  },
 }));
 
 // Rumbo (grados) del punto a hacia b, para orientar el pin en el sentido de
@@ -109,6 +200,9 @@ const bearing = (a, b) => {
 const ReplayPage = () => {
   const t = useTranslation();
   const { classes } = useStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const speedUnit = useAttributePreference('speedUnit');
   const navigate = useNavigate();
   const frameRef = useRef(0);
   const stateRef = useRef({ index: 0, progress: 0 });
@@ -264,47 +358,125 @@ const ReplayPage = () => {
       </MapView>
       <MapScale position="bottom-right" />
       <MapCamera positions={positions} />
-      <div className={classes.sidebar}>
-        <Paper elevation={0} className={classes.header}>
-          <Toolbar>
-            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+      {desktop ? (
+        <div className={classes.sidebar}>
+          <Paper elevation={0} className={classes.header}>
+            <Toolbar>
+              <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+                <BackIcon />
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                {t('reportReplay')}
+              </Typography>
+              {loaded && (
+                <>
+                  <IconButton onClick={handleDownload}>
+                    <DownloadIcon />
+                  </IconButton>
+                  <IconButton edge="end" onClick={() => setFilterOpen((open) => !open)}>
+                    <TuneIcon />
+                  </IconButton>
+                </>
+              )}
+            </Toolbar>
+          </Paper>
+          <Paper elevation={0} className={classes.content}>
+            {loaded && !filterOpen && (
+              <>
+                <Typography variant="subtitle1" align="center">
+                  {deviceName}
+                </Typography>
+                <Slider
+                  className={classes.slider}
+                  max={positions.length - 1}
+                  step={null}
+                  marks={positions.map((_, index) => ({ value: index }))}
+                  value={index}
+                  onChange={(_, index) => {
+                    setIndex(index);
+                    setProgress(0);
+                  }}
+                />
+                <div className={classes.controls}>
+                  <Typography variant="caption">{`${index + 1}/${positions.length}`}</Typography>
+                  <IconButton
+                    onClick={() => {
+                      setIndex((index) => index - 1);
+                      setProgress(0);
+                    }}
+                    disabled={playing || index <= 0}
+                  >
+                    <FastRewindIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => setPlaying(!playing)}
+                    disabled={index >= positions.length - 1}
+                  >
+                    {playing ? <PauseIcon /> : <PlayArrowIcon />}
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      setIndex((index) => index + 1);
+                      setProgress(0);
+                    }}
+                    disabled={playing || index >= positions.length - 1}
+                  >
+                    <FastForwardIcon />
+                  </IconButton>
+                  <Typography variant="caption">
+                    {formatTime(positions[index].fixTime, 'seconds')}
+                  </Typography>
+                </div>
+                <ToggleButtonGroup
+                  exclusive
+                  fullWidth
+                  size="small"
+                  value={speed}
+                  onChange={(_, value) => value && setSpeed(value)}
+                  className={classes.speed}
+                >
+                  {[0.5, 1, 2, 4].map((value) => (
+                    <ToggleButton key={value} value={value}>
+                      {`${value}x`}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </>
+            )}
+            <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>
+              <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
+            </div>
+          </Paper>
+        </div>
+      ) : (
+        <>
+          <div className={classes.mTop}>
+            <IconButton className={classes.mBtn} onClick={() => navigate(-1)}>
               <BackIcon />
             </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {t('reportReplay')}
-            </Typography>
+            <div className={classes.mTitle}>{deviceName || t('reportReplay')}</div>
             {loaded && (
               <>
-                <IconButton onClick={handleDownload}>
+                <IconButton className={classes.mBtn} onClick={handleDownload}>
                   <DownloadIcon />
                 </IconButton>
-                <IconButton edge="end" onClick={() => setFilterOpen((open) => !open)}>
+                <IconButton className={classes.mBtn} onClick={() => setFilterOpen((open) => !open)}>
                   <TuneIcon />
                 </IconButton>
               </>
             )}
-          </Toolbar>
-        </Paper>
-        <Paper elevation={0} className={classes.content}>
+          </div>
           {loaded && !filterOpen && (
-            <>
-              <Typography variant="subtitle1" align="center">
-                {deviceName}
-              </Typography>
-              <Slider
-                className={classes.slider}
-                max={positions.length - 1}
-                step={null}
-                marks={positions.map((_, index) => ({ value: index }))}
-                value={index}
-                onChange={(_, index) => {
-                  setIndex(index);
-                  setProgress(0);
-                }}
-              />
-              <div className={classes.controls}>
-                <Typography variant="caption">{`${index + 1}/${positions.length}`}</Typography>
+            <div className={classes.mBottom}>
+              <div className={classes.mInfo}>
+                <span className={classes.mInfoSpeed}>
+                  {formatSpeed(positions[index].speed, speedUnit, t)}
+                </span>
+                <span>{formatTime(positions[index].fixTime, 'seconds')}</span>
+              </div>
+              <div className={classes.mBar}>
                 <IconButton
+                  size="small"
                   onClick={() => {
                     setIndex((index) => index - 1);
                     setProgress(0);
@@ -314,12 +486,14 @@ const ReplayPage = () => {
                   <FastRewindIcon />
                 </IconButton>
                 <IconButton
+                  size="small"
                   onClick={() => setPlaying(!playing)}
                   disabled={index >= positions.length - 1}
                 >
                   {playing ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
                 <IconButton
+                  size="small"
                   onClick={() => {
                     setIndex((index) => index + 1);
                     setProgress(0);
@@ -328,9 +502,19 @@ const ReplayPage = () => {
                 >
                   <FastForwardIcon />
                 </IconButton>
-                <Typography variant="caption">
-                  {formatTime(positions[index].fixTime, 'seconds')}
-                </Typography>
+                <Slider
+                  className={classes.mBarSlider}
+                  size="small"
+                  max={positions.length - 1}
+                  step={null}
+                  marks={positions.map((_, index) => ({ value: index }))}
+                  value={index}
+                  onChange={(_, index) => {
+                    setIndex(index);
+                    setProgress(0);
+                  }}
+                />
+                <span className={classes.mIdx}>{`${index + 1}/${positions.length}`}</span>
               </div>
               <ToggleButtonGroup
                 exclusive
@@ -346,13 +530,15 @@ const ReplayPage = () => {
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
-            </>
+            </div>
           )}
-          <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>
-            <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
-          </div>
-        </Paper>
-      </div>
+          {(!loaded || filterOpen) && (
+            <div className={classes.mSheet}>
+              <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
+            </div>
+          )}
+        </>
+      )}
       {showCard && index < positions.length && (
         <StatusCard
           deviceId={selectedDeviceId}

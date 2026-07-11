@@ -1,9 +1,13 @@
 import dayjs from 'dayjs';
-import { useState } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, useTheme } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { FormControl, InputLabel, Select, MenuItem, useMediaQuery } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 import {
+  Area,
   Brush,
   CartesianGrid,
+  ComposedChart,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -29,9 +33,88 @@ import {
 import useReportStyles from './common/useReportStyles';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
+// Estilos de la vista mobile (métrica única + KPIs).
+const useMobileStyles = makeStyles()((theme) => ({
+  wrap: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    padding: theme.spacing(1.5),
+    gap: theme.spacing(1.5),
+    flex: 1,
+  },
+  seg: {
+    display: 'flex',
+    gap: 4,
+    backgroundColor: theme.palette.action.hover,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 10,
+    padding: 3,
+    overflowX: 'auto',
+  },
+  segButton: {
+    appearance: 'none',
+    flex: 1,
+    minWidth: 'max-content',
+    border: 0,
+    background: 'none',
+    cursor: 'pointer',
+    fontFamily: theme.fonts.body,
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    color: theme.palette.text.secondary,
+    padding: theme.spacing(0.75, 1.25),
+    borderRadius: 7,
+    whiteSpace: 'nowrap',
+  },
+  segActive: {
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.primary.main,
+    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.08)',
+  },
+  chart: {
+    flex: 1,
+    minHeight: 220,
+  },
+  kpis: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: theme.spacing(1),
+    flexShrink: 0,
+  },
+  kpi: {
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 10,
+    padding: theme.spacing(1, 0.75),
+    textAlign: 'center',
+  },
+  kpiLabel: {
+    display: 'block',
+    fontSize: '0.6rem',
+    textTransform: 'uppercase',
+    letterSpacing: '.03em',
+    color: theme.palette.text.disabled,
+  },
+  kpiValue: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 800,
+    fontSize: '1.35rem',
+    lineHeight: 1.1,
+    display: 'block',
+    margin: '3px 0 0',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  kpiSub: {
+    fontSize: '0.6rem',
+    color: theme.palette.text.disabled,
+  },
+}));
+
 const ChartReportPage = () => {
   const { classes } = useReportStyles();
+  const { classes: mobile, cx } = useMobileStyles();
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const t = useTranslation();
 
   const positionAttributes = usePositionAttributes(t);
@@ -45,6 +128,14 @@ const ChartReportPage = () => {
   const [types, setTypes] = useState(['speed']);
   const [selectedTypes, setSelectedTypes] = useState(['speed']);
   const [timeType, setTimeType] = useState('fixTime');
+  // En mobile se muestra una sola métrica a la vez (segmented).
+  const [activeType, setActiveType] = useState('speed');
+
+  useEffect(() => {
+    if (!selectedTypes.includes(activeType)) {
+      setActiveType(selectedTypes[0] || 'speed');
+    }
+  }, [selectedTypes, activeType]);
 
   const values = items.map((it) =>
     selectedTypes.map((type) => it[type]).filter((value) => value != null),
@@ -52,6 +143,18 @@ const ChartReportPage = () => {
   const minValue = values.length ? Math.min(...values) : 0;
   const maxValue = values.length ? Math.max(...values) : 100;
   const valueRange = maxValue - minValue;
+
+  // Estadísticas de la métrica activa (para los KPIs de mobile).
+  const activeValues = items.map((it) => Number(it[activeType])).filter((v) => !Number.isNaN(v));
+  const activeMax = activeValues.length ? Math.max(...activeValues) : 0;
+  const activeMin = activeValues.length ? Math.min(...activeValues) : 0;
+  const activeAvg = activeValues.length
+    ? activeValues.reduce((a, b) => a + b, 0) / activeValues.length
+    : 0;
+  const activeMaxItem = activeValues.length
+    ? items.find((it) => Number(it[activeType]) === activeMax)
+    : null;
+  const fmt = (v) => parseFloat(v.toFixed(2));
 
   const onShow = useCatchCallback(
     async ({ deviceIds, from, to }) => {
@@ -165,62 +268,162 @@ const ChartReportPage = () => {
           </FormControl>
         </div>
       </ReportFilter>
-      {items.length > 0 && (
-        <div className={classes.chart}>
-          <ResponsiveContainer>
-            <LineChart
-              data={items}
-              margin={{
-                top: 10,
-                right: 40,
-                left: 10,
-                bottom: 10,
-              }}
-            >
-              <XAxis
-                stroke={theme.palette.text.primary}
-                dataKey={timeType}
-                type="number"
-                tickFormatter={(value) => formatTime(value, 'time')}
-                domain={['dataMin', 'dataMax']}
-                scale="time"
-              />
-              <YAxis
-                stroke={theme.palette.text.primary}
-                type="number"
-                tickFormatter={(value) => parseFloat(value.toFixed(2))}
-                domain={[minValue - valueRange / 5, maxValue + valueRange / 5]}
-              />
-              <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme.palette.background.default,
-                  color: theme.palette.text.primary,
+      {items.length > 0 &&
+        (desktop ? (
+          <div className={classes.chart}>
+            <ResponsiveContainer>
+              <LineChart
+                data={items}
+                margin={{
+                  top: 10,
+                  right: 40,
+                  left: 10,
+                  bottom: 10,
                 }}
-                formatter={(value, key) => [value, positionAttributes[key]?.name || key]}
-                labelFormatter={(value) => formatTime(value, 'seconds')}
-              />
-              <Brush
-                dataKey={timeType}
-                height={30}
-                stroke={theme.palette.primary.main}
-                tickFormatter={() => ''}
-              />
-              {selectedTypes.map((type, index) => (
-                <Line
-                  key={type}
-                  type="monotone"
-                  dataKey={type}
-                  stroke={colorPalette[index % colorPalette.length]}
-                  dot={false}
-                  activeDot={{ r: 6 }}
-                  connectNulls
+              >
+                <XAxis
+                  stroke={theme.palette.text.primary}
+                  dataKey={timeType}
+                  type="number"
+                  tickFormatter={(value) => formatTime(value, 'time')}
+                  domain={['dataMin', 'dataMax']}
+                  scale="time"
                 />
+                <YAxis
+                  stroke={theme.palette.text.primary}
+                  type="number"
+                  tickFormatter={(value) => parseFloat(value.toFixed(2))}
+                  domain={[minValue - valueRange / 5, maxValue + valueRange / 5]}
+                />
+                <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme.palette.background.default,
+                    color: theme.palette.text.primary,
+                  }}
+                  formatter={(value, key) => [value, positionAttributes[key]?.name || key]}
+                  labelFormatter={(value) => formatTime(value, 'seconds')}
+                />
+                <Brush
+                  dataKey={timeType}
+                  height={30}
+                  stroke={theme.palette.primary.main}
+                  tickFormatter={() => ''}
+                />
+                {selectedTypes.map((type, index) => (
+                  <Line
+                    key={type}
+                    type="monotone"
+                    dataKey={type}
+                    stroke={colorPalette[index % colorPalette.length]}
+                    dot={false}
+                    activeDot={{ r: 6 }}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className={mobile.wrap}>
+            <div className={mobile.seg}>
+              {selectedTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={cx(mobile.segButton, type === activeType && mobile.segActive)}
+                  onClick={() => setActiveType(type)}
+                >
+                  {positionAttributes[type]?.name || type}
+                </button>
               ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+            </div>
+            <div className={mobile.chart}>
+              <ResponsiveContainer>
+                <ComposedChart data={items} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={theme.palette.primary.main} stopOpacity={0.22} />
+                      <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    stroke={theme.palette.text.secondary}
+                    dataKey={timeType}
+                    type="number"
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => formatTime(value, 'time')}
+                    domain={['dataMin', 'dataMax']}
+                    scale="time"
+                  />
+                  <YAxis
+                    stroke={theme.palette.text.secondary}
+                    type="number"
+                    width={34}
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => parseFloat(value.toFixed(2))}
+                    domain={['auto', 'auto']}
+                  />
+                  <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: theme.palette.background.default,
+                      color: theme.palette.text.primary,
+                      fontSize: 12,
+                    }}
+                    formatter={(value) => [
+                      value,
+                      positionAttributes[activeType]?.name || activeType,
+                    ]}
+                    labelFormatter={(value) => formatTime(value, 'seconds')}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={activeType}
+                    stroke="none"
+                    fill="url(#chartFill)"
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={activeType}
+                    stroke={theme.palette.primary.main}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 5 }}
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className={mobile.kpis}>
+              <div
+                className={mobile.kpi}
+                style={{ borderColor: alpha(theme.palette.primary.main, 0.3) }}
+              >
+                <span className={mobile.kpiLabel}>{t('reportMaximum')}</span>
+                <span className={mobile.kpiValue} style={{ color: theme.palette.primary.main }}>
+                  {fmt(activeMax)}
+                </span>
+                {activeMaxItem && (
+                  <span className={mobile.kpiSub}>
+                    {formatTime(activeMaxItem[timeType], 'time')}
+                  </span>
+                )}
+              </div>
+              <div className={mobile.kpi}>
+                <span className={mobile.kpiLabel}>{t('reportAverage')}</span>
+                <span className={mobile.kpiValue}>{fmt(activeAvg)}</span>
+              </div>
+              <div className={mobile.kpi}>
+                <span className={mobile.kpiLabel}>{t('reportMinimum')}</span>
+                <span className={mobile.kpiValue}>{fmt(activeMin)}</span>
+              </div>
+            </div>
+          </div>
+        ))}
     </PageLayout>
   );
 };
