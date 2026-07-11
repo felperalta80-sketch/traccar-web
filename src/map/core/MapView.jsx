@@ -4,6 +4,8 @@ import { googleProtocol } from 'maplibre-google-maps';
 import { Protocol } from 'pmtiles';
 import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
 import { useTheme, GlobalStyles } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { INK } from '../../common/theme/palette';
 import MapSwitcher from '../control/MapSwitcher';
 import { useAttributePreference, usePreference } from '../../common/util/preferences';
 import usePersistedState from '../../common/util/usePersistedState';
@@ -33,7 +35,7 @@ const mapControlStyles = {
   '.maplibregl-ctrl-group': {
     borderRadius: '8px !important',
     background: '#fff',
-    border: '1px solid rgba(28, 37, 54, 0.06)',
+    border: `1px solid ${alpha(INK, 0.06)}`,
     boxShadow: '0 2px 4px rgba(16, 24, 40, 0.22), 0 6px 18px rgba(16, 24, 40, 0.24) !important',
     overflow: 'hidden',
   },
@@ -42,10 +44,10 @@ const mapControlStyles = {
     height: '29px !important',
   },
   '.maplibregl-ctrl-group button + button': {
-    borderTop: '1px solid rgba(28, 37, 54, 0.08)',
+    borderTop: `1px solid ${alpha(INK, 0.08)}`,
   },
   '.maplibregl-ctrl-group button:hover': {
-    backgroundColor: 'rgba(28, 37, 54, 0.05)',
+    backgroundColor: alpha(INK, 0.05),
   },
   '.maplibregl-ctrl-group button svg': {
     width: '18px',

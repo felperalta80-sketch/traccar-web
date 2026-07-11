@@ -52,14 +52,20 @@ const useStyles = makeStyles()((theme) => ({
     // destacarlo del resto sin ser estridente.
     '&.Mui-selected': {
       backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 37, 54, 0.05)',
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.06)'
+          : alpha(theme.palette.ink.main, 0.05),
       borderColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.22)' : 'rgba(28, 37, 54, 0.22)',
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.22)'
+          : alpha(theme.palette.ink.main, 0.22),
       borderLeftColor: 'var(--st)',
     },
     '&.Mui-selected:hover': {
       backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(28, 37, 54, 0.08)',
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.09)'
+          : alpha(theme.palette.ink.main, 0.08),
     },
   },
   header: {

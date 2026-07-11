@@ -8,6 +8,7 @@ import { mapIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
 import { buildLabelImage, findFonts, fromMapCoordinates, toMapCoordinates } from './core/mapUtil';
+import { INK } from '../common/theme/palette';
 
 const MapPositions = ({
   positions,
@@ -214,7 +215,7 @@ const MapPositions = ({
       source: id,
       filter: ['has', 'point_count'],
       paint: {
-        'circle-color': '#1C2536',
+        'circle-color': INK,
         'circle-opacity': 0.28,
         'circle-blur': 0.7,
         'circle-radius': ['step', ['get', 'point_count'], 31, 10, 37, 50, 46],
@@ -226,7 +227,7 @@ const MapPositions = ({
       source: id,
       filter: ['has', 'point_count'],
       paint: {
-        'circle-color': '#1C2536',
+        'circle-color': INK,
         'circle-radius': ['step', ['get', 'point_count'], 17, 10, 21, 50, 27],
         'circle-stroke-width': 3,
         'circle-stroke-color': '#FFFFFF',

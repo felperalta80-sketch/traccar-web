@@ -2,6 +2,7 @@ import { parse, stringify } from 'wellknown';
 import turfCircle from '@turf/circle';
 import gcoord from 'gcoord';
 import { map } from './MapView';
+import { INK } from '../../common/theme/palette';
 
 const coordinateSystem = (id) => {
   switch (id) {
@@ -284,10 +285,10 @@ export const buildLabelImage = (text) => {
   context.fillStyle = '#FFFFFF';
   context.fill();
   context.lineWidth = border;
-  context.strokeStyle = '#1C2536';
+  context.strokeStyle = INK;
   context.stroke();
 
-  context.fillStyle = '#1C2536';
+  context.fillStyle = INK;
   context.font = font;
   context.textAlign = 'center';
   context.textBaseline = 'middle';

@@ -2,6 +2,9 @@ import { grey, green, indigo } from '@mui/material/colors';
 
 const validatedColor = (color) => (/^#([0-9A-Fa-f]{3}){1,2}$/.test(color) ? color : null);
 
+// Tinta de marca Ubimax (chrome neutro: marcadores, selección, controles del mapa).
+export const INK = '#1C2536';
+
 export default (server, darkMode) => ({
   mode: darkMode ? 'dark' : 'light',
   background: {
@@ -20,6 +23,9 @@ export default (server, darkMode) => ({
   },
   geometry: {
     main: '#3bb2d0',
+  },
+  ink: {
+    main: INK,
   },
   alwaysDark: {
     main: grey[900],
