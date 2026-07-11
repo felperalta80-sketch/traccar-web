@@ -231,6 +231,7 @@
     "loginReset": "Reiniciar contraseña",
     "loginRegister": "Registrarse",
     "loginLogin": "Iniciar sesión",
+    "loginRemember": "Recordar contraseña",
     "loginOpenId": "Iniciar sesión con OpenID",
     "loginFailed": "Email o contraseña incorrecta",
     "loginCreated": "Se ha registrado un nuevo usuario",

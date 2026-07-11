@@ -26,8 +26,7 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import PlaceIcon from '@mui/icons-material/Place';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
-import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
+import NavigationIcon from '@mui/icons-material/Navigation';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -198,18 +197,8 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     whiteSpace: 'normal',
     wordBreak: 'normal',
   },
-  segAgo: {
-    fontSize: '0.6rem',
-    lineHeight: 1.3,
-    // Reserva la altura de esta línea aunque esté vacía (velocidad no la usa),
-    // para que las 3 filas queden alineadas y el valor de velocidad quede
-    // centrado verticalmente igual que el resto.
-    minHeight: '0.78rem',
-    color: theme.palette.text.disabled,
-    whiteSpace: 'nowrap',
-  },
   location: {
-    padding: theme.spacing(1.25, 1.75, 0.5),
+    padding: theme.spacing(1.25, 1.75, 1),
     borderTop: `1px solid ${theme.palette.divider}`,
   },
   locationLabel: {
@@ -231,18 +220,37 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     fontWeight: 600,
     lineHeight: 1.3,
     color: theme.palette.text.primary,
+    // Máximo 2 líneas para la dirección.
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
   },
   lastLine: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: theme.spacing(0.75),
     padding: theme.spacing(0.75, 1.75, 1.25),
-    fontSize: '0.6875rem',
     color: theme.palette.text.secondary,
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
       fontSize: 14,
+      marginTop: 1,
     },
+  },
+  lastText: {
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+  lastLabel: {
+    fontSize: '0.6875rem',
+    lineHeight: 1.35,
+  },
+  lastAgo: {
+    fontSize: '0.625rem',
+    lineHeight: 1.3,
+    color: theme.palette.text.disabled,
   },
   detailsLink: {
     marginLeft: 'auto',
@@ -282,16 +290,6 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   },
 }));
 
-// Último evento de un tipo dado (los eventos vienen en orden ascendente).
-const lastEventTime = (events, type) => {
-  for (let i = events.length - 1; i >= 0; i -= 1) {
-    if (events[i].type === type) {
-      return events[i].eventTime || events[i].serverTime;
-    }
-  }
-  return null;
-};
-
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
   const { classes } = useStyles({ desktopPadding });
   const theme = useTheme();
@@ -324,7 +322,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const ignition = attributes.ignition;
   const motion = attributes.motion;
   const batteryLevel = attributes.batteryLevel;
-  const charge = attributes.charge;
 
   const driverUniqueId = attributes.driverUniqueId;
   const driverName = useSelector((state) =>
@@ -334,47 +331,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const [anchorEl, setAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [events, setEvents] = useState([]);
   const [address, setAddress] = useState();
-
-  // "Desde cuándo" del motor/movimiento: no está en la posición viva; se busca la
-  // última transición vía la API de eventos (ventana de 7 días). Se refresca al
-  // cambiar de dispositivo o cuando el estado (ignición/movimiento) cambia.
-  useEffect(() => {
-    if (!position) {
-      setEvents([]);
-      return undefined;
-    }
-    let active = true;
-    (async () => {
-      try {
-        const to = dayjs();
-        const from = to.subtract(7, 'day');
-        const params = new URLSearchParams();
-        params.append('deviceId', deviceId);
-        ['deviceMoving', 'deviceStopped', 'ignitionOn', 'ignitionOff'].forEach((type) =>
-          params.append('type', type),
-        );
-        params.append('from', from.toISOString());
-        params.append('to', to.toISOString());
-        const response = await fetchOrThrow(`/api/reports/events?${params.toString()}`, {
-          headers: { Accept: 'application/json' },
-        });
-        const data = await response.json();
-        if (active) {
-          setEvents(data);
-        }
-      } catch {
-        if (active) {
-          setEvents([]);
-        }
-      }
-    })();
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deviceId, ignition, motion]);
 
   // Dirección: usa la que ya trae la posición o la geocodifica una vez al abrir.
   useEffect(() => {
@@ -450,24 +407,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const motionLabel = hasMotion ? (motion ? t('deviceMoving') : t('deviceStopped')) : '—';
   const motionColor = hasMotion && motion ? theme.palette.success.main : theme.palette.neutral.main;
 
-  // "Desde cuándo": ralentí y parado cuentan desde que se detuvo (deviceStopped).
-  const motionSince = hasMotion
-    ? motion
-      ? lastEventTime(events, 'deviceMoving')
-      : lastEventTime(events, 'deviceStopped')
-    : null;
-  let engineSince = null;
-  if (hasIgnition) {
-    if (!ignition) {
-      engineSince = lastEventTime(events, 'ignitionOff');
-    } else if (motion) {
-      engineSince = lastEventTime(events, 'deviceMoving');
-    } else {
-      engineSince = lastEventTime(events, 'deviceStopped') || lastEventTime(events, 'ignitionOn');
-    }
-  }
-  const ago = (time) => (time ? dayjs(time).fromNow() : '');
-
   const batteryColor =
     batteryLevel != null ? theme.palette[getBatteryStatus(batteryLevel)].main : theme.palette.neutral.main;
 
@@ -542,30 +481,22 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                       <span className={classes.segValue} style={{ color: engineColor }}>
                         {engineLabel}
                       </span>
-                      <span className={classes.segAgo}>{ago(engineSince)}</span>
                     </div>
                     <div className={classes.seg}>
-                      <DirectionsRunIcon style={{ color: motionColor }} />
+                      <NavigationIcon style={{ color: motionColor }} />
                       <span className={classes.segValue} style={{ color: motionColor }}>
                         {motionLabel}
                       </span>
-                      <span className={classes.segAgo}>{ago(motionSince)}</span>
                     </div>
                     <div className={classes.seg}>
                       <SpeedIcon style={{ color: theme.palette.text.secondary }} />
                       <span className={classes.segValue}>{formatSpeed(position.speed, speedUnit, t)}</span>
-                      <span className={classes.segAgo} />
                     </div>
                     <div className={classes.seg}>
-                      {charge ? (
-                        <BatteryChargingFullIcon style={{ color: batteryColor }} />
-                      ) : (
-                        <BatteryFullIcon style={{ color: batteryColor }} />
-                      )}
+                      <BatteryFullIcon style={{ color: batteryColor }} />
                       <span className={classes.segValue} style={{ color: batteryColor }}>
                         {batteryLevel != null ? `${batteryLevel}%` : '—'}
                       </span>
-                      <span className={classes.segAgo}>{charge ? t('deviceCharging') : ''}</span>
                     </div>
                   </div>
                   <div className={classes.location}>
@@ -577,8 +508,14 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   </div>
                   <div className={classes.lastLine}>
                     <AccessTimeIcon />
-                    {`${t('deviceLastReport')}: ${locationTime ? formatTime(locationTime, 'minutes') : '—'}`}
-                    {locationTime && ` · ${dayjs(locationTime).fromNow()}`}
+                    <div className={classes.lastText}>
+                      <span className={classes.lastLabel}>
+                        {`${t('deviceLastReport')}: ${locationTime ? formatTime(locationTime, 'minutes') : '—'}`}
+                      </span>
+                      {locationTime && (
+                        <span className={classes.lastAgo}>{dayjs(locationTime).fromNow()}</span>
+                      )}
+                    </div>
                     <Link
                       component="button"
                       type="button"

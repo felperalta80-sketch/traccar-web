@@ -11,6 +11,7 @@ import StatusCard from '../common/components/StatusCard';
 import { devicesActions } from '../store';
 import MainToolbar from './MainToolbar';
 import { useAttributePreference } from '../common/util/preferences';
+import logoHorizontal from '../resources/images/logo-horizontal.svg';
 
 // El mapa persistente vive en App (desktop). MainPage renderiza el panel de la
 // lista sobre él, y en mobile su propio mapa.
@@ -81,6 +82,23 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     minHeight: 0,
   },
+  // Logo discreto en la esquina superior izquierda, solo en la vista de mapa
+  // (lista colapsada). Decorativo: no intercepta clics.
+  mapLogo: {
+    position: 'fixed',
+    top: theme.spacing(2),
+    left: theme.spacing(2),
+    height: 26,
+    width: 'auto',
+    opacity: 0.85,
+    zIndex: 3,
+    pointerEvents: 'none',
+    userSelect: 'none',
+    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18))',
+    '@media print': {
+      display: 'none',
+    },
+  },
 }));
 
 const MainPage = () => {
@@ -118,6 +136,7 @@ const MainPage = () => {
 
   return (
     <div className={classes.root}>
+      {!devicesOpen && <img src={logoHorizontal} alt="" className={classes.mapLogo} />}
       <div className={`${classes.sidebar} ${devicesOpen ? classes.sidebarCard : ''}`}>
         {devicesOpen && (
           <Paper square elevation={0} className={classes.header}>

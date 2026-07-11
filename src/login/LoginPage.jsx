@@ -1,26 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  useMediaQuery,
-  Select,
-  MenuItem,
-  FormControl,
   Button,
   TextField,
   Link,
   Snackbar,
   IconButton,
   Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
-import CountryFlag from 'react-country-flag';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
-import { useLocalization, useTranslation } from '../common/components/LocalizationProvider';
+import { useTranslation } from '../common/components/LocalizationProvider';
 import LoginLayout from './LoginLayout';
 import usePersistedState from '../common/util/usePersistedState';
 import {
@@ -29,7 +25,6 @@ import {
   nativeEnvironment,
   nativePostMessage,
 } from '../common/components/NativeInterface';
-import LogoImage from './LogoImage';
 import { useCatch } from '../reactHelper';
 import QrCodeDialog from '../common/components/QrCodeDialog';
 import PasswordField from '../common/components/PasswordField';
@@ -70,29 +65,37 @@ const LoginPage = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
   const t = useTranslation();
-
-  const { languages, language, setLocalLanguage } = useLocalization();
-  const languageList = Object.entries(languages).map((values) => ({
-    code: values[0],
-    country: values[1].country,
-    name: values[1].name,
-  }));
 
   const [failed, setFailed] = useState(false);
 
   const [email, setEmail] = usePersistedState('loginEmail', '');
-  const [password, setPassword] = useState('');
+  const [remember, setRemember] = usePersistedState('loginRemember', false);
+  const [password, setPassword] = useState(() =>
+    remember ? window.localStorage.getItem('loginPassword') || '' : '',
+  );
+
+  // Recordar contraseña: cuando el checkbox está activo, se guarda la contraseña
+  // en localStorage y se precarga; al desactivarlo se borra.
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    if (remember) {
+      window.localStorage.setItem('loginPassword', value);
+    }
+  };
+  const handleRememberChange = (checked) => {
+    setRemember(checked);
+    if (checked) {
+      window.localStorage.setItem('loginPassword', password);
+    } else {
+      window.localStorage.removeItem('loginPassword');
+    }
+  };
   const [code, setCode] = useState('');
   const [showServerTooltip, setShowServerTooltip] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
   const registrationEnabled = useSelector((state) => state.session.server.registration);
-  const languageEnabled = useSelector((state) => {
-    const attributes = state.session.server.attributes;
-    return !attributes.language && !attributes['ui.disableLoginLanguage'];
-  });
   const changeEnabled = useSelector((state) => !state.session.server.attributes.disableChange);
   const emailEnabled = useSelector((state) => state.session.server.emailEnabled);
   const openIdEnabled = useSelector((state) => state.session.server.openIdEnabled);
@@ -183,25 +186,8 @@ const LoginPage = () => {
             <QrCode2Icon />
           </IconButton>
         )}
-        {languageEnabled && (
-          <FormControl>
-            <Select value={language} onChange={(e) => setLocalLanguage(e.target.value)}>
-              {languageList.map((it) => (
-                <MenuItem key={it.code} value={it.code}>
-                  <span className={classes.flag}>
-                    <CountryFlag countryCode={it.country} svg />
-                  </span>
-                  {it.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
       </div>
       <div className={classes.container}>
-        {useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.primary.main} />
-        )}
         {!openIdForced && (
           <>
             <TextField
@@ -223,7 +209,7 @@ const LoginPage = () => {
               value={password}
               autoComplete="current-password"
               autoFocus={!!email}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => handlePasswordChange(e.target.value)}
             />
             {codeEnabled && (
               <TextField
@@ -236,6 +222,15 @@ const LoginPage = () => {
                 onChange={(e) => setCode(e.target.value)}
               />
             )}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={remember}
+                  onChange={(e) => handleRememberChange(e.target.checked)}
+                />
+              }
+              label={t('loginRemember')}
+            />
             <Button
               onClick={handlePasswordLogin}
               type="submit"
