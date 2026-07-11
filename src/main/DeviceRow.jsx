@@ -101,7 +101,7 @@ const useStyles = makeStyles()((theme) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: theme.fonts.head,
-    fontSize: '0.84375rem',
+    fontSize: theme.typography.body2.fontSize,
     fontWeight: 700,
     lineHeight: 1.25,
     color: theme.palette.text.primary,
@@ -135,7 +135,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   locline: {
     minWidth: 0,
-    fontSize: '0.65625rem',
+    fontSize: theme.typography.caption.fontSize,
     lineHeight: 1.3,
     color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
@@ -160,7 +160,7 @@ const useStyles = makeStyles()((theme) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: 2,
-    fontSize: '0.65625rem',
+    fontSize: theme.typography.caption.fontSize,
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
       fontSize: 16,
@@ -215,7 +215,7 @@ const useStyles = makeStyles()((theme) => ({
     gridTemplateColumns: 'auto 1fr',
     columnGap: theme.spacing(1.5),
     rowGap: 2,
-    fontSize: '0.65625rem',
+    fontSize: theme.typography.caption.fontSize,
   },
   kvKey: {
     color: theme.palette.text.disabled,
@@ -229,7 +229,7 @@ const useStyles = makeStyles()((theme) => ({
     overflowWrap: 'anywhere',
   },
   noData: {
-    fontSize: '0.65625rem',
+    fontSize: theme.typography.caption.fontSize,
     color: theme.palette.text.disabled,
     fontStyle: 'italic',
   },

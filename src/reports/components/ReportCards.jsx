@@ -60,7 +60,7 @@ const useStyles = makeStyles()((theme) => ({
     minWidth: 0,
     borderTop: `1px dashed ${theme.palette.divider}`,
     paddingTop: theme.spacing(0.75),
-    fontSize: '0.72rem',
+    fontSize: theme.typography.caption.fontSize,
   },
   key: {
     color: theme.palette.text.secondary,
@@ -85,7 +85,7 @@ const useStyles = makeStyles()((theme) => ({
     paddingTop: theme.spacing(0.75),
   },
   wideKey: {
-    fontSize: '0.625rem',
+    fontSize: theme.typography.label.fontSize,
     fontWeight: 700,
     letterSpacing: '.03em',
     textTransform: 'uppercase',
@@ -104,7 +104,7 @@ const useStyles = makeStyles()((theme) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
-    fontSize: '0.66rem',
+    fontSize: theme.typography.caption.fontSize,
     fontWeight: 700,
     padding: '2px 8px',
     borderRadius: 999,

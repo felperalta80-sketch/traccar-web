@@ -57,7 +57,7 @@ const useStyles = makeStyles()((theme) => ({
     lineHeight: 'unset',
     padding: theme.spacing(1.5, 2, 0.5),
     fontFamily: theme.fonts.head,
-    fontSize: '0.625rem',
+    fontSize: theme.typography.label.fontSize,
     fontWeight: 800,
     letterSpacing: '.08em',
     textTransform: 'uppercase',

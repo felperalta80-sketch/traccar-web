@@ -30,6 +30,13 @@ export default (server, darkMode, direction) =>
           body2: { fontSize: '0.8125rem' },
           button: { fontWeight: 600, fontSize: '0.8125rem', textTransform: 'none' },
           caption: { fontSize: '0.6875rem' },
+          label: {
+            fontFamily: fonts.head,
+            fontWeight: 700,
+            fontSize: '0.625rem',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          },
           overline: {
             fontFamily: fonts.head,
             fontWeight: 700,

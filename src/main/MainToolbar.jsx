@@ -81,7 +81,7 @@ const useStyles = makeStyles()((theme) => ({
       gap: theme.spacing(0.5),
       padding: theme.spacing(0.5),
       textTransform: 'none',
-      fontSize: '0.66rem',
+      fontSize: theme.typography.caption.fontSize,
       fontWeight: 600,
       lineHeight: 1.2,
       whiteSpace: 'nowrap',
@@ -93,7 +93,7 @@ const useStyles = makeStyles()((theme) => ({
       backgroundColor: alpha(theme.palette.primary.main, 0.14),
     },
     '& .m-count': {
-      fontSize: '0.66rem',
+      fontSize: theme.typography.caption.fontSize,
       fontWeight: 700,
       fontVariantNumeric: 'tabular-nums',
       color: theme.palette.text.primary,
