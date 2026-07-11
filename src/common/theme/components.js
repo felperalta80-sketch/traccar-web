@@ -39,7 +39,7 @@ export default {
   MuiPaper: {
     styleOverrides: {
       rounded: {
-        borderRadius: 12,
+        borderRadius: 9,
       },
     },
   },
@@ -54,7 +54,7 @@ export default {
   MuiCard: {
     styleOverrides: {
       root: {
-        borderRadius: 12,
+        borderRadius: 9,
       },
     },
   },

@@ -85,7 +85,7 @@ const useStyles = makeStyles()((theme) => ({
       fontWeight: 600,
       lineHeight: 1.2,
       whiteSpace: 'nowrap',
-      borderRadius: 6,
+      borderRadius: 8,
       color: theme.palette.text.secondary,
     },
     '& .MuiTab-root.Mui-selected': {

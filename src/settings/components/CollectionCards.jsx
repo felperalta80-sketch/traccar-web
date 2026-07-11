@@ -19,7 +19,7 @@ const useStyles = makeStyles()((theme) => ({
     gap: theme.spacing(1.25),
     backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.divider}`,
-    borderRadius: 11,
+    borderRadius: 9,
     padding: theme.spacing(1, 1.25),
   },
   avatar: {

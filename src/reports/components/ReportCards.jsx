@@ -20,7 +20,7 @@ const useStyles = makeStyles()((theme) => ({
     backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.divider}`,
     borderLeftWidth: 3,
-    borderRadius: 12,
+    borderRadius: 9,
     padding: theme.spacing(1.25, 1.5),
   },
   head: {
