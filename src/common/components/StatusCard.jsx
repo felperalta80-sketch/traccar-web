@@ -128,7 +128,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     gap: theme.spacing(0.5),
     fontSize: theme.typography.caption.fontSize,
     fontWeight: 700,
-    padding: '2px 8px',
+    padding: theme.spacing(0.25, 1),
     borderRadius: 999,
     whiteSpace: 'nowrap',
   },
@@ -169,7 +169,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 3,
+    gap: theme.dimensions.gapFine,
     textAlign: 'center',
     position: 'relative',
     '& + &::before': {

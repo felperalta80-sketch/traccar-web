@@ -123,7 +123,7 @@ const useStyles = makeStyles()((theme) => ({
     fontWeight: 700,
     whiteSpace: 'nowrap',
     flexShrink: 0,
-    padding: theme.spacing(0.25, 0.875),
+    padding: theme.spacing(0.25, 1),
     borderRadius: 999,
   },
   dot: {
@@ -165,7 +165,7 @@ const useStyles = makeStyles()((theme) => ({
   stat: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 2,
+    gap: theme.dimensions.gapFine,
     fontSize: theme.typography.caption.fontSize,
     fontVariantNumeric: 'tabular-nums',
     '& svg': {

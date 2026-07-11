@@ -12,4 +12,6 @@ export default {
   popupImageHeight: 144,
   cardContentMaxHeight: '40vh',
   qrCodeSize: 192,
+  // Separación mínima en inline/tabular (px crudo intencional, no múltiplo de 8).
+  gapFine: 2,
 };

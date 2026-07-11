@@ -57,7 +57,7 @@ const useStyles = makeStyles()((theme) => ({
     fontWeight: 800,
     color: theme.palette.text.secondary,
     fontVariantNumeric: 'tabular-nums',
-    padding: '1px 8px',
+    padding: theme.spacing(0.25, 1),
     borderRadius: 999,
     backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.divider}`,
