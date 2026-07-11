@@ -26,7 +26,7 @@ const useStyles = makeStyles()((theme) => ({
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'row',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       flexDirection: 'column-reverse',
     },
   },
@@ -35,7 +35,7 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     backgroundColor: theme.palette.background.paper,
     // Card flotante redondeado Ubimax sobre el mapa (como ModuleMenuLayout).
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('md')]: {
       position: 'fixed',
       zIndex: 3,
       left: 0,
@@ -46,7 +46,7 @@ const useStyles = makeStyles()((theme) => ({
       overflow: 'hidden',
       boxShadow: theme.shadows[6],
     },
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       height: theme.dimensions.drawerHeightPhone,
     },
   },

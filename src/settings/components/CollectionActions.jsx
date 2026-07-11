@@ -30,7 +30,7 @@ const CollectionActions = ({
   const t = useTranslation();
 
   // dense fuerza los iconos en línea (para usarlos dentro de una tarjeta).
-  const phone = useMediaQuery(theme.breakpoints.down('sm')) && !dense;
+  const phone = useMediaQuery(theme.breakpoints.down('md')) && !dense;
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);
