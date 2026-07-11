@@ -34,7 +34,7 @@ const mapControlStyles = {
     borderRadius: '8px !important',
     background: '#fff',
     border: '1px solid rgba(28, 37, 54, 0.06)',
-    boxShadow: '0 2px 4px rgba(28, 37, 54, 0.22), 0 6px 18px rgba(28, 37, 54, 0.24) !important',
+    boxShadow: '0 2px 4px rgba(16, 24, 40, 0.22), 0 6px 18px rgba(16, 24, 40, 0.24) !important',
     overflow: 'hidden',
   },
   '.maplibregl-ctrl-group button': {

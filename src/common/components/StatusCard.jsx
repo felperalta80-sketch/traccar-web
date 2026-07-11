@@ -68,8 +68,8 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
       borderRadius: theme.spacing(2, 2, 0, 0),
       boxShadow:
         theme.palette.mode === 'dark'
-          ? '0 -6px 18px rgba(0, 0, 0, 0.5)'
-          : '0 -4px 16px rgba(0, 0, 0, 0.14)',
+          ? '0 -6px 18px rgba(16, 24, 40, 0.5)'
+          : '0 -4px 16px rgba(16, 24, 40, 0.14)',
     },
   },
   strip: {
