@@ -62,10 +62,15 @@ export default {
   // superior por defecto). El margen uniforme deja aire entre secciones,
   // tanto colapsadas como expandidas.
   MuiAccordion: {
+    defaultProps: {
+      // Look plano tipo tarjeta: borde en vez de sombra.
+      elevation: 0,
+    },
     styleOverrides: {
       root: ({ theme }) => ({
         borderRadius: 8,
         marginBottom: theme.spacing(1),
+        border: `1px solid ${theme.palette.divider}`,
         '&:before': {
           display: 'none',
         },
