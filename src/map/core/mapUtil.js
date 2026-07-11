@@ -144,7 +144,7 @@ export const createPulse = () => {
       context.clearRect(0, 0, size, size);
       context.beginPath();
       context.arc(size / 2, size / 2, radius, 0, 2 * Math.PI);
-      context.fillStyle = `rgba(46, 125, 50, ${(1 - t) * 0.55})`;
+      context.fillStyle = `rgba(34, 211, 165, ${(1 - t) * 0.55})`;
       context.fill();
       this.data = context.getImageData(0, 0, size, size).data;
       map.triggerRepaint();
