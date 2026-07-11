@@ -147,7 +147,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     color: theme.palette.text.secondary,
     minWidth: 0,
     '& svg': {
-      fontSize: 15,
+      fontSize: 16,
     },
   },
   media: {
@@ -182,9 +182,9 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
       backgroundColor: theme.palette.divider,
     },
     '& svg': {
-      fontSize: 18,
-      width: 18,
-      height: 18,
+      fontSize: 20,
+      width: 20,
+      height: 20,
     },
   },
   segValue: {
@@ -212,7 +212,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     color: theme.palette.text.disabled,
     marginBottom: 2,
     '& svg': {
-      fontSize: 14,
+      fontSize: 16,
     },
   },
   locationText: {
@@ -234,7 +234,7 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     color: theme.palette.text.secondary,
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
-      fontSize: 14,
+      fontSize: 16,
       marginTop: 1,
     },
   },
@@ -477,7 +477,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 <>
                   <div className={classes.statusBar}>
                     <div className={classes.seg}>
-                      <EngineIcon width={18} height={18} style={{ color: engineColor }} />
+                      <EngineIcon width={20} height={20} style={{ color: engineColor }} />
                       <span className={classes.segValue} style={{ color: engineColor }}>
                         {engineLabel}
                       </span>

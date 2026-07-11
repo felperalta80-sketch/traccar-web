@@ -78,8 +78,8 @@ const useStyles = makeStyles()((theme) => ({
     justifyContent: 'center',
   },
   icon: {
-    width: 17,
-    height: 17,
+    width: 16,
+    height: 16,
     backgroundColor: 'currentColor',
     WebkitMaskRepeat: 'no-repeat',
     maskRepeat: 'no-repeat',
@@ -163,9 +163,9 @@ const useStyles = makeStyles()((theme) => ({
     fontSize: '0.65625rem',
     fontVariantNumeric: 'tabular-nums',
     '& svg': {
-      fontSize: 14,
-      width: 14,
-      height: 14,
+      fontSize: 16,
+      width: 16,
+      height: 16,
     },
   },
   expand: {
@@ -181,7 +181,7 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.text.disabled,
   },
   chevron: {
-    fontSize: 17,
+    fontSize: 16,
     transition: 'transform .15s ease',
   },
   chevronOpen: {
@@ -398,7 +398,7 @@ const DeviceRow = ({ device, style, expanded, onToggleExpand }) => {
                       position.attributes.ignition ? classes.success : classes.neutral,
                     )}
                   >
-                    <EngineIcon width={15} height={15} />
+                    <EngineIcon width={16} height={16} />
                   </span>
                 </Tooltip>
               )}

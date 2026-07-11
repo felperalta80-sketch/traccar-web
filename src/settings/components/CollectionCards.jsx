@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.primary.main,
     backgroundColor: theme.palette.action.hover,
     '& svg': {
-      fontSize: 18,
+      fontSize: 20,
     },
   },
   text: {
