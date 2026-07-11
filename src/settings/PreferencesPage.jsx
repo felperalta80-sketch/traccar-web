@@ -22,7 +22,9 @@ import {
   TextField,
   createFilterOptions,
   Button,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CachedIcon from '@mui/icons-material/Cached';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -53,6 +55,10 @@ const deviceFields = [
 
 const PreferencesPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  // En mobile todas las secciones nacen colapsadas: lista de secciones
+  // navegables (tocás una para abrirla). En desktop, la primera abierta.
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const t = useTranslation();
@@ -113,7 +119,7 @@ const PreferencesPage = () => {
       <Container maxWidth="xs" className={classes.container}>
         {!readonly && (
           <>
-            <Accordion defaultExpanded>
+            <Accordion defaultExpanded={desktop}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="subtitle1">{t('mapTitle')}</Typography>
               </AccordionSummary>

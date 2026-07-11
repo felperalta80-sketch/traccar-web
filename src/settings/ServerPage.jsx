@@ -14,7 +14,9 @@ import {
   Select,
   MenuItem,
   FormGroup,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -36,6 +38,9 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const ServerPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  // En mobile todas las secciones nacen colapsadas (lista navegable).
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -72,7 +77,7 @@ const ServerPage = () => {
       <Container maxWidth="xs" className={classes.container}>
         {item && (
           <>
-            <Accordion defaultExpanded>
+            <Accordion defaultExpanded={desktop}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="subtitle1">{t('sharedPreferences')}</Typography>
               </AccordionSummary>
