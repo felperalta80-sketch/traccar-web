@@ -77,7 +77,7 @@ const BottomMenu = ({ floating = false }) => {
       sx={(theme) => ({
         // Fondo neutral (un toque más oscuro que el blanco) en modo claro;
         // en oscuro se mantiene el paper del theme.
-        backgroundColor: theme.palette.mode === 'light' ? '#E8EAEE' : undefined,
+        backgroundColor: theme.palette.mode === 'light' ? '#F0F0F0' : undefined,
         ...(floating
           ? { borderRadius: theme.spacing(2), overflow: 'hidden', boxShadow: 6 }
           : {

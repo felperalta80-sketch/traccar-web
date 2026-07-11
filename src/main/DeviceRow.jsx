@@ -33,7 +33,7 @@ dayjs.extend(relativeTime);
 const CARD_GAP = 5;
 const CARD_INSET = 6;
 const foldBg = (theme) =>
-  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#F5F6F9';
+  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#F0F0F0';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
