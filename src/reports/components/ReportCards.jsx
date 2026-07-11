@@ -23,15 +23,28 @@ const useStyles = makeStyles()((theme) => ({
     borderRadius: 12,
     padding: theme.spacing(1.25, 1.5),
   },
+  head: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
   name: {
+    flex: 1,
+    minWidth: 0,
     fontFamily: theme.fonts.head,
     fontWeight: 700,
     fontSize: '0.875rem',
     lineHeight: 1.25,
-    marginBottom: theme.spacing(1),
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  action: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    marginRight: theme.spacing(-0.75),
   },
   rows: {
     display: 'grid',
@@ -121,6 +134,7 @@ const ReportCards = ({
   rowName,
   rowKey,
   rowColor,
+  rowAction,
   wideColumns = [],
   chipColumns = [],
   chipColor,
@@ -152,13 +166,16 @@ const ReportCards = ({
 
   return (
     <div className={classes.list}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <div
-          key={rowKey(item)}
+          key={rowKey(item, index)}
           className={classes.card}
-          style={{ borderLeftColor: rowColor ? rowColor(item) : theme.palette.primary.main }}
+          style={{ borderLeftColor: rowColor ? rowColor(item) : theme.palette.divider }}
         >
-          <div className={classes.name}>{rowName(item)}</div>
+          <div className={classes.head}>
+            <span className={classes.name}>{rowName(item)}</span>
+            {rowAction && <span className={classes.action}>{rowAction(item)}</span>}
+          </div>
           <div className={classes.rows}>
             {columns.map((key) => {
               const value = formatValue(item, key);
