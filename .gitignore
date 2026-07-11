@@ -22,3 +22,5 @@ yarn-error.log*
 dev-dist/
 android/
 capacitor.config.ts
+AUDITORIA-INCONSISTENCIAS-UBIMAX.md
+samples/
