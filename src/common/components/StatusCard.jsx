@@ -1,21 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import {
   Card,
-  CardContent,
+  CardMedia,
   Typography,
   CardActions,
   IconButton,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
   Menu,
   MenuItem,
-  CardMedia,
-  TableFooter,
   Link,
   Tooltip,
   useMediaQuery,
@@ -28,18 +22,36 @@ import SendIcon from '@mui/icons-material/Send';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PendingIcon from '@mui/icons-material/Pending';
+import SpeedIcon from '@mui/icons-material/Speed';
+import PlaceIcon from '@mui/icons-material/Place';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PersonIcon from '@mui/icons-material/Person';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
+import BatteryFullIcon from '@mui/icons-material/BatteryFull';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { useTranslation } from './LocalizationProvider';
-import { getStatusColor, formatStatus } from '../util/formatter';
+import {
+  getStatusColor,
+  formatStatus,
+  formatSpeed,
+  formatAddress,
+  formatTime,
+  getBatteryStatus,
+} from '../util/formatter';
 import RemoveDialog from './RemoveDialog';
 import PositionDrawer from './PositionDrawer';
-import PositionValue from './PositionValue';
 import { useDeviceReadonly, useRestriction } from '../util/permissions';
-import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch, useCatchCallback } from '../../reactHelper';
-import { useAttributePreference } from '../util/preferences';
+import { useAttributePreference, usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
+import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
+import EngineIcon from '../../resources/images/data/engine.svg?react';
+
+dayjs.extend(relativeTime);
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
@@ -66,12 +78,32 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   },
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: theme.spacing(1),
+    gap: theme.spacing(1.25),
     padding: theme.spacing(1.25, 1, 1, 1.75),
   },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: '50%',
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarIcon: {
+    width: 20,
+    height: 20,
+    backgroundColor: 'currentColor',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    maskPosition: 'center',
+    WebkitMaskSize: 'contain',
+    maskSize: 'contain',
+  },
   headerText: {
+    flex: 1,
     minWidth: 0,
   },
   title: {
@@ -84,26 +116,40 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  model: {
-    fontWeight: 400,
-    color: theme.palette.text.secondary,
-  },
   subtitle: {
     marginTop: 4,
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(0.75),
-    fontSize: '0.72rem',
-    color: theme.palette.text.secondary,
+    gap: theme.spacing(1),
+    flexWrap: 'wrap',
   },
   pill: {
     display: 'inline-flex',
     alignItems: 'center',
+    gap: theme.spacing(0.5),
     fontSize: '0.66rem',
     fontWeight: 700,
-    padding: '1px 8px',
+    padding: '2px 8px',
     borderRadius: 999,
     whiteSpace: 'nowrap',
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
+    flexShrink: 0,
+  },
+  driver: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: '0.72rem',
+    color: theme.palette.text.secondary,
+    minWidth: 0,
+    '& svg': {
+      fontSize: 15,
+    },
   },
   media: {
     height: theme.dimensions.popupImageHeight,
@@ -112,45 +158,97 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
       mixBlendMode: 'difference',
     },
   },
-  content: {
-    padding: 0,
-    maxHeight: theme.dimensions.cardContentMaxHeight,
-    overflow: 'auto',
-    '&:last-child': {
-      paddingBottom: 0,
-    },
-  },
-  table: {
-    '& .MuiTableCell-root': {
-      borderBottom: 'none',
-      padding: theme.spacing(0.85, 1.75),
-    },
-    '& .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root': {
-      borderTop: `1px solid ${theme.palette.divider}`,
-    },
-  },
-  keyCell: {
-    backgroundColor: theme.palette.action.hover,
-    width: '1%',
-    whiteSpace: 'nowrap',
-    verticalAlign: 'top',
-  },
-  key: {
-    fontSize: '0.72rem',
-    color: theme.palette.text.secondary,
-  },
-  value: {
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    textAlign: 'right',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  footerCell: {
+  statusBar: {
+    display: 'flex',
+    alignItems: 'stretch',
+    padding: theme.spacing(1.25, 1),
     borderTop: `1px solid ${theme.palette.divider}`,
   },
-  detailsLink: {
-    fontSize: '0.72rem',
+  seg: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 3,
+    textAlign: 'center',
+    position: 'relative',
+    '& + &::before': {
+      content: '""',
+      position: 'absolute',
+      left: 0,
+      top: 2,
+      bottom: 2,
+      width: 1,
+      backgroundColor: theme.palette.divider,
+    },
+    '& svg': {
+      fontSize: 18,
+      width: 18,
+      height: 18,
+    },
+  },
+  segValue: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 800,
+    fontSize: '0.75rem',
+    lineHeight: 1.15,
+    // Permite que etiquetas largas ("En movimiento") caigan a dos líneas en vez
+    // de desbordar la columna.
+    whiteSpace: 'normal',
+    wordBreak: 'normal',
+  },
+  segAgo: {
+    fontSize: '0.6rem',
+    lineHeight: 1.3,
+    // Reserva la altura de esta línea aunque esté vacía (velocidad no la usa),
+    // para que las 3 filas queden alineadas y el valor de velocidad quede
+    // centrado verticalmente igual que el resto.
+    minHeight: '0.78rem',
+    color: theme.palette.text.disabled,
+    whiteSpace: 'nowrap',
+  },
+  location: {
+    padding: theme.spacing(1.25, 1.75, 0.5),
+    borderTop: `1px solid ${theme.palette.divider}`,
+  },
+  locationLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: '0.625rem',
+    fontWeight: 700,
+    letterSpacing: '.05em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.disabled,
+    marginBottom: 2,
+    '& svg': {
+      fontSize: 14,
+    },
+  },
+  locationText: {
+    fontSize: '0.8125rem',
     fontWeight: 600,
+    lineHeight: 1.3,
+    color: theme.palette.text.primary,
+  },
+  lastLine: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.75, 1.75, 1.25),
+    fontSize: '0.6875rem',
+    color: theme.palette.text.secondary,
+    fontVariantNumeric: 'tabular-nums',
+    '& svg': {
+      fontSize: 14,
+    },
+  },
+  detailsLink: {
+    marginLeft: 'auto',
+    fontSize: '0.6875rem',
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
   },
   actions: {
     padding: theme.spacing(1),
@@ -184,23 +282,14 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   },
 }));
 
-const StatusRow = ({ name, content }) => {
-  const { classes } = useStyles({ desktopPadding: 0 });
-
-  return (
-    <TableRow>
-      <TableCell className={classes.keyCell}>
-        <Typography variant="body2" className={classes.key}>
-          {name}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography variant="body2" className={classes.value}>
-          {content}
-        </Typography>
-      </TableCell>
-    </TableRow>
-  );
+// Último evento de un tipo dado (los eventos vienen en orden ascendente).
+const lastEventTime = (events, type) => {
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    if (events[i].type === type) {
+      return events[i].eventTime || events[i].serverTime;
+    }
+  }
+  return null;
 };
 
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
@@ -222,20 +311,98 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
 
   const deviceImage = device?.attributes?.deviceImage;
 
-  const positionAttributes = usePositionAttributes(t);
-  const positionItems = useAttributePreference(
-    'positionItems',
-    'fixTime,address,speed,totalDistance',
-  );
+  const geocoderEnabled = useSelector((state) => state.session.server.geocoderEnabled);
+  const coordinateFormat = usePreference('coordinateFormat');
+  const speedUnit = useAttributePreference('speedUnit');
 
   const navigationAppLink = useAttributePreference('navigationAppLink');
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
 
+  const attributes = position?.attributes || {};
+  const hasIgnition = Object.prototype.hasOwnProperty.call(attributes, 'ignition');
+  const hasMotion = Object.prototype.hasOwnProperty.call(attributes, 'motion');
+  const ignition = attributes.ignition;
+  const motion = attributes.motion;
+  const batteryLevel = attributes.batteryLevel;
+  const charge = attributes.charge;
+
+  const driverUniqueId = attributes.driverUniqueId;
+  const driverName = useSelector((state) =>
+    driverUniqueId ? state.drivers.items[driverUniqueId]?.name || driverUniqueId : null,
+  );
+
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [removing, setRemoving] = useState(false);
-
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [address, setAddress] = useState();
+
+  // "Desde cuándo" del motor/movimiento: no está en la posición viva; se busca la
+  // última transición vía la API de eventos (ventana de 7 días). Se refresca al
+  // cambiar de dispositivo o cuando el estado (ignición/movimiento) cambia.
+  useEffect(() => {
+    if (!position) {
+      setEvents([]);
+      return undefined;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const to = dayjs();
+        const from = to.subtract(7, 'day');
+        const params = new URLSearchParams();
+        params.append('deviceId', deviceId);
+        ['deviceMoving', 'deviceStopped', 'ignitionOn', 'ignitionOff'].forEach((type) =>
+          params.append('type', type),
+        );
+        params.append('from', from.toISOString());
+        params.append('to', to.toISOString());
+        const response = await fetchOrThrow(`/api/reports/events?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const data = await response.json();
+        if (active) {
+          setEvents(data);
+        }
+      } catch {
+        if (active) {
+          setEvents([]);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceId, ignition, motion]);
+
+  // Dirección: usa la que ya trae la posición o la geocodifica una vez al abrir.
+  useEffect(() => {
+    setAddress(position?.address);
+    if (!position || position.address || !geocoderEnabled) {
+      return undefined;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const query = new URLSearchParams({
+          latitude: position.latitude,
+          longitude: position.longitude,
+        });
+        const response = await fetchOrThrow(`/api/server/geocode?${query.toString()}`);
+        const text = await response.text();
+        if (active) {
+          setAddress(text);
+        }
+      } catch {
+        // se mantiene el fallback de coordenadas
+      }
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceId, position?.address, geocoderEnabled]);
 
   const handleRemove = useCatch(async (removed) => {
     if (removed) {
@@ -264,6 +431,56 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     navigate(`/settings/geofence/${item.id}`);
   }, [navigate, position, t]);
 
+  // Estado del motor derivado de ignición + movimiento.
+  let engineLabel = '—';
+  let engineColor = theme.palette.neutral.main;
+  if (hasIgnition) {
+    if (!ignition) {
+      engineLabel = t('deviceEngineOff');
+      engineColor = theme.palette.neutral.main;
+    } else if (motion) {
+      engineLabel = t('deviceEngineOn');
+      engineColor = theme.palette.success.main;
+    } else {
+      engineLabel = t('deviceEngineIdle');
+      engineColor = theme.palette.warning.main;
+    }
+  }
+
+  const motionLabel = hasMotion ? (motion ? t('deviceMoving') : t('deviceStopped')) : '—';
+  const motionColor = hasMotion && motion ? theme.palette.success.main : theme.palette.neutral.main;
+
+  // "Desde cuándo": ralentí y parado cuentan desde que se detuvo (deviceStopped).
+  const motionSince = hasMotion
+    ? motion
+      ? lastEventTime(events, 'deviceMoving')
+      : lastEventTime(events, 'deviceStopped')
+    : null;
+  let engineSince = null;
+  if (hasIgnition) {
+    if (!ignition) {
+      engineSince = lastEventTime(events, 'ignitionOff');
+    } else if (motion) {
+      engineSince = lastEventTime(events, 'deviceMoving');
+    } else {
+      engineSince = lastEventTime(events, 'deviceStopped') || lastEventTime(events, 'ignitionOn');
+    }
+  }
+  const ago = (time) => (time ? dayjs(time).fromNow() : '');
+
+  const batteryColor =
+    batteryLevel != null ? theme.palette[getBatteryStatus(batteryLevel)].main : theme.palette.neutral.main;
+
+  const locationTime = position?.fixTime || device?.lastUpdate;
+  const addressText =
+    address ||
+    (position
+      ? formatAddress(
+          { latitude: position.latitude, longitude: position.longitude },
+          coordinateFormat,
+        )
+      : '');
+
   return (
     <>
       <div className={classes.root}>
@@ -282,20 +499,34 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 image={deviceImage && `/api/media/${device.uniqueId}/${deviceImage}`}
               >
                 <div className={classes.header}>
+                  <div
+                    className={classes.avatar}
+                    style={{ color: statusColor, backgroundColor: alpha(statusColor, 0.16) }}
+                  >
+                    <span
+                      className={classes.avatarIcon}
+                      style={{
+                        WebkitMaskImage: `url("${mapIcons[mapIconKey(device.category)]}")`,
+                        maskImage: `url("${mapIcons[mapIconKey(device.category)]}")`,
+                      }}
+                    />
+                  </div>
                   <div className={classes.headerText}>
-                    <Typography className={classes.title}>
-                      {device.name}
-                      {device.model && (
-                        <span className={classes.model}>{` (${device.model})`}</span>
-                      )}
-                    </Typography>
+                    <Typography className={classes.title}>{device.name}</Typography>
                     <div className={classes.subtitle}>
                       <span
                         className={classes.pill}
                         style={{ color: statusColor, backgroundColor: alpha(statusColor, 0.15) }}
                       >
+                        <span className={classes.dot} />
                         {formatStatus(device.status, t)}
                       </span>
+                      {driverName && (
+                        <span className={classes.driver}>
+                          <PersonIcon />
+                          {driverName}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <IconButton size="small" onClick={onClose} onTouchStart={onClose}>
@@ -304,46 +535,61 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 </div>
               </CardMedia>
               {position && (
-                <CardContent className={classes.content}>
-                  <Table size="small" className={classes.table}>
-                    <TableBody>
-                      {positionItems
-                        .split(',')
-                        .filter(
-                          (key) =>
-                            position.hasOwnProperty(key) || position.attributes.hasOwnProperty(key),
-                        )
-                        .map((key) => (
-                          <StatusRow
-                            key={key}
-                            name={positionAttributes[key]?.name || key}
-                            content={
-                              <PositionValue
-                                position={position}
-                                property={position.hasOwnProperty(key) ? key : null}
-                                attribute={position.hasOwnProperty(key) ? null : key}
-                              />
-                            }
-                          />
-                        ))}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={2} className={classes.footerCell}>
-                          <Link
-                            component="button"
-                            type="button"
-                            onClick={() => setDetailsOpen(true)}
-                            className={classes.detailsLink}
-                            underline="hover"
-                          >
-                            {t('sharedShowDetails')}
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    </TableFooter>
-                  </Table>
-                </CardContent>
+                <>
+                  <div className={classes.statusBar}>
+                    <div className={classes.seg}>
+                      <EngineIcon width={18} height={18} style={{ color: engineColor }} />
+                      <span className={classes.segValue} style={{ color: engineColor }}>
+                        {engineLabel}
+                      </span>
+                      <span className={classes.segAgo}>{ago(engineSince)}</span>
+                    </div>
+                    <div className={classes.seg}>
+                      <DirectionsRunIcon style={{ color: motionColor }} />
+                      <span className={classes.segValue} style={{ color: motionColor }}>
+                        {motionLabel}
+                      </span>
+                      <span className={classes.segAgo}>{ago(motionSince)}</span>
+                    </div>
+                    <div className={classes.seg}>
+                      <SpeedIcon style={{ color: theme.palette.text.secondary }} />
+                      <span className={classes.segValue}>{formatSpeed(position.speed, speedUnit, t)}</span>
+                      <span className={classes.segAgo} />
+                    </div>
+                    <div className={classes.seg}>
+                      {charge ? (
+                        <BatteryChargingFullIcon style={{ color: batteryColor }} />
+                      ) : (
+                        <BatteryFullIcon style={{ color: batteryColor }} />
+                      )}
+                      <span className={classes.segValue} style={{ color: batteryColor }}>
+                        {batteryLevel != null ? `${batteryLevel}%` : '—'}
+                      </span>
+                      <span className={classes.segAgo}>{charge ? t('deviceCharging') : ''}</span>
+                    </div>
+                  </div>
+                  <div className={classes.location}>
+                    <div className={classes.locationLabel}>
+                      <PlaceIcon />
+                      {t('deviceCurrentLocation')}
+                    </div>
+                    <div className={classes.locationText}>{addressText}</div>
+                  </div>
+                  <div className={classes.lastLine}>
+                    <AccessTimeIcon />
+                    {`${t('deviceLastReport')}: ${locationTime ? formatTime(locationTime, 'minutes') : '—'}`}
+                    {locationTime && ` · ${dayjs(locationTime).fromNow()}`}
+                    <Link
+                      component="button"
+                      type="button"
+                      onClick={() => setDetailsOpen(true)}
+                      className={classes.detailsLink}
+                      underline="hover"
+                    >
+                      {t('sharedShowDetails')}
+                    </Link>
+                  </div>
+                </>
               )}
               <CardActions className={classes.actions} disableSpacing>
                 <Tooltip title={t('sharedExtra')}>

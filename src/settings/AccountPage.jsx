@@ -33,6 +33,7 @@ const AccountPage = () => {
       <List>
         <MenuItem
           title={t('sharedConfiguration')}
+          subtitle={t('accountConfigurationDesc')}
           link={`/settings/user/${userId}`}
           icon={<SettingsOutlinedIcon />}
         />

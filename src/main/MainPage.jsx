@@ -119,23 +119,21 @@ const MainPage = () => {
   return (
     <div className={classes.root}>
       <div className={`${classes.sidebar} ${devicesOpen ? classes.sidebarCard : ''}`}>
-        <Paper
-          square
-          elevation={0}
-          className={devicesOpen ? classes.header : `${classes.header} ${classes.headerFloating}`}
-        >
-          <MainToolbar
-            filteredDevices={filteredDevices}
-            keyword={keyword}
-            setKeyword={setKeyword}
-            filter={filter}
-            setFilter={setFilter}
-            filterSort={filterSort}
-            setFilterSort={setFilterSort}
-            filterMap={filterMap}
-            setFilterMap={setFilterMap}
-          />
-        </Paper>
+        {devicesOpen && (
+          <Paper square elevation={0} className={classes.header}>
+            <MainToolbar
+              filteredDevices={filteredDevices}
+              keyword={keyword}
+              setKeyword={setKeyword}
+              filter={filter}
+              setFilter={setFilter}
+              filterSort={filterSort}
+              setFilterSort={setFilterSort}
+              filterMap={filterMap}
+              setFilterMap={setFilterMap}
+            />
+          </Paper>
+        )}
         <div className={classes.middle}>
           {!desktop && (
             <div className={classes.contentMap}>

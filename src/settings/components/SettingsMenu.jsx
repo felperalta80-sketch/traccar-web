@@ -1,4 +1,4 @@
-import { Divider, List } from '@mui/material';
+import { List } from '@mui/material';
 import TuneIcon from '@mui/icons-material/Tune';
 import DrawIcon from '@mui/icons-material/Draw';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import { useAdministrator, useManager, useRestriction } from '../../common/util/permissions';
 import useFeatures from '../../common/util/useFeatures';
-import MenuItem from '../../common/components/MenuItem';
+import MenuItem, { MenuSection } from '../../common/components/MenuItem';
 
 const SettingsMenu = () => {
   const t = useTranslation();
@@ -37,8 +37,10 @@ const SettingsMenu = () => {
   return (
     <>
       <List>
+        <MenuSection>{t('sharedGeneral')}</MenuSection>
         <MenuItem
           title={t('sharedPreferences')}
+          subtitle={t('settingsPreferencesDesc')}
           link="/settings/preferences"
           icon={<TuneIcon />}
           selected={location.pathname === '/settings/preferences'}
@@ -47,24 +49,28 @@ const SettingsMenu = () => {
           <>
             <MenuItem
               title={t('sharedNotifications')}
+              subtitle={t('settingsNotificationsDesc')}
               link="/settings/notifications"
               icon={<NotificationsIcon />}
               selected={location.pathname.startsWith('/settings/notification')}
             />
             <MenuItem
               title={t('settingsUser')}
+              subtitle={t('settingsUserDesc')}
               link={`/settings/user/${userId}`}
               icon={<PersonIcon />}
               selected={location.pathname === `/settings/user/${userId}`}
             />
             <MenuItem
               title={t('deviceTitle')}
+              subtitle={t('settingsDevicesDesc')}
               link="/settings/devices"
               icon={<DnsIcon />}
               selected={location.pathname.startsWith('/settings/device')}
             />
             <MenuItem
               title={t('sharedGeofences')}
+              subtitle={t('settingsGeofencesDesc')}
               link="/geofences"
               icon={<DrawIcon />}
               selected={location.pathname.startsWith('/settings/geofence')}
@@ -72,6 +78,7 @@ const SettingsMenu = () => {
             {!features.disableGroups && (
               <MenuItem
                 title={t('settingsGroups')}
+                subtitle={t('settingsGroupsDesc')}
                 link="/settings/groups"
                 icon={<FolderIcon />}
                 selected={location.pathname.startsWith('/settings/group')}
@@ -80,6 +87,7 @@ const SettingsMenu = () => {
             {!features.disableDrivers && (
               <MenuItem
                 title={t('sharedDrivers')}
+                subtitle={t('settingsDriversDesc')}
                 link="/settings/drivers"
                 icon={<PersonIcon />}
                 selected={location.pathname.startsWith('/settings/driver')}
@@ -88,6 +96,7 @@ const SettingsMenu = () => {
             {!features.disableCalendars && (
               <MenuItem
                 title={t('sharedCalendars')}
+                subtitle={t('settingsCalendarsDesc')}
                 link="/settings/calendars"
                 icon={<TodayIcon />}
                 selected={location.pathname.startsWith('/settings/calendar')}
@@ -96,6 +105,7 @@ const SettingsMenu = () => {
             {!features.disableComputedAttributes && (
               <MenuItem
                 title={t('sharedComputedAttributes')}
+                subtitle={t('settingsAttributesDesc')}
                 link="/settings/attributes"
                 icon={<CalculateIcon />}
                 selected={location.pathname.startsWith('/settings/attribute')}
@@ -104,6 +114,7 @@ const SettingsMenu = () => {
             {!features.disableMaintenance && (
               <MenuItem
                 title={t('sharedMaintenance')}
+                subtitle={t('settingsMaintenanceDesc')}
                 link="/settings/maintenances"
                 icon={<BuildIcon />}
                 selected={location.pathname.startsWith('/settings/maintenance')}
@@ -112,6 +123,7 @@ const SettingsMenu = () => {
             {!features.disableSavedCommands && (
               <MenuItem
                 title={t('sharedSavedCommands')}
+                subtitle={t('settingsCommandsDesc')}
                 link="/settings/commands"
                 icon={<SendIcon />}
                 selected={location.pathname.startsWith('/settings/command')}
@@ -120,18 +132,27 @@ const SettingsMenu = () => {
           </>
         )}
         {billingLink && (
-          <MenuItem title={t('userBilling')} link={billingLink} icon={<PaymentIcon />} />
+          <MenuItem
+            title={t('userBilling')}
+            subtitle={t('settingsBillingDesc')}
+            link={billingLink}
+            icon={<PaymentIcon />}
+          />
         )}
         {supportLink && (
-          <MenuItem title={t('settingsSupport')} link={supportLink} icon={<HelpIcon />} />
+          <MenuItem
+            title={t('settingsSupport')}
+            subtitle={t('settingsSupportDesc')}
+            link={supportLink}
+            icon={<HelpIcon />}
+          />
         )}
-      </List>
-      {manager && (
-        <>
-          <Divider />
-          <List>
+        {manager && (
+          <>
+            <MenuSection>{t('sharedAdministration')}</MenuSection>
             <MenuItem
               title={t('serverAnnouncement')}
+              subtitle={t('settingsAnnouncementDesc')}
               link="/settings/announcement"
               icon={<CampaignIcon />}
               selected={location.pathname === '/settings/announcement'}
@@ -139,6 +160,7 @@ const SettingsMenu = () => {
             {admin && (
               <MenuItem
                 title={t('settingsServer')}
+                subtitle={t('settingsServerDesc')}
                 link="/settings/server"
                 icon={<SettingsIcon />}
                 selected={location.pathname === '/settings/server'}
@@ -146,6 +168,7 @@ const SettingsMenu = () => {
             )}
             <MenuItem
               title={t('settingsUsers')}
+              subtitle={t('settingsUsersDesc')}
               link="/settings/users"
               icon={<PeopleIcon />}
               selected={
@@ -153,9 +176,9 @@ const SettingsMenu = () => {
                 location.pathname !== `/settings/user/${userId}`
               }
             />
-          </List>
-        </>
-      )}
+          </>
+        )}
+      </List>
     </>
   );
 };

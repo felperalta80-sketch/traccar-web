@@ -47,14 +47,19 @@ const useStyles = makeStyles()((theme) => ({
     borderLeft: '3px solid var(--st)',
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.06)',
+    // Seleccionado: se mantiene el filete de color (riel) y el mismo grosor de
+    // borde, solo se oscurece; el fondo lleva un tinte neutro sutil para
+    // destacarlo del resto sin ser estridente.
     '&.Mui-selected': {
-      backgroundColor: theme.palette.background.paper,
-      borderColor: theme.palette.primary.main,
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 37, 54, 0.05)',
+      borderColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.22)' : 'rgba(28, 37, 54, 0.22)',
       borderLeftColor: 'var(--st)',
-      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
     },
     '&.Mui-selected:hover': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor:
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(28, 37, 54, 0.08)',
     },
   },
   header: {
