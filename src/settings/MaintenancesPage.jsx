@@ -1,6 +1,7 @@
 import { useCallback, useReducer, useState } from 'react';
 import dayjs from 'dayjs';
-import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import usePositionAttributes from '../common/attributes/usePositionAttributes';
 import { formatDistance, formatSpeed } from '../common/util/formatter';
@@ -10,6 +11,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
@@ -18,6 +20,8 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const MaintenacesPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const t = useTranslation();
 
   const positionAttributes = usePositionAttributes(t);
@@ -81,38 +85,53 @@ const MaintenacesPage = () => {
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'sharedMaintenance']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedName')}</TableCell>
-            <TableCell>{t('sharedType')}</TableCell>
-            <TableCell>{t('maintenanceStart')}</TableCell>
-            <TableCell>{t('maintenancePeriod')}</TableCell>
-            <TableCell className={classes.columnAction} />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {searchItems(items, searchKeyword).map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.type}</TableCell>
-              <TableCell>{convertAttribute(item.type, true, item.start)}</TableCell>
-              <TableCell>{convertAttribute(item.type, false, item.period)}</TableCell>
-              <TableCell className={classes.columnAction} padding="none">
-                <CollectionActions
-                  itemId={item.id}
-                  editPath="/settings/maintenance"
-                  endpoint="maintenance"
-                  onReload={reload}
-                />
-              </TableCell>
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedName')}</TableCell>
+              <TableCell>{t('sharedType')}</TableCell>
+              <TableCell>{t('maintenanceStart')}</TableCell>
+              <TableCell>{t('maintenancePeriod')}</TableCell>
+              <TableCell className={classes.columnAction} />
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={5} endAction />
-          )}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {searchItems(items, searchKeyword).map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.type}</TableCell>
+                <TableCell>{convertAttribute(item.type, true, item.start)}</TableCell>
+                <TableCell>{convertAttribute(item.type, false, item.period)}</TableCell>
+                <TableCell className={classes.columnAction} padding="none">
+                  <CollectionActions
+                    itemId={item.id}
+                    editPath="/settings/maintenance"
+                    endpoint="maintenance"
+                    onReload={reload}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+            {hasMore && (
+              <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={5} endAction />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={searchItems(items, searchKeyword)}
+          getPrimary={(item) => item.name}
+          getSecondary={(item) =>
+            `${item.type} · ${convertAttribute(item.type, false, item.period)}`
+          }
+          editPath="/settings/maintenance"
+          endpoint="maintenance"
+          onReload={reload}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/maintenance" />
     </PageLayout>
   );

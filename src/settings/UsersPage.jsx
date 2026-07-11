@@ -9,7 +9,9 @@ import {
   Switch,
   TableFooter,
   FormControlLabel,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import LoginIcon from '@mui/icons-material/Login';
 import LinkIcon from '@mui/icons-material/Link';
 import { useCatch, useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
@@ -19,6 +21,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import { useManager } from '../common/util/permissions';
 import SearchHeader from './components/SearchHeader';
@@ -29,6 +32,8 @@ import UserDevicesValue from './components/UserDevicesValue';
 
 const UsersPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -87,64 +92,80 @@ const UsersPage = () => {
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'settingsUsers']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedName')}</TableCell>
-            <TableCell>{t('userEmail')}</TableCell>
-            <TableCell>{t('userAdmin')}</TableCell>
-            <TableCell>{t('sharedDisabled')}</TableCell>
-            <TableCell>{t('userExpirationTime')}</TableCell>
-            <TableCell>{t('deviceTitle')}</TableCell>
-            <TableCell className={classes.columnAction} />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {searchItems(items, searchKeyword)
-            .filter((u) => temporary || !u.temporary)
-            .map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.email}</TableCell>
-                <TableCell>{formatBoolean(item.administrator, t)}</TableCell>
-                <TableCell>{formatBoolean(item.disabled, t)}</TableCell>
-                <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
-                <TableCell>
-                  <UserDevicesValue userId={item.id} />
-                </TableCell>
-                <TableCell className={classes.columnAction} padding="none">
-                  <CollectionActions
-                    itemId={item.id}
-                    editPath="/settings/user"
-                    endpoint="users"
-                    onReload={reload}
-                    customActions={manager ? [actionLogin, actionConnections] : [actionConnections]}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          {hasMore && (
-            <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={7} endAction />
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={7} align="right">
-              <FormControlLabel
-                control={
-                  <Switch
-                    value={temporary}
-                    onChange={(e) => setTemporary(e.target.checked)}
-                    size="small"
-                  />
-                }
-                label={t('userTemporary')}
-                labelPlacement="start"
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedName')}</TableCell>
+              <TableCell>{t('userEmail')}</TableCell>
+              <TableCell>{t('userAdmin')}</TableCell>
+              <TableCell>{t('sharedDisabled')}</TableCell>
+              <TableCell>{t('userExpirationTime')}</TableCell>
+              <TableCell>{t('deviceTitle')}</TableCell>
+              <TableCell className={classes.columnAction} />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {searchItems(items, searchKeyword)
+              .filter((u) => temporary || !u.temporary)
+              .map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.email}</TableCell>
+                  <TableCell>{formatBoolean(item.administrator, t)}</TableCell>
+                  <TableCell>{formatBoolean(item.disabled, t)}</TableCell>
+                  <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
+                  <TableCell>
+                    <UserDevicesValue userId={item.id} />
+                  </TableCell>
+                  <TableCell className={classes.columnAction} padding="none">
+                    <CollectionActions
+                      itemId={item.id}
+                      editPath="/settings/user"
+                      endpoint="users"
+                      onReload={reload}
+                      customActions={
+                        manager ? [actionLogin, actionConnections] : [actionConnections]
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            {hasMore && (
+              <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={7} endAction />
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={7} align="right">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      value={temporary}
+                      onChange={(e) => setTemporary(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label={t('userTemporary')}
+                  labelPlacement="start"
+                />
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={searchItems(items, searchKeyword).filter((u) => temporary || !u.temporary)}
+          getPrimary={(item) => item.name}
+          getSecondary={(item) => item.email}
+          editPath="/settings/user"
+          endpoint="users"
+          onReload={reload}
+          customActions={manager ? [actionLogin, actionConnections] : [actionConnections]}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/user" />
     </PageLayout>
   );

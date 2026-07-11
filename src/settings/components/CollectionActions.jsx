@@ -15,13 +15,22 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions, readonly }) => {
+const CollectionActions = ({
+  itemId,
+  editPath,
+  endpoint,
+  onReload,
+  customActions,
+  readonly,
+  dense,
+}) => {
   const theme = useTheme();
   const { classes } = useStyles();
   const navigate = useNavigate();
   const t = useTranslation();
 
-  const phone = useMediaQuery(theme.breakpoints.down('sm'));
+  // dense fuerza los iconos en línea (para usarlos dentro de una tarjeta).
+  const phone = useMediaQuery(theme.breakpoints.down('sm')) && !dense;
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);

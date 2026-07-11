@@ -1,5 +1,6 @@
 import { useCallback, useReducer, useState } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { formatBoolean } from '../common/util/formatter';
@@ -8,6 +9,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
@@ -17,6 +19,8 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const CommandsPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const t = useTranslation();
 
   const [reloadKey, reload] = useReducer((k) => k + 1, 0);
@@ -53,42 +57,56 @@ const CommandsPage = () => {
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'sharedSavedCommands']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedDescription')}</TableCell>
-            <TableCell>{t('sharedType')}</TableCell>
-            <TableCell>{t('commandSendSms')}</TableCell>
-            {!limitCommands && <TableCell className={classes.columnAction} />}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {searchItems(items, searchKeyword).map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.description}</TableCell>
-              <TableCell>{t(prefixString('command', item.type))}</TableCell>
-              <TableCell>{formatBoolean(item.textChannel, t)}</TableCell>
-              {!limitCommands && (
-                <TableCell className={classes.columnAction} padding="none">
-                  <CollectionActions
-                    itemId={item.id}
-                    editPath="/settings/command"
-                    endpoint="commands"
-                    onReload={reload}
-                  />
-                </TableCell>
-              )}
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedDescription')}</TableCell>
+              <TableCell>{t('sharedType')}</TableCell>
+              <TableCell>{t('commandSendSms')}</TableCell>
+              {!limitCommands && <TableCell className={classes.columnAction} />}
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer
-              ref={items.length > 0 ? sentinelRef : null}
-              columns={limitCommands ? 3 : 4}
-              endAction
-            />
-          )}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {searchItems(items, searchKeyword).map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.description}</TableCell>
+                <TableCell>{t(prefixString('command', item.type))}</TableCell>
+                <TableCell>{formatBoolean(item.textChannel, t)}</TableCell>
+                {!limitCommands && (
+                  <TableCell className={classes.columnAction} padding="none">
+                    <CollectionActions
+                      itemId={item.id}
+                      editPath="/settings/command"
+                      endpoint="commands"
+                      onReload={reload}
+                    />
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+            {hasMore && (
+              <TableShimmer
+                ref={items.length > 0 ? sentinelRef : null}
+                columns={limitCommands ? 3 : 4}
+                endAction
+              />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={searchItems(items, searchKeyword)}
+          getPrimary={(item) => item.description}
+          getSecondary={(item) => t(prefixString('command', item.type))}
+          editPath="/settings/command"
+          endpoint="commands"
+          onReload={reload}
+          readonly={limitCommands}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/command" disabled={limitCommands} />
     </PageLayout>
   );

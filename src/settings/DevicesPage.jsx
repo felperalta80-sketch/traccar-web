@@ -11,6 +11,7 @@ import {
   TableFooter,
   FormControlLabel,
   Switch,
+  useMediaQuery,
 } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
 import { useTheme } from '@mui/material/styles';
@@ -20,6 +21,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
@@ -36,6 +38,7 @@ import exportExcel from '../common/util/exportExcel';
 const DevicesPage = () => {
   const { classes } = useSettingsStyles();
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -112,89 +115,108 @@ const DevicesPage = () => {
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'deviceTitle']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedName')}</TableCell>
-            <TableCell>{t('deviceIdentifier')}</TableCell>
-            <TableCell>{t('groupParent')}</TableCell>
-            <TableCell>{t('sharedPhone')}</TableCell>
-            <TableCell>{t('deviceModel')}</TableCell>
-            <TableCell>{t('deviceContact')}</TableCell>
-            <TableCell>{t('userExpirationTime')}</TableCell>
-            <TableCell>{t('positionAddress')}</TableCell>
-            {manager && <TableCell>{t('settingsUsers')}</TableCell>}
-            <TableCell className={classes.columnAction} />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filteredItems.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.uniqueId}</TableCell>
-              <TableCell>{item.groupId ? groups[item.groupId]?.name : null}</TableCell>
-              <TableCell>{item.phone}</TableCell>
-              <TableCell>{item.model}</TableCell>
-              <TableCell>{item.contact}</TableCell>
-              <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
-              <TableCell>
-                {positions[item.id] && (
-                  <AddressValue
-                    latitude={positions[item.id].latitude}
-                    longitude={positions[item.id].longitude}
-                    originalAddress={positions[item.id]?.address}
-                  />
-                )}
-              </TableCell>
-              {manager && (
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedName')}</TableCell>
+              <TableCell>{t('deviceIdentifier')}</TableCell>
+              <TableCell>{t('groupParent')}</TableCell>
+              <TableCell>{t('sharedPhone')}</TableCell>
+              <TableCell>{t('deviceModel')}</TableCell>
+              <TableCell>{t('deviceContact')}</TableCell>
+              <TableCell>{t('userExpirationTime')}</TableCell>
+              <TableCell>{t('positionAddress')}</TableCell>
+              {manager && <TableCell>{t('settingsUsers')}</TableCell>}
+              <TableCell className={classes.columnAction} />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.uniqueId}</TableCell>
+                <TableCell>{item.groupId ? groups[item.groupId]?.name : null}</TableCell>
+                <TableCell>{item.phone}</TableCell>
+                <TableCell>{item.model}</TableCell>
+                <TableCell>{item.contact}</TableCell>
+                <TableCell>{formatTime(item.expirationTime, 'date')}</TableCell>
                 <TableCell>
-                  <DeviceUsersValue deviceId={item.id} />
+                  {positions[item.id] && (
+                    <AddressValue
+                      latitude={positions[item.id].latitude}
+                      longitude={positions[item.id].longitude}
+                      originalAddress={positions[item.id]?.address}
+                    />
+                  )}
                 </TableCell>
-              )}
-              <TableCell className={classes.columnAction} padding="none">
-                <CollectionActions
-                  itemId={item.id}
-                  editPath="/settings/device"
-                  endpoint="devices"
-                  onReload={reload}
-                  customActions={[actionConnections]}
-                  readonly={deviceReadonly}
+                {manager && (
+                  <TableCell>
+                    <DeviceUsersValue deviceId={item.id} />
+                  </TableCell>
+                )}
+                <TableCell className={classes.columnAction} padding="none">
+                  <CollectionActions
+                    itemId={item.id}
+                    editPath="/settings/device"
+                    endpoint="devices"
+                    onReload={reload}
+                    customActions={[actionConnections]}
+                    readonly={deviceReadonly}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+            {hasMore && (
+              <TableShimmer
+                ref={items.length > 0 ? sentinelRef : null}
+                columns={manager ? 9 : 8}
+                endAction
+              />
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>
+                <Button onClick={handleExport} variant="text">
+                  {t('reportExport')}
+                </Button>
+              </TableCell>
+              <TableCell colSpan={manager ? 9 : 8} align="right">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showAll}
+                      onChange={(e) => setShowAll(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label={t('notificationAlways')}
+                  labelPlacement="start"
+                  disabled={!manager}
                 />
               </TableCell>
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer
-              ref={items.length > 0 ? sentinelRef : null}
-              columns={manager ? 9 : 8}
-              endAction
-            />
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell>
-              <Button onClick={handleExport} variant="text">
-                {t('reportExport')}
-              </Button>
-            </TableCell>
-            <TableCell colSpan={manager ? 9 : 8} align="right">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={showAll}
-                    onChange={(e) => setShowAll(e.target.checked)}
-                    size="small"
-                  />
-                }
-                label={t('notificationAlways')}
-                labelPlacement="start"
-                disabled={!manager}
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableFooter>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={filteredItems}
+          getPrimary={(item) => item.name}
+          getSecondary={(item) =>
+            [item.uniqueId, item.groupId ? groups[item.groupId]?.name : null]
+              .filter(Boolean)
+              .join(' · ')
+          }
+          editPath="/settings/device"
+          endpoint="devices"
+          onReload={reload}
+          customActions={[actionConnections]}
+          readonly={deviceReadonly}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/device" />
     </PageLayout>
   );

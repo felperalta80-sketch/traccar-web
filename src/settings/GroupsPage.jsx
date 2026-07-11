@@ -1,7 +1,8 @@
 import { useCallback, useReducer, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import LinkIcon from '@mui/icons-material/Link';
 import PublishIcon from '@mui/icons-material/Publish';
 import ShareIcon from '@mui/icons-material/Share';
@@ -11,6 +12,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
@@ -20,6 +22,8 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const GroupsPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
   const t = useTranslation();
 
@@ -78,40 +82,55 @@ const GroupsPage = () => {
     handler: (groupId) => navigate(`/settings/group/${groupId}/connections`),
   };
 
+  const groupActions = [
+    actionConnections,
+    ...(!limitCommands ? [actionCommand] : []),
+    ...(!shareDisabled && !user.temporary ? [actionShare] : []),
+  ];
+
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'settingsGroups']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedName')}</TableCell>
-            <TableCell className={classes.columnAction} />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {searchItems(items, searchKeyword).map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell className={classes.columnAction} padding="none">
-                <CollectionActions
-                  itemId={item.id}
-                  editPath="/settings/group"
-                  endpoint="groups"
-                  onReload={reload}
-                  customActions={[
-                    actionConnections,
-                    ...(!limitCommands ? [actionCommand] : []),
-                    ...(!shareDisabled && !user.temporary ? [actionShare] : []),
-                  ]}
-                />
-              </TableCell>
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedName')}</TableCell>
+              <TableCell className={classes.columnAction} />
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={2} endAction />
-          )}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {searchItems(items, searchKeyword).map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell className={classes.columnAction} padding="none">
+                  <CollectionActions
+                    itemId={item.id}
+                    editPath="/settings/group"
+                    endpoint="groups"
+                    onReload={reload}
+                    customActions={groupActions}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+            {hasMore && (
+              <TableShimmer ref={items.length > 0 ? sentinelRef : null} columns={2} endAction />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={searchItems(items, searchKeyword)}
+          getPrimary={(item) => item.name}
+          editPath="/settings/group"
+          endpoint="groups"
+          onReload={reload}
+          customActions={groupActions}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/group" />
     </PageLayout>
   );

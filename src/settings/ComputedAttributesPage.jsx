@@ -1,5 +1,6 @@
 import { useCallback, useReducer, useState } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material';
+import { Table, TableRow, TableCell, TableHead, TableBody, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useAdministrator } from '../common/util/permissions';
@@ -7,6 +8,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import CollectionFab from './components/CollectionFab';
 import CollectionActions from './components/CollectionActions';
+import CollectionCards from './components/CollectionCards';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
@@ -15,6 +17,8 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const ComputedAttributesPage = () => {
   const { classes } = useSettingsStyles();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const t = useTranslation();
 
   const [reloadKey, reload] = useReducer((k) => k + 1, 0);
@@ -53,44 +57,58 @@ const ComputedAttributesPage = () => {
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'sharedComputedAttributes']}>
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedDescription')}</TableCell>
-            <TableCell>{t('sharedAttribute')}</TableCell>
-            <TableCell>{t('sharedExpression')}</TableCell>
-            <TableCell>{t('sharedType')}</TableCell>
-            {administrator && <TableCell className={classes.columnAction} />}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {searchItems(items, searchKeyword).map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.description}</TableCell>
-              <TableCell>{item.attribute}</TableCell>
-              <TableCell>{item.expression}</TableCell>
-              <TableCell>{item.type}</TableCell>
-              {administrator && (
-                <TableCell className={classes.columnAction} padding="none">
-                  <CollectionActions
-                    itemId={item.id}
-                    editPath="/settings/attribute"
-                    endpoint="attributes/computed"
-                    onReload={reload}
-                  />
-                </TableCell>
-              )}
+      {desktop ? (
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedDescription')}</TableCell>
+              <TableCell>{t('sharedAttribute')}</TableCell>
+              <TableCell>{t('sharedExpression')}</TableCell>
+              <TableCell>{t('sharedType')}</TableCell>
+              {administrator && <TableCell className={classes.columnAction} />}
             </TableRow>
-          ))}
-          {hasMore && (
-            <TableShimmer
-              ref={items.length > 0 ? sentinelRef : null}
-              columns={administrator ? 5 : 4}
-              endAction={administrator}
-            />
-          )}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {searchItems(items, searchKeyword).map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.description}</TableCell>
+                <TableCell>{item.attribute}</TableCell>
+                <TableCell>{item.expression}</TableCell>
+                <TableCell>{item.type}</TableCell>
+                {administrator && (
+                  <TableCell className={classes.columnAction} padding="none">
+                    <CollectionActions
+                      itemId={item.id}
+                      editPath="/settings/attribute"
+                      endpoint="attributes/computed"
+                      onReload={reload}
+                    />
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+            {hasMore && (
+              <TableShimmer
+                ref={items.length > 0 ? sentinelRef : null}
+                columns={administrator ? 5 : 4}
+                endAction={administrator}
+              />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <CollectionCards
+          items={searchItems(items, searchKeyword)}
+          getPrimary={(item) => item.description}
+          getSecondary={(item) => `${item.attribute} · ${item.expression}`}
+          editPath="/settings/attribute"
+          endpoint="attributes/computed"
+          onReload={reload}
+          readonly={!administrator}
+          sentinelRef={items.length > 0 ? sentinelRef : undefined}
+          hasMore={hasMore}
+        />
+      )}
       <CollectionFab editPath="/settings/attribute" disabled={!administrator} />
     </PageLayout>
   );
