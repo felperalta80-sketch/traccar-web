@@ -27,8 +27,10 @@ const useStyles = makeStyles()((theme) => ({
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'row',
+    // Mobile: mapa a pantalla completa con la lista como hoja inferior encima.
     [theme.breakpoints.down('sm')]: {
-      flexDirection: 'column-reverse',
+      display: 'block',
+      position: 'relative',
     },
   },
   drawer: {
@@ -49,11 +51,24 @@ const useStyles = makeStyles()((theme) => ({
       boxShadow: theme.shadows[6],
     },
     [theme.breakpoints.down('sm')]: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      // Por encima de la barra de módulos de App en mobile.
+      bottom: theme.dimensions.bottomBarHeight,
+      zIndex: 4,
       height: theme.dimensions.drawerHeightPhone,
+      borderRadius: theme.spacing(2, 2, 0, 0),
+      overflow: 'hidden',
+      boxShadow: theme.shadows[8],
     },
   },
   mapContainer: {
     flexGrow: 1,
+    [theme.breakpoints.down('sm')]: {
+      position: 'absolute',
+      inset: 0,
+    },
   },
   title: {
     flexGrow: 1,
