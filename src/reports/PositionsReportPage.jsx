@@ -1,14 +1,26 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import {
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  useMediaQuery,
+} from '@mui/material';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
+import { getStatusColor } from '../common/util/formatter';
 import ReportFilter, { updateReportParams } from './components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import ReportsMenu from './components/ReportsMenu';
 import PositionValue from '../common/components/PositionValue';
 import ColumnSelect from './components/ColumnSelect';
+import ReportCards from './components/ReportCards';
 import ResizeHandle from './components/ResizeHandle';
 import usePositionAttributes from '../common/attributes/usePositionAttributes';
 import { useCatch, useCatchCallback } from '../reactHelper';
@@ -31,9 +43,12 @@ const PositionsReportPage = () => {
   const navigate = useNavigate();
   const { classes } = useReportStyles();
   const t = useTranslation();
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const devices = useSelector((state) => state.devices.items);
   const positionAttributes = usePositionAttributes(t);
 
   const readonly = useRestriction('readonly');
@@ -172,61 +187,85 @@ const PositionsReportPage = () => {
               />
             </ReportFilter>
           </div>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell className={classes.columnAction} />
-                {columns.map((key) => (
-                  <TableCell key={key}>{positionAttributes[key]?.name || key}</TableCell>
-                ))}
-                <TableCell className={classes.columnAction} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {!loading ? (
-                items.slice(0, 4000).map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className={classes.columnAction} padding="none">
-                      {selectedItem === item ? (
-                        <IconButton
-                          size="small"
-                          onClick={() => setSelectedItem(null)}
-                          ref={selectedRef}
-                        >
-                          <GpsFixedIcon fontSize="small" />
-                        </IconButton>
-                      ) : (
-                        <IconButton size="small" onClick={() => setSelectedItem(item)}>
-                          <LocationSearchingIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                    {columns.map((key) => (
-                      <TableCell key={key}>
-                        <PositionValue
-                          position={item}
-                          property={item.hasOwnProperty(key) ? key : null}
-                          attribute={item.hasOwnProperty(key) ? null : key}
+          {desktop ? (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell className={classes.columnAction} />
+                  {columns.map((key) => (
+                    <TableCell key={key}>{positionAttributes[key]?.name || key}</TableCell>
+                  ))}
+                  <TableCell className={classes.columnAction} />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!loading ? (
+                  items.slice(0, 4000).map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className={classes.columnAction} padding="none">
+                        {selectedItem === item ? (
+                          <IconButton
+                            size="small"
+                            onClick={() => setSelectedItem(null)}
+                            ref={selectedRef}
+                          >
+                            <GpsFixedIcon fontSize="small" />
+                          </IconButton>
+                        ) : (
+                          <IconButton size="small" onClick={() => setSelectedItem(item)}>
+                            <LocationSearchingIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                      {columns.map((key) => (
+                        <TableCell key={key}>
+                          <PositionValue
+                            position={item}
+                            property={item.hasOwnProperty(key) ? key : null}
+                            attribute={item.hasOwnProperty(key) ? null : key}
+                          />
+                        </TableCell>
+                      ))}
+                      <TableCell className={classes.actionCellPadding}>
+                        <CollectionActions
+                          itemId={item.id}
+                          endpoint="positions"
+                          readonly={readonly}
+                          onReload={() => {
+                            setItems(items.filter((position) => position.id !== item.id));
+                          }}
                         />
                       </TableCell>
-                    ))}
-                    <TableCell className={classes.actionCellPadding}>
-                      <CollectionActions
-                        itemId={item.id}
-                        endpoint="positions"
-                        readonly={readonly}
-                        onReload={() => {
-                          setItems(items.filter((position) => position.id !== item.id));
-                        }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableShimmer columns={columns.length + 1} startAction />
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableShimmer columns={columns.length + 1} startAction />
+                )}
+              </TableBody>
+            </Table>
+          ) : (
+            <ReportCards
+              items={items.slice(0, 4000)}
+              columns={columns}
+              columnLabel={(key) => positionAttributes[key]?.name || key}
+              formatValue={(item, key) => (
+                <PositionValue
+                  position={item}
+                  property={item.hasOwnProperty(key) ? key : null}
+                  attribute={item.hasOwnProperty(key) ? null : key}
+                />
               )}
-            </TableBody>
-          </Table>
+              rowName={(item) => devices[item.deviceId]?.name || item.deviceId}
+              rowKey={(item) => item.id}
+              rowColor={(item) =>
+                devices[item.deviceId]
+                  ? theme.palette[getStatusColor(devices[item.deviceId].status)].main
+                  : theme.palette.primary.main
+              }
+              wideColumns={['address']}
+              loading={loading}
+            />
+          )}
         </div>
       </div>
     </PageLayout>

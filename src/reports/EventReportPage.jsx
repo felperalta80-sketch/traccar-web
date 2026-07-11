@@ -1,11 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Table, TableHead, TableRow, TableCell, TableBody, Link, IconButton } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Link,
+  IconButton,
+  useMediaQuery,
+} from '@mui/material';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
-import { formatAddress, formatNumber, formatSpeed, formatTime } from '../common/util/formatter';
+import {
+  formatAddress,
+  formatNumber,
+  formatSpeed,
+  formatTime,
+  getStatusColor,
+} from '../common/util/formatter';
 import ReportFilter, { updateReportParams } from './components/ReportFilter';
 import { prefixString, unprefixString } from '../common/util/stringUtils';
 import { useTranslation, useTranslationKeys } from '../common/components/LocalizationProvider';
@@ -13,6 +28,7 @@ import PageLayout from '../common/components/PageLayout';
 import ReportsMenu from './components/ReportsMenu';
 import usePersistedState from '../common/util/usePersistedState';
 import ColumnSelect from './components/ColumnSelect';
+import ReportCards from './components/ReportCards';
 import ResizeHandle from './components/ResizeHandle';
 import { useCatch, useCatchCallback, useAsyncTask } from '../reactHelper';
 import useReportStyles from './common/useReportStyles';
@@ -45,6 +61,7 @@ const EventReportPage = () => {
   const { classes } = useReportStyles();
   const t = useTranslation();
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -295,44 +312,84 @@ const EventReportPage = () => {
               <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
             </ReportFilter>
           </div>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell className={classes.columnAction} />
-                <TableCell>{t('sharedDevice')}</TableCell>
-                {columns.map((key) => (
-                  <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {!loading ? (
-                items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className={classes.columnAction} padding="none">
-                      {(item.positionId &&
-                        (selectedItem === item ? (
-                          <IconButton size="small" onClick={() => setSelectedItem(null)}>
-                            <GpsFixedIcon fontSize="small" />
-                          </IconButton>
-                        ) : (
-                          <IconButton size="small" onClick={() => setSelectedItem(item)}>
-                            <LocationSearchingIcon fontSize="small" />
-                          </IconButton>
-                        ))) ||
-                        ''}
-                    </TableCell>
-                    <TableCell>{devices[item.deviceId].name}</TableCell>
-                    {columns.map((key) => (
-                      <TableCell key={key}>{formatValue(item, key)}</TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableShimmer columns={columns.length + 2} />
-              )}
-            </TableBody>
-          </Table>
+          {desktop ? (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell className={classes.columnAction} />
+                  <TableCell>{t('sharedDevice')}</TableCell>
+                  {columns.map((key) => (
+                    <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!loading ? (
+                  items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className={classes.columnAction} padding="none">
+                        {(item.positionId &&
+                          (selectedItem === item ? (
+                            <IconButton size="small" onClick={() => setSelectedItem(null)}>
+                              <GpsFixedIcon fontSize="small" />
+                            </IconButton>
+                          ) : (
+                            <IconButton size="small" onClick={() => setSelectedItem(item)}>
+                              <LocationSearchingIcon fontSize="small" />
+                            </IconButton>
+                          ))) ||
+                          ''}
+                      </TableCell>
+                      <TableCell>{devices[item.deviceId].name}</TableCell>
+                      {columns.map((key) => (
+                        <TableCell key={key}>{formatValue(item, key)}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableShimmer columns={columns.length + 2} />
+                )}
+              </TableBody>
+            </Table>
+          ) : (
+            <ReportCards
+              items={items}
+              columns={columns}
+              columnsMap={columnsMap}
+              formatValue={formatValue}
+              rowName={(item) => devices[item.deviceId]?.name || item.deviceId}
+              rowKey={(item) => item.id}
+              rowColor={(item) =>
+                devices[item.deviceId]
+                  ? theme.palette[getStatusColor(devices[item.deviceId].status)].main
+                  : theme.palette.primary.main
+              }
+              wideColumns={['address']}
+              chipColumns={['type']}
+              chipColor={(item) => {
+                switch (item.type) {
+                  case 'alarm':
+                    return theme.palette.error.main;
+                  case 'deviceOverspeed':
+                  case 'deviceFuelDrop':
+                    return theme.palette.warning.main;
+                  case 'deviceOnline':
+                  case 'ignitionOn':
+                  case 'deviceMoving':
+                  case 'geofenceEnter':
+                    return theme.palette.success.main;
+                  case 'deviceOffline':
+                  case 'ignitionOff':
+                  case 'deviceStopped':
+                  case 'geofenceExit':
+                    return theme.palette.neutral.main;
+                  default:
+                    return theme.palette.primary.main;
+                }
+              }}
+              loading={loading}
+            />
+          )}
         </div>
       </div>
     </PageLayout>

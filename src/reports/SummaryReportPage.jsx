@@ -11,6 +11,7 @@ import {
   TableRow,
   TableBody,
   TableCell,
+  useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -19,6 +20,7 @@ import {
   formatVolume,
   formatTime,
   formatNumericHours,
+  getStatusColor,
 } from '../common/util/formatter';
 import ReportFilter, { updateReportParams } from './components/ReportFilter';
 import { useAttributePreference } from '../common/util/preferences';
@@ -27,6 +29,7 @@ import PageLayout from '../common/components/PageLayout';
 import ReportsMenu from './components/ReportsMenu';
 import usePersistedState from '../common/util/usePersistedState';
 import ColumnSelect from './components/ColumnSelect';
+import ReportCards from './components/ReportCards';
 import { useCatch, useCatchCallback } from '../reactHelper';
 import useReportStyles from './common/useReportStyles';
 import TableShimmer from '../common/components/TableShimmer';
@@ -54,6 +57,7 @@ const SummaryReportPage = () => {
   const { classes } = useReportStyles();
   const t = useTranslation();
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -173,30 +177,43 @@ const SummaryReportPage = () => {
           <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
         </ReportFilter>
       </div>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedDevice')}</TableCell>
-            {columns.map((key) => (
-              <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {!loading ? (
-            items.map((item) => (
-              <TableRow key={`${item.deviceId}_${Date.parse(item.startTime)}`}>
-                <TableCell>{devices[item.deviceId].name}</TableCell>
-                {columns.map((key) => (
-                  <TableCell key={key}>{formatValue(item, key)}</TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableShimmer columns={columns.length + 1} />
-          )}
-        </TableBody>
-      </Table>
+      {desktop ? (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedDevice')}</TableCell>
+              {columns.map((key) => (
+                <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {!loading ? (
+              items.map((item) => (
+                <TableRow key={`${item.deviceId}_${Date.parse(item.startTime)}`}>
+                  <TableCell>{devices[item.deviceId].name}</TableCell>
+                  {columns.map((key) => (
+                    <TableCell key={key}>{formatValue(item, key)}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableShimmer columns={columns.length + 1} />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <ReportCards
+          items={items}
+          columns={columns}
+          columnsMap={columnsMap}
+          formatValue={formatValue}
+          rowName={(item) => devices[item.deviceId].name}
+          rowKey={(item) => `${item.deviceId}_${Date.parse(item.startTime)}`}
+          rowColor={(item) => theme.palette[getStatusColor(devices[item.deviceId].status)].main}
+          loading={loading}
+        />
+      )}
     </PageLayout>
   );
 };

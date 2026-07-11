@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { formatNumericHours, formatTime } from '../common/util/formatter';
+import { Table, TableBody, TableCell, TableHead, TableRow, useMediaQuery } from '@mui/material';
+import { formatNumericHours, formatTime, getStatusColor } from '../common/util/formatter';
 import ReportFilter, { updateReportParams } from './components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import ReportsMenu from './components/ReportsMenu';
 import ColumnSelect from './components/ColumnSelect';
+import ReportCards from './components/ReportCards';
 import usePersistedState from '../common/util/usePersistedState';
 import { useCatch, useCatchCallback } from '../reactHelper';
 import useReportStyles from './common/useReportStyles';
@@ -30,6 +31,7 @@ const GeofenceReportPage = () => {
   const { classes } = useReportStyles();
   const t = useTranslation();
   const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const [searchParams, setSearchParams] = useSearchParams();
   const geofenceIds = useMemo(() => searchParams.getAll('geofenceId').map(Number), [searchParams]);
@@ -121,32 +123,50 @@ const GeofenceReportPage = () => {
           <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
         </ReportFilter>
       </div>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('sharedDevice')}</TableCell>
-            {columns.map((key) => (
-              <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {!loading ? (
-            items.map((item) => (
-              <TableRow
-                key={`${item.deviceId}_${item.geofenceId}_${item.startTime}_${item.endTime}`}
-              >
-                <TableCell>{devices[item.deviceId]?.name || item.deviceId}</TableCell>
-                {columns.map((key) => (
-                  <TableCell key={key}>{formatValue(item, key)}</TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableShimmer columns={columns.length + 1} />
-          )}
-        </TableBody>
-      </Table>
+      {desktop ? (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>{t('sharedDevice')}</TableCell>
+              {columns.map((key) => (
+                <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {!loading ? (
+              items.map((item) => (
+                <TableRow
+                  key={`${item.deviceId}_${item.geofenceId}_${item.startTime}_${item.endTime}`}
+                >
+                  <TableCell>{devices[item.deviceId]?.name || item.deviceId}</TableCell>
+                  {columns.map((key) => (
+                    <TableCell key={key}>{formatValue(item, key)}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableShimmer columns={columns.length + 1} />
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <ReportCards
+          items={items}
+          columns={columns}
+          columnsMap={columnsMap}
+          formatValue={formatValue}
+          rowName={(item) => devices[item.deviceId]?.name || item.deviceId}
+          rowKey={(item) => `${item.deviceId}_${item.geofenceId}_${item.startTime}_${item.endTime}`}
+          rowColor={(item) =>
+            devices[item.deviceId]
+              ? theme.palette[getStatusColor(devices[item.deviceId].status)].main
+              : theme.palette.primary.main
+          }
+          wideColumns={['geofenceId']}
+          loading={loading}
+        />
+      )}
     </PageLayout>
   );
 };
