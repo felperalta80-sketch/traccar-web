@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme) => ({
     borderTop: `1px solid ${theme.palette.divider}`,
   },
   groupChevron: {
-    fontSize: 19,
+    fontSize: 20,
     color: theme.palette.text.secondary,
     transition: 'transform .15s ease',
   },

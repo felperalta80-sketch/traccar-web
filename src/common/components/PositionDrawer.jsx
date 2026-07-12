@@ -47,7 +47,7 @@ const useStyles = makeStyles()((theme) => ({
     gap: theme.spacing(0.5),
   },
   collapseChevron: {
-    fontSize: 18,
+    fontSize: 20,
     transition: 'transform .15s ease',
   },
   collapseChevronOpen: {
