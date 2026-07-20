@@ -7,7 +7,9 @@ import { useTranslation } from '../../common/components/LocalizationProvider';
 
 // Selector de un día para reportes cronológicos: flechas anterior/siguiente y
 // campo de fecha nativo. Trabaja con dayjs y no permite avanzar al futuro,
-// porque no hay recorrido que mostrar más allá de hoy.
+// porque no hay recorrido que mostrar más allá de hoy. El nombre del día es el
+// label flotante del campo, para que el control quede estructuralmente igual al
+// selector de dispositivo (label + campo) y ambos se alineen en la fila.
 const useStyles = makeStyles()((theme) => ({
   root: {
     display: 'flex',
@@ -21,16 +23,6 @@ const useStyles = makeStyles()((theme) => ({
     flex: 1,
     minWidth: 0,
   },
-  label: {
-    fontFamily: theme.fonts.head,
-    fontSize: theme.typography.label.fontSize,
-    fontWeight: theme.typography.label.fontWeight,
-    letterSpacing: theme.typography.label.letterSpacing,
-    textTransform: theme.typography.label.textTransform,
-    color: theme.palette.text.secondary,
-    textAlign: 'center',
-    lineHeight: 1.4,
-  },
 }));
 
 const DayNavigator = ({ day, onChange }) => {
@@ -38,42 +30,44 @@ const DayNavigator = ({ day, onChange }) => {
   const t = useTranslation();
 
   const isToday = day.isSame(dayjs(), 'day');
+  const weekday = day.format('dddd');
+  const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
 
   return (
-    <div>
-      <div className={classes.label}>{day.format('dddd')}</div>
-      <div className={classes.root}>
-        <IconButton
-          className={classes.nav}
-          size="small"
-          aria-label={t('reportPreviousDay')}
-          onClick={() => onChange(day.subtract(1, 'day'))}
-        >
-          <ChevronLeftIcon fontSize="small" />
-        </IconButton>
-        <TextField
-          className={classes.field}
-          type="date"
-          size="small"
-          value={day.format('YYYY-MM-DD')}
-          slotProps={{ htmlInput: { max: dayjs().format('YYYY-MM-DD') } }}
-          onChange={(e) => {
-            const next = dayjs(e.target.value);
-            if (next.isValid()) {
-              onChange(next);
-            }
-          }}
-        />
-        <IconButton
-          className={classes.nav}
-          size="small"
-          aria-label={t('reportNextDay')}
-          disabled={isToday}
-          onClick={() => onChange(day.add(1, 'day'))}
-        >
-          <ChevronRightIcon fontSize="small" />
-        </IconButton>
-      </div>
+    <div className={classes.root}>
+      <IconButton
+        className={classes.nav}
+        size="small"
+        aria-label={t('reportPreviousDay')}
+        onClick={() => onChange(day.subtract(1, 'day'))}
+      >
+        <ChevronLeftIcon fontSize="small" />
+      </IconButton>
+      <TextField
+        className={classes.field}
+        type="date"
+        label={label}
+        value={day.format('YYYY-MM-DD')}
+        slotProps={{
+          htmlInput: { max: dayjs().format('YYYY-MM-DD') },
+          inputLabel: { shrink: true },
+        }}
+        onChange={(e) => {
+          const next = dayjs(e.target.value);
+          if (next.isValid()) {
+            onChange(next);
+          }
+        }}
+      />
+      <IconButton
+        className={classes.nav}
+        size="small"
+        aria-label={t('reportNextDay')}
+        disabled={isToday}
+        onClick={() => onChange(day.add(1, 'day'))}
+      >
+        <ChevronRightIcon fontSize="small" />
+      </IconButton>
     </div>
   );
 };
