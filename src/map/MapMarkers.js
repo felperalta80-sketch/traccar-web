@@ -5,12 +5,16 @@ import { map } from './core/MapView';
 import { useAttributePreference } from '../common/util/preferences';
 import { findFonts, toMapCoordinates } from './core/mapUtil';
 
-const MapMarkers = ({ markers, showTitles }) => {
+const MapMarkers = ({ markers, showTitles, scale }) => {
   const id = useId();
 
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
-  const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
+  // `scale` explícito tiene prioridad sobre la preferencia del usuario; se usa
+  // cuando un mapa necesita marcadores más prominentes (p.ej. inicio/fin del
+  // recorrido en el mapa a pantalla completa de mobile).
+  const preferenceScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
+  const iconScale = scale ?? preferenceScale;
 
   useEffect(() => {
     map.addSource(id, {

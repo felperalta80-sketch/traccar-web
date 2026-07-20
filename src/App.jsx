@@ -83,10 +83,11 @@ const App = () => {
   // duplicar la instancia singleton de MapView.
   const mapShellPaths = ['/', '/reports', '/settings', '/account'];
   const showPersistentMap = desktop && mapShellPaths.includes(location.pathname);
-  // En estas rutas el panel (ModuleMenuLayout) doca su propia barra inferior en
-  // desktop, así que App no renderiza la barra flotante para no duplicarla.
-  const moduleIndexPaths = ['/reports', '/settings', '/account'];
-  const panelDocksNav = desktop && moduleIndexPaths.includes(location.pathname);
+  // En estas rutas el panel doca su propia barra inferior en desktop (los
+  // índices vía ModuleMenuLayout; el Recorrido del día en su propio panel), así
+  // que App no renderiza la barra flotante para no duplicarla.
+  const navDockPaths = ['/reports', '/settings', '/account', '/reports/timeline'];
+  const panelDocksNav = desktop && navDockPaths.includes(location.pathname);
 
   const newServer = useSelector((state) => state.session.server.newServer);
   const termsUrl = useSelector((state) => state.session.server.attributes.termsUrl);

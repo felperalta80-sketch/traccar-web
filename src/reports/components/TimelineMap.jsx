@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 import MapView from '../../map/core/MapView';
 import MapGeofence from '../../map/MapGeofence';
 import MapRoutePath from '../../map/MapRoutePath';
@@ -13,9 +15,14 @@ import fetchOrThrow from '../../common/util/fetchOrThrow';
 // como recorrido con marcadores de inicio y fin; una parada, como un punto
 // centrado. Las capas son las mismas que usan TripReportPage y StopReportPage.
 const TimelineMap = ({ item }) => {
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const [route, setRoute] = useState(null);
 
   const trip = item?.type === 'trip';
+  // En el mapa a pantalla completa de mobile los marcadores de inicio/fin
+  // quedaban chicos; se agrandan explícitamente. En desktop van al tamaño normal.
+  const markerScale = desktop ? undefined : 1.4;
 
   useAsyncTask(
     async ({ signal }) => {
@@ -45,6 +52,7 @@ const TimelineMap = ({ item }) => {
           <>
             <MapRoutePath positions={route} />
             <MapMarkers
+              scale={markerScale}
               markers={[
                 { latitude: item.startLat, longitude: item.startLon, image: 'start-success' },
                 { latitude: item.endLat, longitude: item.endLon, image: 'finish-error' },

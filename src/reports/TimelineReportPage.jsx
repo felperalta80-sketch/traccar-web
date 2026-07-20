@@ -10,8 +10,9 @@ import { useTranslation } from '../common/components/LocalizationProvider';
 import { useAttributePreference } from '../common/util/preferences';
 import { formatDistance, formatDurationCompact, formatTime } from '../common/util/formatter';
 import PageLayout from '../common/components/PageLayout';
+import BackIcon from '../common/components/BackIcon';
+import BottomMenu from '../common/components/BottomMenu';
 import SelectField from '../common/components/SelectField';
-import ReportsMenu from './components/ReportsMenu';
 import DayNavigator from './components/DayNavigator';
 import DayTimeline, { DayTimelineSummary, itemKey } from './components/DayTimeline';
 import TimelineMap from './components/TimelineMap';
@@ -24,25 +25,22 @@ import { deviceEquality } from '../common/util/deviceEquality';
 // tiempo. Combina /api/reports/trips y /api/reports/stops en el mismo rango y
 // los intercala por hora de inicio; no hay endpoint nuevo del lado del servidor.
 //
-// Desktop: mismo lenguaje que el panel de dispositivos (MainPage). Un card
-// flotante a la izquierda (ancho drawerWidthDesktop, radio 16, sombra
-// shadows[6], margen 12px) sobre el mapa a sangre completa, que muestra el
-// tramo elegido. Mobile: el mapa se abre como diálogo a pantalla completa,
-// porque no hay ancho para las dos cosas a la vez.
+// Desktop: mismo lenguaje y disposición que el panel de dispositivos (MainPage /
+// ModuleMenuLayout). Un card flotante a la izquierda de top a bottom (margen
+// 12px, ancho drawerWidthDesktop, radio 16, sombra shadows[6]) con la barra de
+// módulos docada abajo, sobre el mapa a sangre completa. Mobile: el mapa se abre
+// como diálogo a pantalla completa, porque no hay ancho para las dos cosas.
 const useStyles = makeStyles()((theme) => ({
-  stage: {
-    position: 'relative',
-    height: '100%',
-    overflow: 'hidden',
-  },
-  mapArea: {
-    position: 'absolute',
+  mapFull: {
+    position: 'fixed',
     inset: 0,
+    zIndex: 0,
     backgroundColor: theme.palette.background.default,
   },
   mapPlaceholder: {
-    position: 'absolute',
+    position: 'fixed',
     inset: 0,
+    zIndex: 1,
     // Centrado en la franja de mapa visible, a la derecha del panel flotante.
     paddingLeft: `calc(${theme.dimensions.drawerWidthDesktop} + ${theme.spacing(3)})`,
     display: 'grid',
@@ -52,12 +50,11 @@ const useStyles = makeStyles()((theme) => ({
     pointerEvents: 'none',
   },
   panel: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    margin: theme.spacing(1.5),
+    position: 'fixed',
+    left: theme.spacing(1.5),
+    top: theme.spacing(1.5),
+    bottom: theme.spacing(1.5),
     width: theme.dimensions.drawerWidthDesktop,
-    height: `calc(100% - ${theme.spacing(3)})`,
     borderRadius: theme.spacing(2),
     overflow: 'hidden',
     boxShadow: theme.shadows[6],
@@ -66,6 +63,28 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     minHeight: 0,
     zIndex: 3,
+  },
+  panelHead: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1, 1.5),
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  panelTitle: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    fontSize: theme.typography.h6.fontSize,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  controls: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1.5),
+    padding: theme.spacing(1.5),
   },
   panelScroll: {
     overflowY: 'auto',
@@ -77,10 +96,12 @@ const useStyles = makeStyles()((theme) => ({
     width: '100%',
     height: '100%',
   },
+  // La X va arriba a la izquierda: los controles del mapa (zoom/brújula/capas)
+  // se anclan arriba a la derecha, así no se solapan.
   dialogClose: {
     position: 'absolute',
     top: theme.spacing(1.5),
-    right: theme.spacing(1.5),
+    left: theme.spacing(1.5),
     zIndex: 4,
     backgroundColor: theme.palette.background.paper,
     boxShadow: '0 1px 4px rgba(16, 24, 40, 0.24)',
@@ -96,9 +117,10 @@ const useStyles = makeStyles()((theme) => ({
   dialogTitle: {
     position: 'absolute',
     top: theme.spacing(1.5),
-    left: theme.spacing(1.5),
+    left: '50%',
+    transform: 'translateX(-50%)',
     zIndex: 4,
-    maxWidth: `calc(100% - ${theme.spacing(9)})`,
+    maxWidth: `calc(100% - ${theme.spacing(16)})`,
     backgroundColor: theme.palette.background.paper,
     borderRadius: 999,
     padding: theme.spacing(0.5, 1.5),
@@ -215,28 +237,25 @@ const TimelineReportPage = () => {
     ? `${formatTime(selectedItem.startTime, 'clock')} — ${formatTime(selectedItem.endTime, 'clock')}`
     : '';
 
-  const controls = (
-    <div className={classes.header}>
-      <div className={classes.filter}>
-        <div className={classes.filterItem}>
-          <SelectField
-            label={t('reportDevice')}
-            data={deviceList}
-            value={deviceId}
-            onChange={(e) => updateParam('deviceId', e.target.value)}
-            fullWidth
-          />
-        </div>
-        <div className={classes.filterItem}>
-          <DayNavigator
-            day={day}
-            onChange={(next) => updateParam('day', next.format('YYYY-MM-DD'))}
-          />
-        </div>
-      </div>
-      {deviceId && !loading && <DayTimelineSummary summary={summary} />}
+  const deviceField = (
+    <div className={classes.filterItem}>
+      <SelectField
+        label={t('reportDevice')}
+        data={deviceList}
+        value={deviceId}
+        onChange={(e) => updateParam('deviceId', e.target.value)}
+        fullWidth
+      />
     </div>
   );
+
+  const dayField = (
+    <div className={classes.filterItem}>
+      <DayNavigator day={day} onChange={(next) => updateParam('day', next.format('YYYY-MM-DD'))} />
+    </div>
+  );
+
+  const summaryStrip = deviceId && !loading ? <DayTimelineSummary summary={summary} /> : null;
 
   const timeline = (
     <DayTimeline
@@ -252,28 +271,43 @@ const TimelineReportPage = () => {
 
   if (desktop) {
     return (
-      <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportDayTimeline']}>
-        <div className={own.stage}>
-          <div className={own.mapArea}>{selectedItem && <TimelineMap item={selectedItem} />}</div>
-          {!selectedItem && (
-            <div className={own.mapPlaceholder}>
-              <Typography variant="body2">{t('reportTimelineSelectHint')}</Typography>
-            </div>
-          )}
-          <div className={own.panel}>
-            {controls}
-            <div className={own.panelScroll}>{timeline}</div>
+      <>
+        <div className={own.mapFull}>{selectedItem && <TimelineMap item={selectedItem} />}</div>
+        {!selectedItem && (
+          <div className={own.mapPlaceholder}>
+            <Typography variant="body2">{t('reportTimelineSelectHint')}</Typography>
           </div>
+        )}
+        <div className={own.panel}>
+          <div className={own.panelHead}>
+            <IconButton edge="start" onClick={() => navigate('/reports')}>
+              <BackIcon />
+            </IconButton>
+            <span className={own.panelTitle}>{t('reportDayTimeline')}</span>
+          </div>
+          <div className={own.controls}>
+            {deviceField}
+            {dayField}
+          </div>
+          {summaryStrip}
+          <div className={own.panelScroll}>{timeline}</div>
+          <BottomMenu />
         </div>
-      </PageLayout>
+      </>
     );
   }
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportDayTimeline']}>
+    <PageLayout breadcrumbs={['reportTitle', 'reportDayTimeline']}>
       <div className={classes.container}>
         <div className={classes.containerMain}>
-          {controls}
+          <div className={classes.header}>
+            <div className={classes.filter}>
+              {deviceField}
+              {dayField}
+            </div>
+            {summaryStrip}
+          </div>
           {timeline}
         </div>
       </div>
