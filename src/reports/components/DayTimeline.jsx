@@ -1,6 +1,6 @@
 import { makeStyles } from 'tss-react/mui';
 import { useTheme, alpha } from '@mui/material/styles';
-import { IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
+import { ButtonBase, IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
 import TripOriginIcon from '@mui/icons-material/TripOrigin';
 import PlaceIcon from '@mui/icons-material/Place';
 import RouteIcon from '@mui/icons-material/Route';
@@ -88,6 +88,13 @@ const useStyles = makeStyles()((theme) => ({
     border: `2px solid ${theme.palette.background.paper}`,
   },
   card: {
+    // Layout de card en bloque: sobreescribe el inline-flex/centrado que trae
+    // ButtonBase, para que el contenido (cabecera, tramos, métricas) se apile.
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    width: '100%',
+    textAlign: 'left',
     backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.divider}`,
     borderLeftWidth: 3,
@@ -268,7 +275,10 @@ const DayTimeline = ({
         return (
           <div key={key} className={classes.entry}>
             <span className={classes.node} style={{ backgroundColor: color }} />
-            <div
+            <ButtonBase
+              component="div"
+              focusRipple
+              disableRipple={!onSelect}
               className={cx(
                 classes.card,
                 onSelect && classes.clickable,
@@ -276,18 +286,6 @@ const DayTimeline = ({
               )}
               style={{ borderLeftColor: color }}
               onClick={onSelect ? () => onSelect(item) : undefined}
-              role={onSelect ? 'button' : undefined}
-              tabIndex={onSelect ? 0 : undefined}
-              onKeyDown={
-                onSelect
-                  ? (event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        onSelect(item);
-                      }
-                    }
-                  : undefined
-              }
             >
               <div className={classes.head}>
                 <span className={classes.time}>
@@ -364,7 +362,7 @@ const DayTimeline = ({
                   />
                 </div>
               )}
-            </div>
+            </ButtonBase>
           </div>
         );
       })}
