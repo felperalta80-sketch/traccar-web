@@ -6,6 +6,7 @@ import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PlaceIcon from '@mui/icons-material/Place';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import RouteIcon from '@mui/icons-material/Route';
@@ -32,7 +33,12 @@ const ReportsMenu = () => {
       return path;
     }
     const params = new URLSearchParams();
-    if (path === '/reports/chart' || path === '/reports/route' || path === '/replay') {
+    if (
+      path === '/reports/chart' ||
+      path === '/reports/route' ||
+      path === '/reports/timeline' ||
+      path === '/replay'
+    ) {
       const [firstDeviceId] = deviceIds;
       if (firstDeviceId != null) {
         params.append('deviceId', firstDeviceId);
@@ -90,6 +96,13 @@ const ReportsMenu = () => {
           link={buildLink('/reports/summary')}
           icon={<FormatListBulletedIcon />}
           selected={location.pathname === '/reports/summary'}
+        />
+        <MenuItem
+          title={t('reportDayTimeline')}
+          subtitle={t('reportDayTimelineDesc')}
+          link={buildLink('/reports/timeline')}
+          icon={<ScheduleIcon />}
+          selected={location.pathname === '/reports/timeline'}
         />
         <MenuItem
           title={t('reportChart')}

@@ -1,0 +1,309 @@
+import { makeStyles } from 'tss-react/mui';
+import { useTheme } from '@mui/material/styles';
+import { Skeleton, Typography } from '@mui/material';
+import TripOriginIcon from '@mui/icons-material/TripOrigin';
+import PlaceIcon from '@mui/icons-material/Place';
+import { useTranslation } from '../../common/components/LocalizationProvider';
+import {
+  formatTime,
+  formatDistance,
+  formatSpeed,
+  formatDurationCompact,
+} from '../../common/util/formatter';
+import AddressValue from '../../common/components/AddressValue';
+
+// Línea de tiempo vertical del recorrido de un día: viajes y paradas
+// encadenados cronológicamente sobre un riel. Cada tramo es una tarjeta con el
+// filete de color del sistema (verde = en marcha, gris = detenido), igual que
+// DeviceRow y ReportCards, para no introducir un lenguaje visual nuevo.
+const useStyles = makeStyles()((theme) => ({
+  summary: {
+    display: 'flex',
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#F0F0F0',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  summaryCell: {
+    flex: 1,
+    minWidth: 0,
+    padding: theme.spacing(1, 0.75),
+    textAlign: 'center',
+    '& + &': {
+      borderLeft: `1px solid ${theme.palette.divider}`,
+    },
+  },
+  summaryKey: {
+    display: 'block',
+    fontFamily: theme.fonts.head,
+    fontSize: theme.typography.label.fontSize,
+    fontWeight: theme.typography.label.fontWeight,
+    letterSpacing: theme.typography.label.letterSpacing,
+    textTransform: theme.typography.label.textTransform,
+    color: theme.palette.text.secondary,
+    lineHeight: 1.4,
+  },
+  summaryValue: {
+    display: 'block',
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    fontSize: theme.typography.body1.fontSize,
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: 1.3,
+  },
+  rail: {
+    position: 'relative',
+    // El riel corre a 13px del borde (12 + mitad de 2); las tarjetas arrancan
+    // en 30px y los nodos se centran sobre él con un desplazamiento negativo.
+    padding: theme.spacing(1.5, 1.5, 1.5, 3.75),
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      left: theme.spacing(1.5),
+      top: theme.spacing(2.5),
+      bottom: theme.spacing(2.5),
+      width: 2,
+      backgroundColor: theme.palette.divider,
+    },
+  },
+  entry: {
+    position: 'relative',
+    '& + &': {
+      marginTop: theme.spacing(1.25),
+    },
+  },
+  node: {
+    position: 'absolute',
+    // -22px desde la tarjeta (30px) => borde en 8, centro en 13 = eje del riel.
+    left: theme.spacing(-2.75),
+    top: theme.spacing(1.75),
+    width: 10,
+    height: 10,
+    borderRadius: '50%',
+    border: `2px solid ${theme.palette.background.default}`,
+  },
+  card: {
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    borderLeftWidth: 3,
+    borderRadius: 9,
+    padding: theme.spacing(1.25, 1.5),
+    boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.06)',
+  },
+  clickable: {
+    cursor: 'pointer',
+    '&:hover': {
+      borderColor: theme.palette.text.secondary,
+    },
+  },
+  head: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(0.5),
+  },
+  time: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    fontSize: theme.typography.body2.fontSize,
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: 1.35,
+  },
+  duration: {
+    marginLeft: 'auto',
+    flexShrink: 0,
+    fontSize: theme.typography.caption.fontSize,
+    color: theme.palette.text.secondary,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  leg: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.75),
+    fontSize: theme.typography.body2.fontSize,
+    lineHeight: 1.4,
+    color: theme.palette.text.secondary,
+    '& + &': {
+      marginTop: theme.dimensions.gapFine,
+    },
+    '& svg': {
+      fontSize: 16,
+      width: 16,
+      height: 16,
+      flexShrink: 0,
+      marginTop: 2,
+      color: theme.palette.text.disabled,
+    },
+  },
+  metrics: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(0.75),
+    marginTop: theme.spacing(0.75),
+  },
+  metric: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.dimensions.gapFine,
+    backgroundColor:
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 37, 54, 0.05)',
+    borderRadius: 999,
+    padding: theme.spacing(0.25, 1),
+    fontSize: theme.typography.caption.fontSize,
+    fontVariantNumeric: 'tabular-nums',
+    color: theme.palette.text.secondary,
+  },
+  metricValue: {
+    fontFamily: theme.fonts.head,
+    fontWeight: 700,
+    color: theme.palette.text.primary,
+  },
+  empty: {
+    padding: theme.spacing(5, 2),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const DayTimelineSummary = ({ summary }) => {
+  const { classes } = useStyles();
+  const t = useTranslation();
+
+  const cells = [
+    { key: t('reportTrips'), value: summary.trips },
+    { key: t('sharedDistance'), value: summary.distance },
+    { key: t('reportMoving'), value: summary.moving },
+    { key: t('reportStopped'), value: summary.stopped },
+  ];
+
+  return (
+    <div className={classes.summary}>
+      {cells.map((cell) => (
+        <div key={cell.key} className={classes.summaryCell}>
+          <span className={classes.summaryKey}>{cell.key}</span>
+          <span className={classes.summaryValue}>{cell.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DayTimeline = ({ items, loading, distanceUnit, speedUnit, onSelect }) => {
+  const { classes, cx } = useStyles();
+  const theme = useTheme();
+  const t = useTranslation();
+
+  if (loading) {
+    return (
+      <div className={classes.rail}>
+        {[0, 1, 2, 3].map((index) => (
+          <div key={index} className={classes.entry}>
+            <Skeleton variant="rounded" height={index % 2 ? 64 : 96} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!items.length) {
+    return (
+      <div className={classes.empty}>
+        <Typography variant="body2">{t('sharedNoData')}</Typography>
+      </div>
+    );
+  }
+
+  return (
+    <div className={classes.rail}>
+      {items.map((item) => {
+        const trip = item.type === 'trip';
+        const color = trip ? theme.palette.success.main : theme.palette.neutral.main;
+        return (
+          <div
+            key={`${item.type}-${item.startPositionId ?? item.startTime}`}
+            className={classes.entry}
+          >
+            <span className={classes.node} style={{ backgroundColor: color }} />
+            <div
+              className={cx(classes.card, onSelect && classes.clickable)}
+              style={{ borderLeftColor: color }}
+              onClick={onSelect ? () => onSelect(item) : undefined}
+              role={onSelect ? 'button' : undefined}
+              tabIndex={onSelect ? 0 : undefined}
+              onKeyDown={
+                onSelect
+                  ? (event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onSelect(item);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              <div className={classes.head}>
+                <span className={classes.time}>
+                  {`${formatTime(item.startTime, 'clock')} — ${formatTime(item.endTime, 'clock')}`}
+                </span>
+                <span className={classes.duration}>{formatDurationCompact(item.duration, t)}</span>
+              </div>
+
+              {trip ? (
+                <>
+                  <div className={classes.leg}>
+                    <TripOriginIcon />
+                    <AddressValue
+                      latitude={item.startLat}
+                      longitude={item.startLon}
+                      originalAddress={item.startAddress}
+                    />
+                  </div>
+                  <div className={classes.leg}>
+                    <PlaceIcon />
+                    <AddressValue
+                      latitude={item.endLat}
+                      longitude={item.endLon}
+                      originalAddress={item.endAddress}
+                    />
+                  </div>
+                  <div className={classes.metrics}>
+                    <span className={classes.metric}>
+                      <span className={classes.metricValue}>
+                        {formatDistance(item.distance, distanceUnit, t)}
+                      </span>
+                    </span>
+                    {item.averageSpeed > 0 && (
+                      <span className={classes.metric}>
+                        {`${t('reportAverageSpeed')} `}
+                        <span className={classes.metricValue}>
+                          {formatSpeed(item.averageSpeed, speedUnit, t)}
+                        </span>
+                      </span>
+                    )}
+                    {item.maxSpeed > 0 && (
+                      <span className={classes.metric}>
+                        {`${t('reportMaximumSpeed')} `}
+                        <span className={classes.metricValue}>
+                          {formatSpeed(item.maxSpeed, speedUnit, t)}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className={classes.leg}>
+                  <PlaceIcon />
+                  <AddressValue
+                    latitude={item.latitude}
+                    longitude={item.longitude}
+                    originalAddress={item.address}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export default DayTimeline;

@@ -43,6 +43,10 @@ export const formatTime = (value, format) => {
         return d.toLocaleDateString(undefined, dateConfig);
       case 'time':
         return d.toLocaleTimeString(undefined, secondConfig);
+      // Solo hora y minuto, sin fecha ni segundos: para vistas cronológicas
+      // donde el día ya está en el encabezado (línea de tiempo del recorrido).
+      case 'clock':
+        return d.toLocaleTimeString(undefined, minuteConfig);
       case 'minutes':
         return d.toLocaleString(undefined, { ...dateConfig, ...minuteConfig });
       default:
@@ -97,6 +101,17 @@ export const formatVolume = (value, unit, t) =>
 export const formatNumericHours = (value, t) => {
   const hours = Math.floor(value / 3600000);
   const minutes = Math.floor((value % 3600000) / 60000);
+  return `${hours} ${t('sharedHourAbbreviation')} ${minutes} ${t('sharedMinuteAbbreviation')}`;
+};
+
+// Igual que formatNumericHours pero omite las horas cuando son cero: en listas
+// cronológicas densas el "0 h" de cada tramo corto es ruido.
+export const formatDurationCompact = (value, t) => {
+  const hours = Math.floor(value / 3600000);
+  const minutes = Math.floor((value % 3600000) / 60000);
+  if (!hours) {
+    return `${minutes} ${t('sharedMinuteAbbreviation')}`;
+  }
   return `${hours} ${t('sharedHourAbbreviation')} ${minutes} ${t('sharedMinuteAbbreviation')}`;
 };
 
