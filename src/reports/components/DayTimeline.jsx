@@ -95,14 +95,17 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(1.25, 1.5),
     boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.06)',
   },
+  // Hover coherente con la fila de dispositivo (ListItemButton): rellena el
+  // fondo con action.hover, no cambia el borde.
   clickable: {
     cursor: 'pointer',
     '&:hover': {
-      borderColor: theme.palette.text.secondary,
+      backgroundColor: theme.palette.action.hover,
     },
   },
   // Seleccionado: mismo tinte neutro que la fila de dispositivo, para que el
-  // tramo abierto en el mapa se lea sin depender solo del filete de color.
+  // tramo abierto en el mapa se lea sin depender solo del filete de color. El
+  // hover del seleccionado sube el tinte, igual que Mui-selected:hover.
   selected: {
     backgroundColor:
       theme.palette.mode === 'dark'
@@ -112,6 +115,12 @@ const useStyles = makeStyles()((theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.22)'
         : alpha(theme.palette.ink.main, 0.22),
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.09)'
+          : alpha(theme.palette.ink.main, 0.08),
+    },
   },
   head: {
     display: 'flex',
