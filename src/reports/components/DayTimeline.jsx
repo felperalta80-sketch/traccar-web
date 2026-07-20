@@ -1,8 +1,9 @@
 import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
-import { Skeleton, Typography } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
 import TripOriginIcon from '@mui/icons-material/TripOrigin';
 import PlaceIcon from '@mui/icons-material/Place';
+import RouteIcon from '@mui/icons-material/Route';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import {
   formatTime,
@@ -94,11 +95,33 @@ const useStyles = makeStyles()((theme) => ({
       borderColor: theme.palette.text.secondary,
     },
   },
+  // Seleccionado: mismo tinte neutro que la fila de dispositivo, para que el
+  // tramo abierto en el mapa se lea sin depender solo del filete de color.
+  selected: {
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.06)'
+        : alpha(theme.palette.ink.main, 0.05),
+    borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.22)'
+        : alpha(theme.palette.ink.main, 0.22),
+  },
   head: {
     display: 'flex',
-    alignItems: 'baseline',
+    alignItems: 'center',
     gap: theme.spacing(1),
     marginBottom: theme.spacing(0.5),
+  },
+  replay: {
+    marginLeft: theme.spacing(-0.5),
+    marginRight: theme.spacing(-0.5),
+    flexShrink: 0,
+    '& svg': {
+      fontSize: 16,
+      width: 16,
+      height: 16,
+    },
   },
   time: {
     fontFamily: theme.fonts.head,
@@ -186,7 +209,17 @@ export const DayTimelineSummary = ({ summary }) => {
   );
 };
 
-const DayTimeline = ({ items, loading, distanceUnit, speedUnit, onSelect }) => {
+export const itemKey = (item) => `${item.type}-${item.startPositionId ?? item.startTime}`;
+
+const DayTimeline = ({
+  items,
+  loading,
+  distanceUnit,
+  speedUnit,
+  onSelect,
+  onReplay,
+  selectedKey,
+}) => {
   const { classes, cx } = useStyles();
   const theme = useTheme();
   const t = useTranslation();
@@ -216,14 +249,16 @@ const DayTimeline = ({ items, loading, distanceUnit, speedUnit, onSelect }) => {
       {items.map((item) => {
         const trip = item.type === 'trip';
         const color = trip ? theme.palette.success.main : theme.palette.neutral.main;
+        const key = itemKey(item);
         return (
-          <div
-            key={`${item.type}-${item.startPositionId ?? item.startTime}`}
-            className={classes.entry}
-          >
+          <div key={key} className={classes.entry}>
             <span className={classes.node} style={{ backgroundColor: color }} />
             <div
-              className={cx(classes.card, onSelect && classes.clickable)}
+              className={cx(
+                classes.card,
+                onSelect && classes.clickable,
+                selectedKey === key && classes.selected,
+              )}
               style={{ borderLeftColor: color }}
               onClick={onSelect ? () => onSelect(item) : undefined}
               role={onSelect ? 'button' : undefined}
@@ -244,6 +279,22 @@ const DayTimeline = ({ items, loading, distanceUnit, speedUnit, onSelect }) => {
                   {`${formatTime(item.startTime, 'clock')} — ${formatTime(item.endTime, 'clock')}`}
                 </span>
                 <span className={classes.duration}>{formatDurationCompact(item.duration, t)}</span>
+                {trip && onReplay && (
+                  <Tooltip title={t('reportReplay')}>
+                    <IconButton
+                      className={classes.replay}
+                      size="small"
+                      aria-label={t('reportReplay')}
+                      // No debe seleccionar el tramo en el mapa: es otra acción.
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onReplay(item);
+                      }}
+                    >
+                      <RouteIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </div>
 
               {trip ? (

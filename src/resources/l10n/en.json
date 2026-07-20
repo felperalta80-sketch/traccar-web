@@ -304,6 +304,7 @@
     "reportStopsDesc": "Stops with time and place",
     "reportSummaryDesc": "Totals per device",
     "reportDayTimelineDesc": "Trips and stops on a timeline",
+    "reportTimelineSelectHint": "Select a trip or stop to see it on the map",
     "reportChartDesc": "Speed and battery over time",
     "reportReplayDesc": "Route playback",
     "reportPositionsDesc": "Position log",

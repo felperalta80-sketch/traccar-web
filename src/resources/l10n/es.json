@@ -305,6 +305,7 @@
     "reportStopsDesc": "Detenciones con tiempo y lugar",
     "reportSummaryDesc": "Totales por dispositivo",
     "reportDayTimelineDesc": "Viajes y paradas en línea de tiempo",
+    "reportTimelineSelectHint": "Elegí un viaje o parada para verlo en el mapa",
     "reportChartDesc": "Velocidad y batería en el tiempo",
     "reportReplayDesc": "Reproducción de la ruta",
     "reportPositionsDesc": "Registro de posiciones",
