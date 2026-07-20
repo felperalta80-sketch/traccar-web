@@ -15,8 +15,13 @@ import AddressValue from '../../common/components/AddressValue';
 
 // Línea de tiempo vertical del recorrido de un día: viajes y paradas
 // encadenados cronológicamente sobre un riel. Cada tramo es una tarjeta con el
-// filete de color del sistema (verde = en marcha, gris = detenido), igual que
-// DeviceRow y ReportCards, para no introducir un lenguaje visual nuevo.
+// filete de color del sistema (verde = en marcha, gris = detenido), con el mismo
+// tratamiento que DeviceRow (radio 9, filete 3px, sombra e insets) para que el
+// panel se lea igual que la lista de dispositivos.
+const CARD_GAP = 5; // separación entre tarjetas (igual que DeviceRow)
+const CARD_INSET = 6; // sangría lateral (igual que DeviceRow)
+const RAIL_CHANNEL = 28; // canal izquierdo reservado al riel y los nodos
+
 const useStyles = makeStyles()((theme) => ({
   summary: {
     display: 'flex',
@@ -52,9 +57,9 @@ const useStyles = makeStyles()((theme) => ({
   },
   rail: {
     position: 'relative',
-    // El riel corre a 13px del borde (12 + mitad de 2); las tarjetas arrancan
-    // en 30px y los nodos se centran sobre él con un desplazamiento negativo.
-    padding: theme.spacing(1.5, 1.5, 1.5, 3.75),
+    // Riel a 13px del borde (12 + mitad de 2). Las tarjetas arrancan en el canal
+    // (28px); arriba/abajo/derecha llevan el mismo inset que la lista.
+    padding: `${CARD_INSET}px ${CARD_INSET}px ${CARD_INSET}px ${RAIL_CHANNEL}px`,
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -68,18 +73,19 @@ const useStyles = makeStyles()((theme) => ({
   entry: {
     position: 'relative',
     '& + &': {
-      marginTop: theme.spacing(1.25),
+      marginTop: CARD_GAP,
     },
   },
   node: {
     position: 'absolute',
-    // -22px desde la tarjeta (30px) => borde en 8, centro en 13 = eje del riel.
-    left: theme.spacing(-2.75),
+    // -20px desde la tarjeta (28px) => borde en 8, centro en 13 = eje del riel.
+    left: 8 - RAIL_CHANNEL,
     top: theme.spacing(1.75),
     width: 10,
     height: 10,
     borderRadius: '50%',
-    border: `2px solid ${theme.palette.background.default}`,
+    // Halo del color del panel (paper) para separar el nodo del riel.
+    border: `2px solid ${theme.palette.background.paper}`,
   },
   card: {
     backgroundColor: theme.palette.background.paper,

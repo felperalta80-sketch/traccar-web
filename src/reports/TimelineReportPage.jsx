@@ -24,44 +24,53 @@ import { deviceEquality } from '../common/util/deviceEquality';
 // tiempo. Combina /api/reports/trips y /api/reports/stops en el mismo rango y
 // los intercala por hora de inicio; no hay endpoint nuevo del lado del servidor.
 //
-// Desktop: la línea de tiempo queda fija a la izquierda y el mapa ocupa el
-// resto, mostrando el tramo elegido. Mobile: el mapa se abre como diálogo a
-// pantalla completa, porque no hay ancho para las dos cosas a la vez.
+// Desktop: mismo lenguaje que el panel de dispositivos (MainPage). Un card
+// flotante a la izquierda (ancho drawerWidthDesktop, radio 16, sombra
+// shadows[6], margen 12px) sobre el mapa a sangre completa, que muestra el
+// tramo elegido. Mobile: el mapa se abre como diálogo a pantalla completa,
+// porque no hay ancho para las dos cosas a la vez.
 const useStyles = makeStyles()((theme) => ({
-  split: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'stretch',
-    minHeight: 0,
-  },
-  pane: {
-    width: theme.dimensions.timelinePaneWidth,
-    flexShrink: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    backgroundColor: theme.palette.background.paper,
-    borderRight: `1px solid ${theme.palette.divider}`,
-  },
-  paneScroll: {
-    overflowY: 'auto',
-    minHeight: 0,
-    flex: 1,
-  },
-  mapPane: {
-    flex: 1,
-    minWidth: 0,
+  stage: {
     position: 'relative',
+    height: '100%',
+    overflow: 'hidden',
+  },
+  mapArea: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: theme.palette.background.default,
   },
   mapPlaceholder: {
     position: 'absolute',
     inset: 0,
+    // Centrado en la franja de mapa visible, a la derecha del panel flotante.
+    paddingLeft: `calc(${theme.dimensions.drawerWidthDesktop} + ${theme.spacing(3)})`,
     display: 'grid',
     placeItems: 'center',
-    padding: theme.spacing(2),
     textAlign: 'center',
     color: theme.palette.text.secondary,
-    backgroundColor: theme.palette.background.default,
+    pointerEvents: 'none',
+  },
+  panel: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    margin: theme.spacing(1.5),
+    width: theme.dimensions.drawerWidthDesktop,
+    height: `calc(100% - ${theme.spacing(3)})`,
+    borderRadius: theme.spacing(2),
+    overflow: 'hidden',
+    boxShadow: theme.shadows[6],
+    backgroundColor: theme.palette.background.paper,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+    zIndex: 3,
+  },
+  panelScroll: {
+    overflowY: 'auto',
+    minHeight: 0,
+    flex: 1,
   },
   dialogMap: {
     position: 'relative',
@@ -244,19 +253,16 @@ const TimelineReportPage = () => {
   if (desktop) {
     return (
       <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportDayTimeline']}>
-        <div className={own.split}>
-          <div className={own.pane}>
+        <div className={own.stage}>
+          <div className={own.mapArea}>{selectedItem && <TimelineMap item={selectedItem} />}</div>
+          {!selectedItem && (
+            <div className={own.mapPlaceholder}>
+              <Typography variant="body2">{t('reportTimelineSelectHint')}</Typography>
+            </div>
+          )}
+          <div className={own.panel}>
             {controls}
-            <div className={own.paneScroll}>{timeline}</div>
-          </div>
-          <div className={own.mapPane}>
-            {selectedItem ? (
-              <TimelineMap item={selectedItem} />
-            ) : (
-              <div className={own.mapPlaceholder}>
-                <Typography variant="body2">{t('reportTimelineSelectHint')}</Typography>
-              </div>
-            )}
+            <div className={own.panelScroll}>{timeline}</div>
           </div>
         </div>
       </PageLayout>

@@ -6,7 +6,6 @@ export default {
   drawerHeightPhone: '250px',
   filterFormWidth: '160px',
   eventsDrawerWidth: '320px',
-  timelinePaneWidth: '380px',
   bottomBarHeight: 56,
   popupMapOffset: 300,
   popupMaxWidth: 340,
