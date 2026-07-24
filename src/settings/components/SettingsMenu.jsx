@@ -61,13 +61,15 @@ const SettingsMenu = () => {
               icon={<PersonIcon />}
               selected={location.pathname === `/settings/user/${userId}`}
             />
-            <MenuItem
-              title={t('deviceTitle')}
-              subtitle={t('settingsDevicesDesc')}
-              link="/settings/devices"
-              icon={<DnsIcon />}
-              selected={location.pathname.startsWith('/settings/device')}
-            />
+            {admin && (
+              <MenuItem
+                title={t('deviceTitle')}
+                subtitle={t('settingsDevicesDesc')}
+                link="/settings/devices"
+                icon={<DnsIcon />}
+                selected={location.pathname.startsWith('/settings/device')}
+              />
+            )}
             <MenuItem
               title={t('sharedGeofences')}
               subtitle={t('settingsGeofencesDesc')}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import {
@@ -20,7 +20,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import RouteIcon from '@mui/icons-material/Route';
 import SendIcon from '@mui/icons-material/Send';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PendingIcon from '@mui/icons-material/Pending';
 import SpeedIcon from '@mui/icons-material/Speed';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -40,11 +39,9 @@ import {
   formatTime,
   getBatteryStatus,
 } from '../util/formatter';
-import RemoveDialog from './RemoveDialog';
 import PositionDrawer from './PositionDrawer';
 import { useDeviceReadonly, useRestriction } from '../util/permissions';
-import { devicesActions } from '../../store';
-import { useCatch, useCatchCallback } from '../../reactHelper';
+import { useCatchCallback } from '../../reactHelper';
 import { useAttributePreference, usePreference } from '../util/preferences';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { mapIconKey, mapIcons } from '../../map/core/preloadImages';
@@ -295,7 +292,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const t = useTranslation();
 
   const readonly = useRestriction('readonly');
@@ -329,7 +325,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   );
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [removing, setRemoving] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [address, setAddress] = useState();
 
@@ -358,16 +353,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deviceId, position?.address, geocoderEnabled]);
-
-  const handleRemove = useCatch(async (removed) => {
-    if (removed) {
-      const response = await fetchOrThrow('/api/devices');
-      dispatch(devicesActions.refresh(await response.json()));
-    }
-    setRemoving(false);
-  });
 
   const handleGeofence = useCatchCallback(async () => {
     const newItem = {
@@ -408,7 +394,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const motionColor = hasMotion && motion ? theme.palette.success.main : theme.palette.neutral.main;
 
   const batteryColor =
-    batteryLevel != null ? theme.palette[getBatteryStatus(batteryLevel)].main : theme.palette.neutral.main;
+    batteryLevel != null
+      ? theme.palette[getBatteryStatus(batteryLevel)].main
+      : theme.palette.neutral.main;
 
   const locationTime = position?.fixTime || device?.lastUpdate;
   const addressText =
@@ -490,7 +478,9 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     </div>
                     <div className={classes.seg}>
                       <SpeedIcon style={{ color: theme.palette.text.secondary }} />
-                      <span className={classes.segValue}>{formatSpeed(position.speed, speedUnit, t)}</span>
+                      <span className={classes.segValue}>
+                        {formatSpeed(position.speed, speedUnit, t)}
+                      </span>
                     </div>
                     <div className={classes.seg}>
                       <BatteryFullIcon style={{ color: batteryColor }} />
@@ -562,15 +552,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={t('sharedRemove')}>
-                  <IconButton
-                    color="error"
-                    onClick={() => setRemoving(true)}
-                    disabled={disableActions || deviceReadonly}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
               </CardActions>
             </Card>
           </Rnd>
@@ -624,12 +605,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
           )}
         </Menu>
       )}
-      <RemoveDialog
-        open={removing}
-        endpoint="devices"
-        itemId={deviceId}
-        onResult={(removed) => handleRemove(removed)}
-      />
       <PositionDrawer
         position={position}
         open={detailsOpen}

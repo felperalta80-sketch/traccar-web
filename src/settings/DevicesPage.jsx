@@ -1,6 +1,6 @@
 import { useCallback, useReducer, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
   Table,
   TableRow,
@@ -26,7 +26,7 @@ import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
 import searchItems from '../common/util/searchItems';
 import { formatAddress, formatStatus, formatTime } from '../common/util/formatter';
-import { useDeviceReadonly, useManager } from '../common/util/permissions';
+import { useAdministrator, useDeviceReadonly, useManager } from '../common/util/permissions';
 import { usePreference } from '../common/util/preferences';
 import useSettingsStyles from './common/useSettingsStyles';
 import DeviceUsersValue from './components/DeviceUsersValue';
@@ -44,6 +44,7 @@ const DevicesPage = () => {
 
   const groups = useSelector((state) => state.groups.items);
 
+  const admin = useAdministrator();
   const manager = useManager();
   const deviceReadonly = useDeviceReadonly();
   const coordinateFormat = usePreference('coordinateFormat');
@@ -111,6 +112,12 @@ const DevicesPage = () => {
     icon: <LinkIcon fontSize="small" />,
     handler: (deviceId) => navigate(`/settings/device/${deviceId}/connections`),
   };
+
+  // Módulo restringido a administradores: un no-admin que llegue por URL directa
+  // es redirigido, para que ocultar el ítem del menú no baste como bloqueo.
+  if (!admin) {
+    return <Navigate to="/settings/preferences" replace />;
+  }
 
   return (
     <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'deviceTitle']}>
