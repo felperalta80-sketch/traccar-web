@@ -353,6 +353,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     return () => {
       active = false;
     };
+    // `position` cambia en cada actualización de ubicación; depender del objeto
+    // completo re-geocodificaría en cada tick y saturaría el endpoint. Solo se
+    // re-ejecuta al cambiar el dispositivo, la dirección cacheada o el flag.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [deviceId, position?.address, geocoderEnabled]);
 
   const handleGeofence = useCatchCallback(async () => {
