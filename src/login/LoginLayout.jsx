@@ -18,6 +18,26 @@ const useStyles = makeStyles()((theme) => ({
     width: '100%',
     maxWidth: theme.spacing(46),
     padding: theme.spacing(3),
+    // Contraste: sobre el fondo plano (#F0F0F0) el input de relleno tenue y
+    // borde transparente se fundía con el fondo (~1.1:1). En las páginas de
+    // auth los inputs van con fondo blanco y borde gris visible en reposo
+    // (grey[600] ≈ 4:1 contra el fondo), conservando el resaltado de foco
+    // (primary) y de error.
+    '& .MuiOutlinedInput-root': {
+      backgroundColor: theme.palette.background.paper,
+    },
+    '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.grey[600],
+    },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.grey[800],
+    },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.primary.main,
+    },
+    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.error.main,
+    },
   },
   logo: {
     alignSelf: 'center',
