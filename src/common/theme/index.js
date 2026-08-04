@@ -11,7 +11,7 @@ const fonts = {
   body: '"Noto Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
 };
 
-export default (server, darkMode, direction) =>
+export default (server, direction) =>
   useMemo(
     () =>
       createTheme({
@@ -47,11 +47,11 @@ export default (server, darkMode, direction) =>
         shape: {
           borderRadius: 8,
         },
-        palette: palette(server, darkMode),
+        palette: palette(server),
         direction,
         dimensions,
         fonts,
         components,
       }),
-    [server, darkMode, direction],
+    [server, direction],
   );
